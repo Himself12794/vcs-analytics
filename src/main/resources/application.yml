@@ -1,0 +1,17 @@
+spring:
+  profiles: dev
+server.port: 1103
+spring.datasource:
+  driverClassName: oracle.jdbc.driver.OracleDriver
+  url: DB_DEV_URL
+  username: DB_DEV_USERNAME
+  password: DB_DEV_PASSWORD
+---
+spring:
+  profiles: prod
+server.port: 1103
+spring.datasource:
+  driverClassName: oracle.jdbc.driver.OracleDriver
+  url: DB_PROD_URL
+  username: DB_PROD_USERNAME
+  password: DB_PROD_PASSWORD
