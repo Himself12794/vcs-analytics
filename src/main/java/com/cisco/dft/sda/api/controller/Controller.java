@@ -1,6 +1,6 @@
 package com.cisco.dft.sda.api.controller;
 
-import org.apache.log4j.*;
+import org.slf4j.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,7 +19,7 @@ import com.cisco.dft.sda.api.service.TestService;
 @RestController
 public class Controller {
 
-	 static  Logger LOGGER = Logger
+	 static  Logger LOGGER = LoggerFactory
 			.getLogger(Controller.class);
 
 	@Autowired
@@ -33,7 +33,7 @@ public class Controller {
 	 */
 	@RequestMapping(value = "/dft/sda/test/{name}", method = RequestMethod.GET)
 	public String test(@PathVariable String name) {
-		LOGGER.info("Input value:" + name);
+		LOGGER.error("Input value:" + name);
 		return service.test(name);
 	}
 
