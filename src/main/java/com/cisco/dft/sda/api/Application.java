@@ -6,6 +6,7 @@ import org.springframework.context.annotation.ComponentScan;
 
 import com.cisco.dft.sda.api.config.JdbcConfigLoader;
 
+import  org.apache.log4j.Logger;
 /**
  * Responsible to bootstrap and launch Spring Boot Application context
  * 
@@ -16,9 +17,13 @@ import com.cisco.dft.sda.api.config.JdbcConfigLoader;
 @ComponentScan
 @EnableAutoConfiguration
 public class Application {
+	static  Logger logger= Logger.getLogger(Application.class);
 
 	public static void main(String[] args) {
+		
+		
 		SpringApplication.run(new Object[] { Application.class,
 				JdbcConfigLoader.class }, args);
+		logger.info("hello i am here");
 	}
 }
