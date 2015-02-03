@@ -9,12 +9,13 @@
 
 		<append>true</append>
 		<encoder>
-			<pattern>%d [%thread] %-5level %logger{35} %L - %msg%n</pattern>
+			<!-- [DEBUG][DATE and TIME][Class-line][THREAD][MSG] -->
+			<pattern>[%-5level] [%d]  [%logger{35} - %L] [%thread ] - %msg %n</pattern>
 		</encoder>
 	</appender>
 	<appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
-			<pattern>%d [%thread] %-5level %logger{35} - %msg%n</pattern>
+			<pattern>[%-5level] [%d]  [%logger{35} - %L] [%thread ] - %msg %n</pattern>
 		</encoder>
 
 	</appender>
