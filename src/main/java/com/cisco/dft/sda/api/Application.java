@@ -24,6 +24,6 @@ public class Application {
 		
 		SpringApplication.run(new Object[] { Application.class,
 				JdbcConfigLoader.class }, args);
-		logger.warn("hello i am here");
+		logger.debug("hello i am here");
 	}
-}	
+}			

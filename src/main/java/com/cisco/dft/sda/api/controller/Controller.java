@@ -33,8 +33,18 @@ public class Controller {
 	 */
 	@RequestMapping(value = "/dft/sda/test/{name}", method = RequestMethod.GET)
 	public String test(@PathVariable String name) {
-		LOGGER.error("Input value:" + name);
+		LOGGER.info("Input value:" + name);
+		
+		try
+		{
+			int i = 1/0;
+		}
+		catch(Exception e)
+		{
+			LOGGER.error("division by 0",e);
+		}
+		
 		return service.test(name);
 	}
-
+   
 }
