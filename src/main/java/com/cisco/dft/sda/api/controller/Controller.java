@@ -40,9 +40,9 @@ public class Controller {
 		try {
 			int i = 1 / 0;
 		} catch (Exception e) {
-			LOGGER.error("division by 0", e);// catching the '1/0' exception here with logger level error.
+			LOGGER.error("division by 0", e);// catching the '1/0' exception here with logger level error with exception object e.
 		}
-
+		
 		return service.test(name);
 	}
 

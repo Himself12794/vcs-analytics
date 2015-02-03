@@ -3,7 +3,10 @@
 <configuration>
 
 	<appender name="fileAppender" class="ch.qos.logback.core.FileAppender">
+		<!-- prints the logs in this package to file in path mentioned below -->
 		<file>/Users/bhargoel/Desktop/springlogs.log</file>
+		<!-- prints the logs in this package to file project workspace 
+		<file>/Users/bhargoel/Desktop/springlogs.log</file>-->
 		<append>true</append>
 		<encoder>
 			<pattern>%d [%thread] %-5level %logger{35} - %msg%n</pattern>
@@ -15,26 +18,25 @@
 		</encoder>
 
 	</appender>
-	
-	
-    <!-- prints the logs in this  package to file mentioned in appender -->
+
+
+	<!-- prints the logs in this package to file mentioned in appender -->
 	<logger name="com.cisco.dft.sda.api" level="TRACE" additivity="false">
 
 		<appender-ref ref="fileAppender" />
-	</logger> 
-	
-		
-		
-	<!-- redirects all other logs for the application to console with level INFO -->
+	</logger>
+
+
+
+	<!-- redirects all other logs for the application to console with level 
+		INFO -->
 	<root level="INFO">
 		<appender-ref ref="stdout" />
 	</root>
 
 	<!-- redirects all other logs for the application to file with level TRACE -->
 
-	<!-- <root level="TRACE">
-		<appender-ref ref="stdout" />
-	</root> -->
-  	
+	<!-- <root level="TRACE"> <appender-ref ref="stdout" /> </root> -->
+
 
 </configuration>
