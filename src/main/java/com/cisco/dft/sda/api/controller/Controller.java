@@ -34,6 +34,10 @@ public class Controller {
 	 */
 	@RequestMapping(value = "/dft/sda/test/{name}", method = RequestMethod.GET)
 	public String test(@PathVariable String name) {
+		
+		
+		
+		
 		LOGGER.info("Input value:" + name); // Logs the name passed in the query parameter with logger level info
 		LOGGER.warn("Input value:" + name); //Logs the name passed in the query parameter with logger level warn
 		

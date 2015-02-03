@@ -3,13 +3,13 @@
 <configuration>
 
 	<appender name="fileAppender" class="ch.qos.logback.core.FileAppender">
-		<!-- prints the logs in this package to file in path mentioned below -->
-		<file>/Users/bhargoel/Desktop/springlogs.log</file>
-		<!-- prints the logs in this package to file project workspace 
-		<file>/Users/bhargoel/Desktop/springlogs.log</file>-->
+		<!-- creates a folder named log in the current directory and pushes the 
+			springlogs file there -->
+		<file>logs/springlogs.log</file>
+
 		<append>true</append>
 		<encoder>
-			<pattern>%d [%thread] %-5level %logger{35} - %msg%n</pattern>
+			<pattern>%d [%thread] %-5level %logger{35} %L - %msg%n</pattern>
 		</encoder>
 	</appender>
 	<appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
