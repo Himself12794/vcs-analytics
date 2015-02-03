@@ -4,40 +4,39 @@
 
 	<appender name="fileAppender" class="ch.qos.logback.core.FileAppender">
 		<!-- creates a folder named log in the current directory and pushes the 
-			springlogs file there -->
+			springlogs file there . -->
 		<file>logs/springlogs.log</file>
-
 		<append>true</append>
 		<encoder>
-			<!-- [DEBUG][DATE and TIME][Class-line][THREAD][MSG] -->
-			<pattern>[%-5level] [%d]  [%logger{35} - %L] [%thread ] - %msg %n</pattern>
+			<!-- pattern followed -[DEBUG][DATE and TIME][Class-line][THREAD][MSG] [number of lines of exception] -->
+			<pattern>[%-5level] [%d] [%logger{35} - %L] [%thread ] - %msg %n  %throwable{6}
+			</pattern>
 		</encoder>
 	</appender>
+
 	<appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
-			<pattern>[%-5level] [%d]  [%logger{35} - %L] [%thread ] - %msg %n</pattern>
+			<pattern>[%-5level] [%d] [%logger{35} - %L] [%thread ] - %msg %n
+			</pattern>
 		</encoder>
-
 	</appender>
 
+	<!-- redirects all other logs for the application to file with level 
+		INFO -->
+	 <root level="DEBUG">
+		<appender-ref ref="fileAppender" />
+	</root> 
+
+
+	<!-- redirects all other logs for the application to console with level TRACE 
+
+	<root level="TRACE">
+		<appender-ref ref="stdout" />
+	</root>-->
 
 	<!-- prints the logs in this package to file mentioned in appender -->
-	<logger name="com.cisco.dft.sda.api" level="TRACE" additivity="false">
-
-		<appender-ref ref="fileAppender" />
-	</logger>
-
-
-
-	<!-- redirects all other logs for the application to console with level 
-		INFO -->
-	<root level="INFO">
-		<appender-ref ref="stdout" />
-	</root>
-
-	<!-- redirects all other logs for the application to file with level TRACE -->
-
-	<!-- <root level="TRACE"> <appender-ref ref="stdout" /> </root> -->
+	<!-- <logger name="com.cisco.dft.sda.api" level="TRACE" additivity="false"> 
+		<appender-ref ref="fileAppender" /> </logger> -->
 
 
 </configuration>
