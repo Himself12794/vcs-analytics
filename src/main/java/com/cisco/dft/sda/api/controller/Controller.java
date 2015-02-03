@@ -1,6 +1,8 @@
 package com.cisco.dft.sda.api.controller;
 
-import org.slf4j.*;
+
+// importing the slf4j jar
+import org.slf4j.*; 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,8 +21,7 @@ import com.cisco.dft.sda.api.service.TestService;
 @RestController
 public class Controller {
 
-	 static  Logger LOGGER = LoggerFactory
-			.getLogger(Controller.class);
+	static Logger LOGGER = LoggerFactory.getLogger(Controller.class); // defining the slf4j Logger Factory Object
 
 	@Autowired
 	private TestService service;
@@ -33,18 +34,16 @@ public class Controller {
 	 */
 	@RequestMapping(value = "/dft/sda/test/{name}", method = RequestMethod.GET)
 	public String test(@PathVariable String name) {
-		LOGGER.info("Input value:" + name);
+		LOGGER.info("Input value:" + name); // Logs the name passed in the query parameter with logger level info
+		LOGGER.warn("Input value:" + name); //Logs the name passed in the query parameter with logger level warn
 		
-		try
-		{
-			int i = 1/0;
+		try {
+			int i = 1 / 0;
+		} catch (Exception e) {
+			LOGGER.error("division by 0", e);// catching the '1/0' exception here with logger level error.
 		}
-		catch(Exception e)
-		{
-			LOGGER.error("division by 0",e);
-		}
-		
+
 		return service.test(name);
 	}
-   
+
 }
