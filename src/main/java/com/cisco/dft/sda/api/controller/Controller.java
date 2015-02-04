@@ -42,7 +42,7 @@ public class Controller {
 											// parameter with logger level info
 		LOGGER.warn("Input value:" + name); // Logs the name passed in the query
 											// parameter with logger level warn
-
+    /* sample error logging scenario */
 		try {
 			int i = 1 / 0;
 		} catch (Exception e) {

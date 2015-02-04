@@ -17,7 +17,7 @@ import org.slf4j.*;
 @ComponentScan
 @EnableAutoConfiguration
 public class Application {
-	static  Logger logger= LoggerFactory.getLogger(Application.class);
+	static  Logger logger= LoggerFactory.getLogger(Application.class); 
 
 	public static void main(String[] args) {
 		
