@@ -4,8 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import com.cisco.dft.sda.api.controller.Controller;
-
 /**
  * Implements API business logic
  * 
