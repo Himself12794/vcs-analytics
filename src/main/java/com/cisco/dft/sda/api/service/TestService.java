@@ -34,7 +34,7 @@ public class TestService {
 	 * @return
 	 */ 
 	
-	public String debugTest(String name) {
+	public String loggerTest(String name) {
 		// Logs the name passed in the query parameter with logger level debug
 		LOGGER.debug("Logger Test (debug): Input value:" + name); 
 		

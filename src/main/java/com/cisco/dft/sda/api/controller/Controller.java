@@ -34,7 +34,7 @@ public class Controller {
 	 */
 	@RequestMapping(value = "/dft/sda/test/{name}", method = RequestMethod.GET)
 	public String test(@PathVariable String name) {
-		return service.debugTest(name);
+		return service.loggerTest(name);
 	}
 
 }
