@@ -1,7 +1,5 @@
 package com.cisco.dft.sda.api.controller;
 
-import static org.junit.Assert.*;
-
 import java.net.URL;
 
 import org.junit.Before;
