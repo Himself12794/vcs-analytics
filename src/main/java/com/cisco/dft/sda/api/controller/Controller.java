@@ -1,23 +1,15 @@
 package com.cisco.dft.sda.api.controller;
 
-import java.io.IOException;
-
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
-
+import com.cisco.dft.sda.api.pojo.GenericRequestObject;
+import com.cisco.dft.sda.api.pojo.GenericResponseObject;
+import com.cisco.dft.sda.api.service.TestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.cisco.dft.sda.api.pojo.GenericResponseObject;
-import com.cisco.dft.sda.api.pojo.GenericRequestObject;
-import com.cisco.dft.sda.api.service.TestService;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 
 /**
  * A generic controller responsible to handle HTTP requests.
@@ -30,7 +22,7 @@ import com.cisco.dft.sda.api.service.TestService;
 public class Controller {
 
 	// defining the slf4j Logger Object
-	static Logger LOGGER = LoggerFactory.getLogger(Controller.class); 
+	static Logger LOGGER = LoggerFactory.getLogger(Controller.class);
 
 	@Autowired
 	private TestService service;
@@ -43,12 +35,12 @@ public class Controller {
 	 */
 	@RequestMapping(value = "/dft/sda/test/{name}", method = RequestMethod.GET)
 	public String test(@PathVariable String name) {
-		return service.loggerTest(name);
+		return name;
 	}
 
 	/**
 	 * Test implementation using HTTP GET Usage:
-	 * <server-name>:<port-num>/dft/sda/get-test?param1=Hello&param2=World
+	 * <server-name>:<port-num>/dft/sda/get-test?param1=Hello&param2=Hello
 	 * 
 	 * @param param1
      * @param param2
@@ -72,7 +64,7 @@ public class Controller {
 
 	/**
 	 * Test implementation using HTTP POST exchange Sample Payload: {"param1":
-	 * "Hello", "param2": "World!"}
+	 * "Hello", "param2": "Hello"}
 	 * 
 	 * @param request
 	 * @return

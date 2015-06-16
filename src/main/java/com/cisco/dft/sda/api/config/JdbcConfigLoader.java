@@ -1,7 +1,5 @@
 package com.cisco.dft.sda.api.config;
 
-import java.io.IOException;
-
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.env.YamlPropertySourceLoader;
@@ -10,6 +8,8 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.PropertySource;
 import org.springframework.core.io.ClassPathResource;
+
+import java.io.IOException;
 
 /**
  * Initializes and loads application.yml file into a PropertySource (represents

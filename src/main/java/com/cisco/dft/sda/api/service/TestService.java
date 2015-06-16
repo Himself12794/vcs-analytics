@@ -1,14 +1,13 @@
 package com.cisco.dft.sda.api.service;
 
+import com.cisco.dft.sda.api.pojo.GenericRequestObject;
+import com.cisco.dft.sda.api.pojo.GenericResponseObject;
+import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import javax.servlet.http.HttpServletResponse;
-
-import org.json.simple.JSONObject;
 import org.springframework.stereotype.Service;
 
-import com.cisco.dft.sda.api.pojo.GenericResponseObject;
-import com.cisco.dft.sda.api.pojo.GenericRequestObject;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Implements API business logic

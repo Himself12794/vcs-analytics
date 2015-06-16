@@ -13,8 +13,8 @@ TRACE -	Designates finer-grained informational events than the DEBUG.
 	
 	<!-- Regular file appender -->
 	<appender name="fileAppender" class="ch.qos.logback.core.FileAppender">
-		<!-- creates a folder named log in the current directory and pushes the 
-			applog file there . -->
+		<!-- creates a folder named logs in the current directory and pushes the
+			applog.log file there . -->
 		<file>logs/applog.log</file>
 		<append>true</append>
 		<encoder>

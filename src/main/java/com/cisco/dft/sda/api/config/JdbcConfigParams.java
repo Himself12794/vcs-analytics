@@ -1,11 +1,10 @@
 package com.cisco.dft.sda.api.config;
 
-import javax.annotation.PostConstruct;
-
+import com.cisco.dft.sda.api.util.Util;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-import com.cisco.dft.sda.api.util.Util;
+import javax.annotation.PostConstruct;
 
 /**
  * Defines the JDBC attributes (with prefix "datasource") specified in the
