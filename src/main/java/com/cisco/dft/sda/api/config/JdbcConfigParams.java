@@ -1,7 +1,11 @@
 package com.cisco.dft.sda.api.config;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
+
+import com.cisco.dft.sda.api.util.Util;
 
 /**
  * Defines the JDBC attributes (with prefix "datasource") specified in the
@@ -19,6 +23,7 @@ public class JdbcConfigParams {
 	private String url;
 	private String username;
 	private String password;
+	private String key;
 
 	public String getDriverClassName() {
 		return driverClassName;
@@ -50,5 +55,19 @@ public class JdbcConfigParams {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	public String getKey() {
+		return key;
+	}
+
+	public void setKey(String key) {
+		this.key = key;
+	}
+	
+	@PostConstruct
+	public void decrypt (){
+		this.password=Util.decrypt(password, key);
+		
 	}
 }

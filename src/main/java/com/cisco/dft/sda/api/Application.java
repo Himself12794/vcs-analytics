@@ -4,8 +4,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 
-import com.cisco.dft.sda.api.config.JdbcConfigLoader;
-
 /**
  * Responsible to bootstrap and launch Spring Boot Application context
  * 
@@ -18,7 +16,6 @@ import com.cisco.dft.sda.api.config.JdbcConfigLoader;
 public class Application {
 
 	public static void main(String[] args) {
-		SpringApplication.run(new Object[] { Application.class,
-				JdbcConfigLoader.class }, args);
+		SpringApplication.run(new Object[] { Application.class}, args);
 	}
 }

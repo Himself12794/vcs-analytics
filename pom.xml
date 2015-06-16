@@ -52,6 +52,17 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+<!-- 	<dependency> 
+  <groupId>org.slf4j</groupId>
+  <artifactId>slf4j-log4j12</artifactId>
+  <version>1.7.10</version>
+</dependency> -->
+		<!-- Jasypt Library -->
+		<dependency>
+			<groupId>org.jasypt</groupId>
+			<artifactId>jasypt</artifactId>
+			<version>1.9.2</version>
+		</dependency>
 	</dependencies>
 
 	<build>
