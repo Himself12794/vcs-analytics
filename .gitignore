@@ -1,8 +1,37 @@
-/.settings/
-/bin/
-/target/
-/.classpath
-/.project
-/logs/
+# General non-source code files
+~
+bin/
+target/
+*.class
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files
+*.jar
+*.war
+*.ear
+
+# Log Files
+log/
+logs/
+*.log
+
+# Eclipse IDE related files
+.settings/
+.project
+.classpath
+
+# Intellij Idea IDE related files
 *.iml
-/.idea/
+.idea/
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*%
+
+# Misc.
+*.metadata
+*.ini
+autorun.inf
+*.DS_Store
+*.swp

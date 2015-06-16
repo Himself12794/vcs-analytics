@@ -20,11 +20,8 @@ import com.cisco.dft.sda.api.service.TestService;
 @RestController
 public class Controller {
 
-	static Logger LOGGER = LoggerFactory.getLogger(Controller.class); // defining
-																		// the
-																		// slf4j
-																		// Logger
-																		// Object
+	// defining the slf4j Logger Object
+	static Logger LOGGER = LoggerFactory.getLogger(Controller.class); 
 
 	@Autowired
 	private TestService service;
@@ -37,21 +34,7 @@ public class Controller {
 	 */
 	@RequestMapping(value = "/dft/sda/test/{name}", method = RequestMethod.GET)
 	public String test(@PathVariable String name) {
-
-		LOGGER.info("Input value:" + name); // Logs the name passed in the query
-											// parameter with logger level info
-		LOGGER.warn("Input value:" + name); // Logs the name passed in the query
-											// parameter with logger level warn
-    /* sample error logging scenario */
-		try {
-			int i = 1 / 0;
-		} catch (Exception e) {
-			LOGGER.error("division by 0", e);// catching the '1/0' exception
-												// here with logger level error
-												// with exception object e.
-		}
-
-		return service.test(name);
+		return service.loggerTest(name);
 	}
 
 }
