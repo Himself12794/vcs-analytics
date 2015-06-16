@@ -1,8 +1,7 @@
 package com.cisco.dft.sda.api.controller;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
+import com.cisco.dft.sda.api.config.JdbcConfigLoader;
+import com.cisco.dft.sda.api.service.TestService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,11 +15,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import com.cisco.dft.sda.api.config.JdbcConfigLoader;
-import com.cisco.dft.sda.api.service.TestService;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = {Controller.class ,TestService.class ,JdbcConfigLoader.class})
+@SpringApplicationConfiguration(classes = {Controller.class, TestService.class, JdbcConfigLoader.class})
 @ComponentScan
 @EnableAutoConfiguration
 public class ControllerTest {
