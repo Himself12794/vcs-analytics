@@ -43,7 +43,7 @@ public class Util {
 			LOGGER.info("Encrypted Password:  " + encryptedPassword);
 		} catch (Exception e) {
 
-			e.printStackTrace();
+			LOGGER.error("Error occurred while decrypting password", e);
 		}
 		return encryptedPassword;
 	}

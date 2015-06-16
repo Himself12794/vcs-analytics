@@ -34,4 +34,12 @@ public class GenericResponseObject {
 	public void setParam2(String param2) {
 		this.param2 = param2;
 	}
+
+    @Override
+    public String toString() {
+        return "GenericResponseObject{" +
+                "param1='" + param1 + '\'' +
+                ", param2='" + param2 + '\'' +
+                '}';
+    }
 }

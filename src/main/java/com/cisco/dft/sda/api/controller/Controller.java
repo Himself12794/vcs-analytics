@@ -35,6 +35,7 @@ public class Controller {
 	 */
 	@RequestMapping(value = "/dft/sda/test/{name}", method = RequestMethod.GET)
 	public String test(@PathVariable String name) {
+		LOGGER.info("test() received params: " + "name: " + name);
 		return name;
 	}
 
@@ -51,8 +52,12 @@ public class Controller {
 			@RequestParam(value = "param1", defaultValue = "param1", required = true) String param1,
 			@RequestParam(value = "param2", defaultValue = "param2") String param2,
 			HttpServletResponse httpResponse) {
+		LOGGER.info("testGet() i/p: " + "param1: " + param1 + ", " + "param2: " + param2);
 		GenericRequestObject request = new GenericRequestObject(param1, param2);
-		return service.test(request, httpResponse);
+        GenericResponseObject response = service.test(request, httpResponse);
+        LOGGER.info("testGet() status: " + httpResponse.getStatus());
+        LOGGER.info("testGet() o/p: " + response.toString());
+		return response;
 
 		// send a custom json instead:
 		// try {
@@ -73,7 +78,11 @@ public class Controller {
 	public GenericResponseObject testPost(
 			@RequestBody @Valid final GenericRequestObject request,
 			HttpServletResponse httpResponse) {
-		return service.test(request, httpResponse);
+        LOGGER.info("testPost() i/p: " + "RequestBody: " + request.toString());
+        GenericResponseObject response = service.test(request, httpResponse);
+        LOGGER.info("testPost() status: " + httpResponse.getStatus());
+        LOGGER.info("testPost() o/p: " + response.toString());
+		return response;
 
 		// send a custom json instead:
 		// try {

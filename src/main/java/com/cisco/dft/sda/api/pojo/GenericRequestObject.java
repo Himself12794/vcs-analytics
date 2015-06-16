@@ -31,4 +31,11 @@ public class GenericRequestObject {
 		this.param2 = param2;
 	}
 
+    @Override
+    public String toString() {
+        return "GenericRequestObject{" +
+                "param1='" + param1 + '\'' +
+                ", param2='" + param2 + '\'' +
+                '}';
+    }
 }

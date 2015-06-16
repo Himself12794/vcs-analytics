@@ -33,33 +33,6 @@ public class TestService {
 	}
 
 	/**
-	 * Test implementation for checking debugger
-	 * 
-	 * @param name
-	 * @return
-	 */ 
-	
-	public String loggerTest(String name) {
-		// Logs the name passed in the query parameter with logger level debug
-		LOGGER.debug("Logger Test (debug): Input value:" + name); 
-		
-		// Logs the name passed in the query parameter with logger level info
-		LOGGER.info("Logger Test (info): Input value:" + name); 
-		
-		// Logs the name passed in the query parameter with logger level warn
-		LOGGER.warn("Logger Test (warn): Input value:" + name); 
-		
-		/* sample error logging scenario */
-		try {
-			int i = 1 / 0;
-		} catch (Exception e) {
-			// catching the '1/0' exception here with logger level error with exception object e.
-			LOGGER.error("division by 0", e);
-		}
-		return name;
-	}
-
-	/**
 	 * an over-ridden test method with custom business logic which returns a
 	 * generic response object when called
 	 * 
@@ -76,11 +49,13 @@ public class TestService {
 
 		// Business logic:
 		if (param1.equals(param2)) {
+            LOGGER.info("param1 is same as param2");
 			response.setParam1("value#1");
 			response.setParam2("value#2");
 			httpResponse.setContentType("application/json");
 			httpResponse.setStatus(200); // status 200 will be returned
 		} else {
+            LOGGER.info("param1 is NOT same as param2");
 			response.setParam1("value#3");
 			response.setParam2("value#4");
 			httpResponse.setContentType("application/json");
@@ -101,5 +76,30 @@ public class TestService {
 		json.put("param2", "world");
 
 		return json;
+	}
+
+	/**
+	 * Test implementation for checking debugger
+	 *
+	 * @param name
+	 */
+
+	public void loggerTest(String name) {
+		// Logs the name passed in the query parameter with logger level debug
+		LOGGER.debug("Logger Test (debug): Input value:" + name);
+
+		// Logs the name passed in the query parameter with logger level info
+		LOGGER.info("Logger Test (info): Input value:" + name);
+
+		// Logs the name passed in the query parameter with logger level warn
+		LOGGER.warn("Logger Test (warn): Input value:" + name);
+
+		/* sample error logging scenario */
+		try {
+			int i = 1 / 0;
+		} catch (Exception e) {
+			// catching the '1/0' exception here with logger level error with exception object e.
+			LOGGER.error("division by 0", e);
+		}
 	}
 }
