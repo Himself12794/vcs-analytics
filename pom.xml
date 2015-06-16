@@ -8,9 +8,9 @@
 	</parent>
 
 	<groupId>com.cisco.dft.sda.api</groupId>
-	<artifactId>sda-api</artifactId>
-	<version>0.0.1</version>
-	<name>sda-api</name>
+	<artifactId>seed-api-sb</artifactId>
+	<version>0.0.2</version>
+	<name>seed-api-sb</name>
 	<description>Spring Boot Application</description>
 
 	<url>http://maven.apache.org</url>
