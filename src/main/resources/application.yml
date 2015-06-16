@@ -3,7 +3,7 @@ spring:
 ---
 spring:
   profiles: dev
-server.port: 1103
+server.port: 1100
 datasource:
   driverClassName: oracle.jdbc.driver.OracleDriver
   url: DB_DEV_URL
@@ -13,7 +13,7 @@ datasource:
 ---
 spring:
   profiles: stage
-server.port: 1103
+server.port: 1100
 datasource:
   driverClassName: oracle.jdbc.driver.OracleDriver
   url: DB_STAGE_URL
@@ -23,7 +23,7 @@ datasource:
 ---
 spring:
   profiles: prod
-server.port: 1103
+server.port: 1100
 datasource:
   driverClassName: oracle.jdbc.driver.OracleDriver
   url: DB_PROD_URL
