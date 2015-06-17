@@ -10,12 +10,15 @@ TRACE -	Designates finer-grained informational events than the DEBUG.
  -->
  
 <configuration>
-	
+
+    <!-- Enter your app name here instead of <seed-api-sb> -->
+    <property name="APP_NAME" value="seed-api-sb" />
+
 	<!-- Regular file appender -->
 	<appender name="fileAppender" class="ch.qos.logback.core.FileAppender">
 		<!-- creates a folder named logs in the current directory and pushes the
 			applog.log file there . -->
-		<file>logs/applog.log</file>
+		<file>logs/${APP_NAME}.log</file>
 		<append>true</append>
 		<encoder>
 			<!-- pattern followed -[DEBUG][DATE and TIME][Class-line][THREAD][MSG] [number of lines of exception] -->
@@ -26,12 +29,12 @@ TRACE -	Designates finer-grained informational events than the DEBUG.
 	
 	<!-- Rolling file appender: keeps archiving the log files everyday -->
 	<appender name="rollingFileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<file>logs/applog.log</file>
+		<file>logs/${APP_NAME}.log</file>
 		<append>true</append>
 		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
 		
 	      <!-- daily rollover -->
-	      <fileNamePattern>logs/archived/applog_%d{yyyy-MM-dd}.log</fileNamePattern>
+	      <fileNamePattern>logs/archived/${APP_NAME}_%d{yyyy-MM-dd}.log</fileNamePattern>
 	
 	      <!-- keep 30 days' worth of history -->
 	      <maxHistory>30</maxHistory>

@@ -1,18 +1,21 @@
 # INTRODUCTION
-__seed-api-sb__ is a repo for Spring Boot "seed" RESTful API development with all the best practices implemented in. 
+__seed-api-sb__ is a repo for Spring Boot "seed" RESTful API development with all the best practices implemented in.
 
-# RELEASE NOTES
+# USAGE
+Fork this repository.
+Follow these steps before you start building your APIs.
 
-__Sprint End Date: 02-06-2015__
+1. __Edit pom.xml__<br/>
+Edit the following tags in your pom.xml: <br/>
+	<groupId> _your-group-id_ </groupId>
+	<artifactId> _your-artifact-id_ </artifactId>
+	<version> _1.0-SNAPSHOT_ </version>
+	<name> _name-of-your-app_ </name>
+	<description> _description-of-your-app_ </description>
 
-1. __Logging Framework__<br/>
-Branch Name: _feature/TA3657-logging-framework_
+2. __Edit src/main/resource/logback.xml__<br/>
+Edit the value of following property in your logback.xml: <br/>
+    <property name="APP_NAME" value= " _name-of-your-app_ " />
 
-2. __Encrypt configuration properties in YAML file__<br/>
-Branch Name: _feature/TA3662-encrypt-yaml-file_
-
-3. __Unit and Integration Tests (JUnit, Mockito etc.)__<br/>
-Branch Name: _feature/TA3713-unit-and-integration-tests_
-
-4. __Functional Test Suite for RESTful APIs (rest-assured vs soapui vs custom implementation)__<br/>
-Branch Name: _feature/TA3714-functional-testsuite_
+3. __Edit src/name/resource/application.xml and src/test/resource/application.xml__<br/>
+Edit the values of different application properties and custom configurations (like server.port, DB details etc.) <br/>
