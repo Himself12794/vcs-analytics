@@ -15,13 +15,13 @@ Edit the following tags in your pom.xml: <br/>
 	<name>name-of-your-app</name>
 	<description>description-of-your-app</description>
 	```
-
+<br/>
 2. __Edit src/main/resource/logback.xml__<br/>
 Edit the value of following property in your logback.xml: <br/>
     
     ```xml
-    <property name="APP_NAME" value="name-of-your-app_"/>
+    <property name="APP_NAME" value="name-of-your-app"/>
     ```
-    
+<br/>
 3. __Edit src/name/resource/application.xml and src/test/resource/application.xml__<br/>
 Edit the values of different application properties and custom configurations (like server.port, DB details etc.) <br/>
