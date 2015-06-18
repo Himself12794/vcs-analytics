@@ -1,11 +1,12 @@
 # INTRODUCTION
 __seed-api-sb__ is a repo for Spring Boot "seed" RESTful API development with all the best practices implemented in.
 <br/>
+<br/>
 # USAGE
 Fork this repository.
 Follow these steps before you start building your APIs.
 
-1. __Edit pom.xml__<br/>
+1. Edit __pom.xml__<br/>
 Edit the following tags in your pom.xml: <br/>
 
 	```xml
@@ -16,12 +17,12 @@ Edit the following tags in your pom.xml: <br/>
 	<description>description-of-your-app</description>
 	```
 <br/>
-2. __Edit src/main/resource/logback.xml__<br/>
+2. Edit __src/main/resource/logback.xml__<br/>
 Edit the value of following property in your logback.xml: <br/>
     
     ```xml
     <property name="APP_NAME" value="name-of-your-app"/>
     ```
 <br/>
-3. __Edit src/name/resource/application.xml and src/test/resource/application.xml__<br/>
+3. Edit __src/name/resource/application.yml__ and __src/test/resource/application.yml__<br/>
 Edit the values of different application properties and custom configurations (like server.port, DB details etc.) <br/>

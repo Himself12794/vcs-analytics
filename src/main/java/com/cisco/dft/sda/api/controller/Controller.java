@@ -41,13 +41,13 @@ public class Controller {
 
 	/**
 	 * Test implementation using HTTP GET Usage:
-	 * <server-name>:<port-num>/dft/sda/get-test?param1=Hello&param2=Hello
+	 * <server-name>:<port-num>/dft/sda/test?param1=Hello&param2=Hello
 	 * 
 	 * @param param1
      * @param param2
 	 * @return
 	 */
-	@RequestMapping(value = "/dft/sda/get-test", method = RequestMethod.GET)
+	@RequestMapping(value = "/dft/sda/test", method = RequestMethod.GET)
 	public GenericResponseObject testGet(
 			@RequestParam(value = "param1", defaultValue = "param1", required = true) String param1,
 			@RequestParam(value = "param2", defaultValue = "param2") String param2,
@@ -74,7 +74,7 @@ public class Controller {
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(value = "/dft/sda/post-test", method = RequestMethod.POST)
+	@RequestMapping(value = "/dft/sda/test", method = RequestMethod.POST)
 	public GenericResponseObject testPost(
 			@RequestBody @Valid final GenericRequestObject request,
 			HttpServletResponse httpResponse) {
