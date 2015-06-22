@@ -1,4 +1,0 @@
-2015-02-03 14:18:07,708 [main] INFO  com.cisco.dft.sda.api.Application - Starting Application on BHARGOEL-M-Q0UN with PID 49075 (/Users/bhargoel/git/seed-api-sb/target/classes started by bhargoel in /Users/bhargoel/git/seed-api-sb)
-2015-02-03 14:18:07,712 [main] DEBUG com.cisco.dft.sda.api.Application - Running with Spring Boot v1.1.8.RELEASE, Spring v4.0.7.RELEASE
-2015-02-03 14:18:10,896 [main] INFO  com.cisco.dft.sda.api.Application - Started Application in 3.562 seconds (JVM running for 4.245)
-2015-02-03 14:18:10,897 [main] DEBUG com.cisco.dft.sda.api.Application - hello i am here

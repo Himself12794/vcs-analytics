@@ -4,13 +4,13 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.1.8.RELEASE</version>
+		<version>1.2.4.RELEASE</version>
 	</parent>
 
 	<groupId>com.cisco.dft.sda.api</groupId>
-	<artifactId>sda-api</artifactId>
-	<version>0.0.1</version>
-	<name>sda-api</name>
+	<artifactId>seed-api-sb</artifactId>
+	<version>0.0.2</version>
+	<name>seed-api-sb</name>
 	<description>Spring Boot Application</description>
 
 	<url>http://maven.apache.org</url>
@@ -52,12 +52,17 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-<!-- 		<dependency> 
+<!-- 	<dependency> 
   <groupId>org.slf4j</groupId>
   <artifactId>slf4j-log4j12</artifactId>
   <version>1.7.10</version>
 </dependency> -->
-	
+		<!-- Jasypt Library -->
+		<dependency>
+			<groupId>org.jasypt</groupId>
+			<artifactId>jasypt</artifactId>
+			<version>1.9.2</version>
+		</dependency>
 	</dependencies>
 
 	<build>
