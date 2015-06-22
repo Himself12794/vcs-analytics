@@ -4,9 +4,10 @@ spring:
 spring:
   profiles: test
 server.port: 1100
+application:
+  decryptionKey: test
 datasource:
   driverClassName: oracle.jdbc.driver.OracleDriver
   url: DB_TEST_URL
   username: DB_TEST_USERNAME
   password: c3YTqsfwYKRgcFMQB6eBM8qbfIndqdRYA5am9vriOXQ=
-  key: test

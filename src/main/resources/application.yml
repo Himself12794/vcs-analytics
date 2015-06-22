@@ -4,29 +4,32 @@ spring:
 spring:
   profiles: dev
 server.port: 1100
+application:
+  decryptionKey:
 datasource:
   driverClassName: oracle.jdbc.driver.OracleDriver
   url: DB_DEV_URL
   username: DB_DEV_USERNAME
   password: 4N1ZhjC5JxIvs3X8ulCegpscj/HPY3GA
-  key:
 ---
 spring:
   profiles: stage
 server.port: 1100
+application:
+  decryptionKey:
 datasource:
   driverClassName: oracle.jdbc.driver.OracleDriver
   url: DB_STAGE_URL
   username: DB_STAGE_USERNAME
   password: 5OyRkLiWOtWnIM8gwwof04s6TTJ44tG0PwuBYkyNfEo=
-  key:
 ---
 spring:
   profiles: prod
 server.port: 1100
+application:
+  decryptionKey:
 datasource:
   driverClassName: oracle.jdbc.driver.OracleDriver
   url: DB_PROD_URL
   username: DB_PROD_USERNAME
   password: 8E7ou21wxJfQSEPjccXumIwunn11RSc8MFKkr1dShUM=
-  key:

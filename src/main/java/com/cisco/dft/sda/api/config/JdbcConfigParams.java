@@ -1,6 +1,7 @@
 package com.cisco.dft.sda.api.config;
 
 import com.cisco.dft.sda.api.util.Util;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -18,11 +19,13 @@ import javax.annotation.PostConstruct;
 @ConfigurationProperties(prefix = "datasource")
 public class JdbcConfigParams {
 
+	@Autowired
+	private ApplicationConfigParams applicationConfigParams;
+
 	private String driverClassName;
 	private String url;
 	private String username;
 	private String password;
-	private String key;
 
 	public String getDriverClassName() {
 		return driverClassName;
@@ -55,18 +58,10 @@ public class JdbcConfigParams {
 	public void setPassword(String password) {
 		this.password = password;
 	}
-
-	public String getKey() {
-		return key;
-	}
-
-	public void setKey(String key) {
-		this.key = key;
-	}
 	
 	@PostConstruct
 	public void decrypt (){
-		this.password=Util.decrypt(password, key);
+		this.password=Util.decrypt(this.password, applicationConfigParams.getDecryptionKey());
 		
 	}
 }
