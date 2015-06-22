@@ -11,6 +11,11 @@ datasource:
   url: DB_DEV_URL
   username: DB_DEV_USERNAME
   password: 4N1ZhjC5JxIvs3X8ulCegpscj/HPY3GA
+graphite:
+  enabled: true
+  prefix: com.cisco.dft.sda
+  host: cdtelemetry-sb
+  port: 2003
 ---
 spring:
   profiles: stage
@@ -22,6 +27,11 @@ datasource:
   url: DB_STAGE_URL
   username: DB_STAGE_USERNAME
   password: 5OyRkLiWOtWnIM8gwwof04s6TTJ44tG0PwuBYkyNfEo=
+graphite:
+  enabled: true
+  prefix: com.cisco.dft.sda
+  host: cdtelemetry-sb
+  port: 2003
 ---
 spring:
   profiles: prod
@@ -33,3 +43,8 @@ datasource:
   url: DB_PROD_URL
   username: DB_PROD_USERNAME
   password: 8E7ou21wxJfQSEPjccXumIwunn11RSc8MFKkr1dShUM=
+graphite:
+  enabled: true
+  prefix: com.cisco.dft.sda
+  host: cdtelemetry-sb
+  port: 2003

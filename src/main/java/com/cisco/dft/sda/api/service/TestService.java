@@ -2,6 +2,7 @@ package com.cisco.dft.sda.api.service;
 
 import com.cisco.dft.sda.api.pojo.GenericRequestObject;
 import com.cisco.dft.sda.api.pojo.GenericResponseObject;
+
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,6 +70,7 @@ public class TestService {
 	 * @return
 	 */
 
+	@SuppressWarnings("unchecked")
 	public JSONObject getObjectJSON() {
 		// dummy
 		JSONObject json = new JSONObject();
@@ -96,6 +98,7 @@ public class TestService {
 
 		/* sample error logging scenario */
 		try {
+			@SuppressWarnings("unused")
 			int i = 1 / 0;
 		} catch (Exception e) {
 			// catching the '1/0' exception here with logger level error with exception object e.

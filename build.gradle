@@ -1,0 +1,52 @@
+buildscript {
+    repositories {
+		mavenLocal()
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.2.3.RELEASE")
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'spring-boot'
+
+jar {
+    baseName = 'gs-spring-boot'
+    version =  '0.1.0'
+}
+
+repositories {
+    mavenCentral()
+}
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+dependencies {
+
+    compile group: 'com.googlecode.json-simple', name: 'json-simple', version:'1.1'
+    compile group: 'commons-codec', name: 'commons-codec', version:'1.4'
+    compile(group: 'org.apache.httpcomponents', name: 'httpclient', version:'4.3.5') {
+		exclude(module: 'commons-logging')
+    }
+	compile group: 'org.apache.httpcomponents', name: 'httpclient', version:'4.3.5'
+	compile('com.codahale.metrics:metrics-graphite:3.0.2')
+	compile("com.ryantenney.metrics:metrics-spring:3.1.0")
+    // tag::jetty[]
+    compile("org.springframework.boot:spring-boot-starter-web") {
+        exclude module: "spring-boot-starter-tomcat"
+    }
+    compile("org.springframework.boot:spring-boot-starter-jetty")
+    // end::jetty[]
+
+    testCompile("junit:junit")
+	testCompile("org.springframework.boot:spring-boot-starter-test")
+	
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.3'
+}
