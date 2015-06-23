@@ -14,6 +14,14 @@ import com.codahale.metrics.graphite.GraphiteReporter;
 import com.ryantenney.metrics.spring.config.annotation.EnableMetrics;
 import com.ryantenney.metrics.spring.config.annotation.MetricsConfigurerAdapter;
 
+/**
+ * This configures the metric reporting services. It can be configured to report to the console,
+ * and/or the Graphite server. 
+ * 
+ * @author phwhitin
+ * @since June 23, 2015
+ *
+ */
 @Configuration
 @EnableMetrics
 public class MetricReportingConfiguration extends MetricsConfigurerAdapter {
@@ -24,17 +32,13 @@ public class MetricReportingConfiguration extends MetricsConfigurerAdapter {
 	@Resource
 	private GraphiteConfigParams config;
 	
+	/**
+	 * Configures the separate reporters based on the application.yml.
+	 */
     @Override
     public void configureReporters(MetricRegistry metricRegistry) {
-        
-
     	
-        if ( config.enabled ){
-        	
-        	ConsoleReporter
-            	.forRegistry(metricRegistry)
-            	.build()
-            	.start(10, TimeUnit.SECONDS);
+        if ( config.isEnabled() ){
         	
         	GraphiteReporter
 	        	.forRegistry( metricRegistry )
@@ -43,7 +47,17 @@ public class MetricReportingConfiguration extends MetricsConfigurerAdapter {
 	            .convertDurationsTo(TimeUnit.MILLISECONDS)
 	            .filter(MetricFilter.ALL)
 	        	.build( graphite )
-	        	.start( 10, TimeUnit.SECONDS );
+	        	.start( config.getReportRate(), TimeUnit.SECONDS );
+        	
+        }
+        
+        if ( config.isConsoleReportingEnabled() ) {
+        	
+        	ConsoleReporter
+            	.forRegistry(metricRegistry)
+            	.build()
+            	.start(config.getReportRate(), TimeUnit.SECONDS);
+        	
         }
     }
    

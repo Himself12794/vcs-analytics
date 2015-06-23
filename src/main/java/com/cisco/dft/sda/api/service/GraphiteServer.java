@@ -12,6 +12,11 @@ import org.springframework.context.annotation.Configuration;
 import com.cisco.dft.sda.api.config.GraphiteConfigParams;
 import com.codahale.metrics.graphite.Graphite;
 
+/**
+ * Configures the Graphite server connection and stores it as a bean. 
+ * 
+ * @author phwhitin
+ */
 @Configuration
 @ComponentScan
 @EnableAutoConfiguration

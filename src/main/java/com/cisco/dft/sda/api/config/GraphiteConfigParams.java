@@ -2,10 +2,22 @@ package com.cisco.dft.sda.api.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+/**
+ * Defines the Graphite reporting attributes (with prefix "graphite") specified in the
+ * application.yml configuration file.
+ * 
+ * @author phwhitin
+ * @version 1.0
+ * @since June 23, 2015
+ */
 @ConfigurationProperties(prefix = "graphite", ignoreInvalidFields=true)
 public class GraphiteConfigParams {
 	
 	public boolean enabled;
+	
+	public boolean consoleReportingEnabled;
+
+	public int reportRate;
 	
 	public String prefix;
 	
@@ -13,9 +25,17 @@ public class GraphiteConfigParams {
 
 	public int port;
 	
-	public boolean getEnabled() { return enabled; }
+	public boolean isEnabled() { return enabled; }
 	
 	public void setEnabled(boolean status) {enabled = status;}
+	
+	public int getReportRate() { return reportRate; }
+
+	public void setReportRate(int reportRate) { this.reportRate = reportRate; }
+	
+	public boolean isConsoleReportingEnabled() { return this.consoleReportingEnabled; } 
+	
+	public void setConsoleReportingEnabled(boolean status) { this.consoleReportingEnabled = status; }
 		
 	public String getHost() { return host; }
 	

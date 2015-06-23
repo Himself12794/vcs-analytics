@@ -13,7 +13,9 @@ datasource:
   password: 4N1ZhjC5JxIvs3X8ulCegpscj/HPY3GA
 graphite:
   enabled: true
-  prefix: com.cisco.dft.sda
+  consoleReportingEnabled: true
+  reportRate: 5
+  prefix: 
   host: cdtelemetry-sb
   port: 2003
 ---
@@ -29,7 +31,9 @@ datasource:
   password: 5OyRkLiWOtWnIM8gwwof04s6TTJ44tG0PwuBYkyNfEo=
 graphite:
   enabled: true
-  prefix: com.cisco.dft.sda
+  consoleReportingEnabled: true
+  reportRate: 10
+  prefix: 
   host: cdtelemetry-sb
   port: 2003
 ---
@@ -45,6 +49,8 @@ datasource:
   password: 8E7ou21wxJfQSEPjccXumIwunn11RSc8MFKkr1dShUM=
 graphite:
   enabled: true
-  prefix: com.cisco.dft.sda
+  consoleReportingEnabled: true
+  reportRate: 10
+  prefix: 
   host: cdtelemetry-sb
   port: 2003
