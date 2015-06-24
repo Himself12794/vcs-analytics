@@ -1,14 +1,14 @@
 package com.cisco.dft.seed.api.service;
 
-import com.cisco.dft.seed.api.pojo.GenericRequestObject;
-import com.cisco.dft.seed.api.pojo.GenericResponseObject;
+import javax.servlet.http.HttpServletResponse;
 
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletResponse;
+import com.cisco.dft.seed.api.pojo.GenericRequestObject;
+import com.cisco.dft.seed.api.pojo.GenericResponseObject;
 
 /**
  * Implements API business logic
@@ -19,17 +19,17 @@ import javax.servlet.http.HttpServletResponse;
  */
 @Service
 public class TestService {
-	
+
 	// defining the slf4j Logger Object
 	static Logger LOGGER = LoggerFactory.getLogger(TestService.class);
-	
+
 	/**
 	 * Test implementation
 	 * 
 	 * @param name
 	 * @return
-	 */ 
-	public String test(String name){
+	 */
+	public String test(String name) {
 		return (name);
 	}
 
@@ -50,23 +50,25 @@ public class TestService {
 
 		// Business logic:
 		if (param1.equals(param2)) {
-            LOGGER.info("param1 is same as param2");
+			LOGGER.info("param1 is same as param2");
 			response.setParam1("value#1");
 			response.setParam2("value#2");
 			httpResponse.setContentType("application/json");
 			httpResponse.setStatus(200); // status 200 will be returned
 		} else {
-            LOGGER.info("param1 is NOT same as param2");
+			LOGGER.info("param1 is NOT same as param2");
 			response.setParam1("value#3");
 			response.setParam2("value#4");
 			httpResponse.setContentType("application/json");
 			httpResponse.setStatus(400); // status 400 will be returned
 		}
+
 		return response;
 	}
 
 	/**
 	 * dummy method which creates and return a json
+	 * 
 	 * @return
 	 */
 
@@ -101,8 +103,9 @@ public class TestService {
 			@SuppressWarnings("unused")
 			int i = 1 / 0;
 		} catch (Exception e) {
-			// catching the '1/0' exception here with logger level error with exception object e.
+			// catching the '1/0' exception here with logger level error with
+			// exception object e.
 			LOGGER.error("division by 0", e);
 		}
 	}
-}
+} 

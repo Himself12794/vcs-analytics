@@ -6,11 +6,11 @@ spring:
 server.port: 1100
 application:
   decryptionKey: test
-datasource:
+jdbc:
   driverClassName: oracle.jdbc.driver.OracleDriver
-  url: DB_TEST_URL
-  username: DB_TEST_USERNAME
-  password: c3YTqsfwYKRgcFMQB6eBM8qbfIndqdRYA5am9vriOXQ=
+  url: jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=dbc-nprd2-vm-027)(PORT=1525))(CONNECT_DATA=(SERVICE_NAME=N2C007G2)(Server=Dedicated)))
+  username: XXEA_SCM_O
+  password: fUg6zuh3AG1ZBPdu8CsnUpUOP1UDYEzY
 mongodb:
   host: dft-mongo-sb-1
   port: 18000

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 
 /**
- * Defines the JDBC attributes (with prefix "datasource") specified in the
+ * Defines the JDBC attributes (with prefix "jdbc") specified in the
  * application.yml configuration file.
  * 
  * @author sujmuthu
@@ -16,7 +16,7 @@ import javax.annotation.PostConstruct;
  * @date January 22, 2015
  */
 @Component
-@ConfigurationProperties(prefix = "datasource")
+@ConfigurationProperties(prefix = "jdbc")
 public class JdbcConfigParams {
 
 	@Autowired

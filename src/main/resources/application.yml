@@ -6,11 +6,11 @@ spring:
 server.port: 1100
 application:
   decryptionKey:
-datasource:
+jdbc:
   driverClassName: oracle.jdbc.driver.OracleDriver
-  url: DB_DEV_URL
-  username: DB_DEV_USERNAME
-  password: 4N1ZhjC5JxIvs3X8ulCegpscj/HPY3GA
+  url: jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=dbc-nprd2-vm-027)(PORT=1525))(CONNECT_DATA=(SERVICE_NAME=N2C007G2)(Server=Dedicated)))
+  username: XXEA_SCM_O
+  password: kinpFII7LlxOsAUOqjdXg7yFflS4LGho
 graphite:
   graphiteReportingEnabled: false
   consoleReportingEnabled: false
@@ -31,11 +31,11 @@ spring:
 server.port: 1100
 application:
   decryptionKey:
-datasource:
+jdbc:
   driverClassName: oracle.jdbc.driver.OracleDriver
   url: DB_STAGE_URL
   username: DB_STAGE_USERNAME
-  password: 5OyRkLiWOtWnIM8gwwof04s6TTJ44tG0PwuBYkyNfEo=
+  password: DB_STAGE_PASSWORD
 graphite:
   graphiteReportingenabled: false
   consoleReportingEnabled: false
@@ -56,11 +56,11 @@ spring:
 server.port: 1100
 application:
   decryptionKey:
-datasource:
+jdbc:
   driverClassName: oracle.jdbc.driver.OracleDriver
   url: DB_PROD_URL
   username: DB_PROD_USERNAME
-  password: 8E7ou21wxJfQSEPjccXumIwunn11RSc8MFKkr1dShUM=
+  password: DB_PROD_PASSWORD
 graphite:
   graphiteReportingenabled: false
   consoleReportingEnabled: false

@@ -3,6 +3,7 @@ package com.cisco.dft.seed.api.util;
 import java.io.IOException;
 
 import com.cisco.dft.seed.api.pojo.HttpResponseEntity;
+
 import org.apache.http.HttpMessage;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -28,7 +29,6 @@ import org.springframework.http.HttpMethod;
  */
 public class APIConnectionUtil {
 
-	private static String authStringEnc = "";
 	private static final Logger LOGGER = LoggerFactory
 			.getLogger(APIConnectionUtil.class);
 
@@ -42,7 +42,7 @@ public class APIConnectionUtil {
 	 * @return
 	 */
 	public static HttpResponseEntity invokeHttpRequest(String url,
-			HttpMethod httpMethod, String requestBody) {
+			HttpMethod httpMethod, String requestBody, String authStringEnc) {
 
 		LOGGER.info("Invoking http " + httpMethod.toString()
 				+ " request on url: " + url);
