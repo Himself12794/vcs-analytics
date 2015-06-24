@@ -1,4 +1,4 @@
-package com.cisco.dft.sda.api.config;
+package com.cisco.dft.seed.api.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

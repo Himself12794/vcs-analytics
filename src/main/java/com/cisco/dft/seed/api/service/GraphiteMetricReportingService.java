@@ -1,9 +1,9 @@
-package com.cisco.dft.sda.api.service;
+package com.cisco.dft.seed.api.service;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
-import com.cisco.dft.sda.api.config.GraphiteConfigParams;
+import com.cisco.dft.seed.api.config.GraphiteConfigParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 

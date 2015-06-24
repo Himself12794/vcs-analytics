@@ -86,7 +86,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>com.cisco.dft.sda.api.Application</mainClass>
+							<mainClass>com.cisco.dft.seed.api.Application</mainClass>
 						</manifest>
 					</archive>
 				</configuration>

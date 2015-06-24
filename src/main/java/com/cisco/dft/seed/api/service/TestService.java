@@ -1,7 +1,7 @@
-package com.cisco.dft.sda.api.service;
+package com.cisco.dft.seed.api.service;
 
-import com.cisco.dft.sda.api.pojo.GenericRequestObject;
-import com.cisco.dft.sda.api.pojo.GenericResponseObject;
+import com.cisco.dft.seed.api.pojo.GenericRequestObject;
+import com.cisco.dft.seed.api.pojo.GenericResponseObject;
 
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;

@@ -1,7 +1,8 @@
-package com.cisco.dft.sda.api.util;
+package com.cisco.dft.seed.api.util;
 
 import java.io.IOException;
 
+import com.cisco.dft.seed.api.pojo.HttpResponseEntity;
 import org.apache.http.HttpMessage;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -17,8 +18,6 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
-
-import com.cisco.dft.sda.api.pojo.HttpResponseEntity;
 
 /**
  * Responsible to make HTTP requests.

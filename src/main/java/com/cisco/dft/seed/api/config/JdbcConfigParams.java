@@ -1,6 +1,6 @@
-package com.cisco.dft.sda.api.config;
+package com.cisco.dft.seed.api.config;
 
-import com.cisco.dft.sda.api.util.Util;
+import com.cisco.dft.seed.api.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -61,7 +61,7 @@ public class JdbcConfigParams {
 	
 	@PostConstruct
 	public void decrypt (){
-		this.password=Util.decrypt(this.password, applicationConfigParams.getDecryptionKey());
+		this.password= Util.decrypt(this.password, applicationConfigParams.getDecryptionKey());
 		
 	}
 }

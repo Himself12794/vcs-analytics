@@ -1,4 +1,4 @@
-package com.cisco.dft.sda.api.controller;
+package com.cisco.dft.seed.api.controller;
 
 import java.net.URL;
 
@@ -14,7 +14,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.client.RestTemplate;
 
-import com.cisco.dft.sda.api.Application;
+import com.cisco.dft.seed.api.Application;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = Application.class)
@@ -30,7 +30,7 @@ public class ControllerIT {
 	@Before
 	public void setUp() throws Exception {
 		this.base = new URL("http://localhost:" + port
-				+ "/dft/sda/test/Testing");
+				+ "/dft/seed/test/Testing");
 		template = new TestRestTemplate();
 	}
 
