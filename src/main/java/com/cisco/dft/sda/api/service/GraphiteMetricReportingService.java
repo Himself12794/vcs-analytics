@@ -1,8 +1,9 @@
-package com.cisco.dft.sda.api.config;
+package com.cisco.dft.sda.api.service;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
+import com.cisco.dft.sda.api.config.GraphiteConfigParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 
@@ -24,7 +25,7 @@ import com.ryantenney.metrics.spring.config.annotation.MetricsConfigurerAdapter;
  */
 @Configuration
 @EnableMetrics
-public class MetricReportingConfiguration extends MetricsConfigurerAdapter {
+public class GraphiteMetricReportingService extends MetricsConfigurerAdapter {
 	
 	@Autowired
 	private Graphite graphite;
@@ -38,11 +39,11 @@ public class MetricReportingConfiguration extends MetricsConfigurerAdapter {
     @Override
     public void configureReporters(MetricRegistry metricRegistry) {
     	
-        if ( config.isEnabled() ){
+        if ( config.isGraphiteReportingEnabled() ){
         	
         	GraphiteReporter
 	        	.forRegistry( metricRegistry )
-	        	.prefixedWith( config.getPrefix() )
+	        	.prefixedWith(config.getPrefix())
 	            .convertRatesTo(TimeUnit.SECONDS)
 	            .convertDurationsTo(TimeUnit.MILLISECONDS)
 	            .filter(MetricFilter.ALL)
@@ -55,6 +56,9 @@ public class MetricReportingConfiguration extends MetricsConfigurerAdapter {
         	
         	ConsoleReporter
             	.forRegistry(metricRegistry)
+                .convertRatesTo(TimeUnit.SECONDS)
+                .convertDurationsTo(TimeUnit.MILLISECONDS)
+                .filter(MetricFilter.ALL)
             	.build()
             	.start(config.getReportRate(), TimeUnit.SECONDS);
         	

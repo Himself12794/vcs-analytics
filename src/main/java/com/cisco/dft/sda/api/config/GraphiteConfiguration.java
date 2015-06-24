@@ -1,4 +1,4 @@
-package com.cisco.dft.sda.api.service;
+package com.cisco.dft.sda.api.config;
 
 import java.net.InetSocketAddress;
 
@@ -20,7 +20,7 @@ import com.codahale.metrics.graphite.Graphite;
 @Configuration
 @ComponentScan
 @EnableAutoConfiguration
-public class GraphiteServer {
+public class GraphiteConfiguration {
 
 	@Resource
 	private GraphiteConfigParams config;

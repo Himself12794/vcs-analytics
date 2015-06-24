@@ -13,7 +13,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "graphite", ignoreInvalidFields=true)
 public class GraphiteConfigParams {
 	
-	public boolean enabled;
+	public boolean graphiteReportingEnabled;
 	
 	public boolean consoleReportingEnabled;
 
@@ -24,12 +24,16 @@ public class GraphiteConfigParams {
 	public String host;
 
 	public int port;
-	
-	public boolean isEnabled() { return enabled; }
-	
-	public void setEnabled(boolean status) {enabled = status;}
-	
-	public int getReportRate() { return reportRate; }
+
+    public boolean isGraphiteReportingEnabled() {
+        return graphiteReportingEnabled;
+    }
+
+    public void setGraphiteReportingEnabled(boolean graphiteReportingEnabled) {
+        this.graphiteReportingEnabled = graphiteReportingEnabled;
+    }
+
+    public int getReportRate() { return reportRate; }
 
 	public void setReportRate(int reportRate) { this.reportRate = reportRate; }
 	
