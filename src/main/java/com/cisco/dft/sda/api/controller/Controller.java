@@ -1,15 +1,22 @@
 package com.cisco.dft.sda.api.controller;
 
-import com.cisco.dft.sda.api.pojo.GenericRequestObject;
-import com.cisco.dft.sda.api.pojo.GenericResponseObject;
-import com.cisco.dft.sda.api.service.TestService;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
+import com.cisco.dft.sda.api.pojo.GenericRequestObject;
+import com.cisco.dft.sda.api.pojo.GenericResponseObject;
+import com.cisco.dft.sda.api.service.TestService;
+import com.codahale.metrics.annotation.Timed;
 
 /**
  * A generic controller responsible to handle HTTP requests.
@@ -33,6 +40,7 @@ public class Controller {
 	 * @param name
 	 * @return returns the value of the path variable passed in.
 	 */
+	@Timed(name = "test", absolute = true)
 	@RequestMapping(value = "/dft/sda/test/{name}", method = RequestMethod.GET)
 	public String test(@PathVariable String name) {
 		LOGGER.info("test() received params: " + "name: " + name);
@@ -47,6 +55,7 @@ public class Controller {
      * @param param2
 	 * @return
 	 */
+	@Timed(name = "testGet", absolute = true)
 	@RequestMapping(value = "/dft/sda/test", method = RequestMethod.GET)
 	public GenericResponseObject testGet(
 			@RequestParam(value = "param1", defaultValue = "param1", required = true) String param1,
@@ -74,6 +83,7 @@ public class Controller {
 	 * @param request
 	 * @return
 	 */
+	@Timed(name = "testPost", absolute = true)
 	@RequestMapping(value = "/dft/sda/test", method = RequestMethod.POST)
 	public GenericResponseObject testPost(
 			@RequestBody @Valid final GenericRequestObject request,

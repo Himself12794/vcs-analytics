@@ -26,3 +26,15 @@ Edit the value of following property in your logback.xml: <br/>
 <br/>
 3. Edit __src/name/resource/application.yml__ and __src/test/resource/application.yml__<br/>
 Edit the values of different application properties and custom configurations (like server.port, DB details etc.) <br/>
+<br/>
+4. View various metrics generated for your APIs on a graphite server by entering following graphite server configuration in __src/name/resource/application.yml__<br/>
+
+    ```xml
+	graphite:
+      graphiteReportingEnabled: true
+      consoleReportingEnabled: false
+      reportRate: 100
+      prefix: <prefix for your APIs>
+      host: <graphite server host>
+      port: <graphite server port>
+	```
