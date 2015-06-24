@@ -12,9 +12,9 @@ datasource:
   username: DB_TEST_USERNAME
   password: c3YTqsfwYKRgcFMQB6eBM8qbfIndqdRYA5am9vriOXQ=
 mongodb:
-  host: DB_TEST_URL
-  port: 27017
-  database: sampleUserDB
-  username: scott
-  password: cQZL91KFtL4kC/S0MWLVyg==
-  authenticationDB: sampleAdminDB
+  host: dft-mongo-sb-1
+  port: 18000
+  database: ci-metrics
+  username: dftdevuser
+  password: 1pV1DiK1xzSVD3cy0XuuM30gvRGdJY5E
+  authenticationDB: ci-metrics
