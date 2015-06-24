@@ -1,4 +1,4 @@
-package com.cisco.dft.sda.api.util;
+package com.cisco.dft.seed.api.util;
 
 /**
  * Holds all constants. Make sure the constant name in all upper case letters

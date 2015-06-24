@@ -1,4 +1,4 @@
-package com.cisco.dft.sda.api.config;
+package com.cisco.dft.seed.api.config;
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -17,19 +17,17 @@ import java.io.IOException;
  * 
  * @author sujmuthu
  * @version 1.0
- * @date January 22, 2015
+ * @date February 16, 2015
  */
 @Configuration
 @EnableAutoConfiguration
 @ComponentScan
-@EnableConfigurationProperties(JdbcConfigParams.class)
-public class JdbcConfigLoader {
+@EnableConfigurationProperties({ ApplicationConfigParams.class, GraphiteConfigParams.class, JdbcConfigParams.class, MongoDBConfigParams.class })
+public class ApplicationConfigLoader {
 
 	/**
-	 * This bean is responsible to initialize and read the contents of the
-	 * application.yml file loaded from the class path and translates each
-	 * attributes to a Java Object (e.g: JdbcConfigParams) based on the
-	 * specified active profile (dev or prod)
+	 * Initializes and reads configuration properties from application.yaml file
+	 * and translates each properties into an object (e.g: ApplicationConfigParams)
 	 * 
 	 * @return
 	 * @throws IOException

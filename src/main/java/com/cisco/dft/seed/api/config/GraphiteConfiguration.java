@@ -1,4 +1,4 @@
-package com.cisco.dft.sda.api.config;
+package com.cisco.dft.seed.api.config;
 
 import java.net.InetSocketAddress;
 
@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
-import com.cisco.dft.sda.api.config.GraphiteConfigParams;
 import com.codahale.metrics.graphite.Graphite;
 
 /**
@@ -27,7 +26,10 @@ public class GraphiteConfiguration {
 	
 	@Bean
 	public Graphite getGraphiteServer() {
-		return new Graphite(new InetSocketAddress(config.getHost(), config.getPort()));
+
+		String host = config.getHost() == null ? "localhost" : config.getHost();
+		int port = config.getPort();
+		return new Graphite(new InetSocketAddress(host, port));
 	}
 	
 }

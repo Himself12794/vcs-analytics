@@ -1,4 +1,4 @@
-package com.cisco.dft.sda.api.pojo;
+package com.cisco.dft.seed.api.pojo;
 
 /**
  * Represents the HTTPResponse message

@@ -1,4 +1,4 @@
-package com.cisco.dft.sda.api.controller;
+package com.cisco.dft.seed.api.controller;
 
 import java.net.URL;
 
@@ -14,7 +14,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.client.RestTemplate;
 
-import com.cisco.dft.sda.api.Application;
+import com.cisco.dft.seed.api.Application;
+
+import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = Application.class)
@@ -30,7 +32,7 @@ public class ControllerIT {
 	@Before
 	public void setUp() throws Exception {
 		this.base = new URL("http://localhost:" + port
-				+ "/dft/sda/test/Testing");
+				+ "/dft/seed/test/Testing");
 		template = new TestRestTemplate();
 	}
 
@@ -38,8 +40,8 @@ public class ControllerIT {
 	public void getHello() throws Exception {
 		ResponseEntity<String> response = template.getForEntity(
 				base.toString(), String.class);
-		System.out.println("BODY " + response.getBody());
+		//System.out.println("BODY " + response.getBody());
 
-		//assertEquals(response.getBody(), "Testing");
+		assertEquals(response.getBody(), "Testing");
 	}
 }

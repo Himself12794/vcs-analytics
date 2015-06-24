@@ -1,4 +1,4 @@
-package com.cisco.dft.sda.api.util;
+package com.cisco.dft.seed.api.util;
 
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import org.slf4j.Logger;
@@ -38,11 +38,8 @@ public class Util {
 		String encryptedPassword = null;
 		encryptor.setPassword(key);
 		try {
-			LOGGER.info("Decrypting the password:  " + password);
 			encryptedPassword = encryptor.decrypt(password);
-			LOGGER.info("Encrypted Password:  " + encryptedPassword);
 		} catch (Exception e) {
-
 			LOGGER.error("Error occurred while decrypting password", e);
 		}
 		return encryptedPassword;

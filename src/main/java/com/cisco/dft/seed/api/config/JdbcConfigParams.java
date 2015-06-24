@@ -1,6 +1,6 @@
-package com.cisco.dft.sda.api.config;
+package com.cisco.dft.seed.api.config;
 
-import com.cisco.dft.sda.api.util.Util;
+import com.cisco.dft.seed.api.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 
 /**
- * Defines the JDBC attributes (with prefix "datasource") specified in the
+ * Defines the JDBC attributes (with prefix "jdbc") specified in the
  * application.yml configuration file.
  * 
  * @author sujmuthu
@@ -16,7 +16,7 @@ import javax.annotation.PostConstruct;
  * @date January 22, 2015
  */
 @Component
-@ConfigurationProperties(prefix = "datasource")
+@ConfigurationProperties(prefix = "jdbc")
 public class JdbcConfigParams {
 
 	@Autowired
@@ -61,7 +61,7 @@ public class JdbcConfigParams {
 	
 	@PostConstruct
 	public void decrypt (){
-		this.password=Util.decrypt(this.password, applicationConfigParams.getDecryptionKey());
+		this.password= Util.decrypt(this.password, applicationConfigParams.getDecryptionKey());
 		
 	}
 }

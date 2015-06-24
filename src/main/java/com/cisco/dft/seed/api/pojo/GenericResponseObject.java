@@ -1,15 +1,19 @@
-package com.cisco.dft.sda.api.pojo;
+package com.cisco.dft.seed.api.pojo;
 
-public class GenericRequestObject {
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+@JsonInclude(Include.NON_NULL)
+public class GenericResponseObject {
+	
 	private String param1;
 	private String param2;
 	
-	public GenericRequestObject(){
-		super();
+	public GenericResponseObject(){
+		
 	}
-
-	public GenericRequestObject(String param1, String param2) {
+	
+	public GenericResponseObject(String param1, String param2) {
 		super();
 		this.param1 = param1;
 		this.param2 = param2;
@@ -33,7 +37,7 @@ public class GenericRequestObject {
 
     @Override
     public String toString() {
-        return "GenericRequestObject{" +
+        return "GenericResponseObject{" +
                 "param1='" + param1 + '\'' +
                 ", param2='" + param2 + '\'' +
                 '}';

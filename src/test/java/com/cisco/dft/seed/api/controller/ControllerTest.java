@@ -1,7 +1,7 @@
-package com.cisco.dft.sda.api.controller;
+package com.cisco.dft.seed.api.controller;
 
-import com.cisco.dft.sda.api.config.JdbcConfigLoader;
-import com.cisco.dft.sda.api.service.TestService;
+import com.cisco.dft.seed.api.config.ApplicationConfigLoader;
+import com.cisco.dft.seed.api.service.TestService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,7 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = {Controller.class, TestService.class, JdbcConfigLoader.class})
+@SpringApplicationConfiguration(classes = {Controller.class, TestService.class, ApplicationConfigLoader.class})
 @ComponentScan
 @EnableAutoConfiguration
 public class ControllerTest {
@@ -37,7 +37,7 @@ public class ControllerTest {
 	@Test
 	public void sayHello() throws Exception {
 		mvc.perform(
-				MockMvcRequestBuilders.get("/dft/sda/test/Testing").accept(
+				MockMvcRequestBuilders.get("/dft/seed/test/Testing").accept(
 						MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().string("Testing"));
 	}

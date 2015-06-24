@@ -1,6 +1,8 @@
-package com.cisco.dft.sda.api.util;
+package com.cisco.dft.seed.api.util;
 
 import java.io.IOException;
+
+import com.cisco.dft.seed.api.pojo.HttpResponseEntity;
 
 import org.apache.http.HttpMessage;
 import org.apache.http.HttpResponse;
@@ -18,8 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 
-import com.cisco.dft.sda.api.pojo.HttpResponseEntity;
-
 /**
  * Responsible to make HTTP requests.
  * 
@@ -29,7 +29,6 @@ import com.cisco.dft.sda.api.pojo.HttpResponseEntity;
  */
 public class APIConnectionUtil {
 
-	private static String authStringEnc = "";
 	private static final Logger LOGGER = LoggerFactory
 			.getLogger(APIConnectionUtil.class);
 
@@ -43,7 +42,7 @@ public class APIConnectionUtil {
 	 * @return
 	 */
 	public static HttpResponseEntity invokeHttpRequest(String url,
-			HttpMethod httpMethod, String requestBody) {
+			HttpMethod httpMethod, String requestBody, String authStringEnc) {
 
 		LOGGER.info("Invoking http " + httpMethod.toString()
 				+ " request on url: " + url);
