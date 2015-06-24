@@ -22,7 +22,7 @@ import java.io.IOException;
 @Configuration
 @EnableAutoConfiguration
 @ComponentScan
-@EnableConfigurationProperties({ ApplicationConfigParams.class, GraphiteConfigParams.class, JdbcConfigParams.class })
+@EnableConfigurationProperties({ ApplicationConfigParams.class, GraphiteConfigParams.class, JdbcConfigParams.class, MongoDBConfigParams.class })
 public class ApplicationConfigLoader {
 
 	/**

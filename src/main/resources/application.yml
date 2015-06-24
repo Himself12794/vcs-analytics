@@ -18,6 +18,13 @@ graphite:
   prefix: com.cisco.dft.seed.api
   host: cdtelemetry-sb
   port: 2003
+mongodb:
+  host: dft-mongo-sb-1
+  port: 18000
+  database: ci-metrics
+  username: dftdevuser
+  password: EHYNO3uaX/SSC4Hvqwz7IsSaoxPoOeTE
+  authenticationDB: ci-metrics
 ---
 spring:
   profiles: stage
@@ -36,6 +43,13 @@ graphite:
   prefix: 
   host:
   port:
+mongodb:
+  host: DB_STG_URL
+  port: 27017
+  database: sampleUserDB
+  username: scott
+  password: C0uJpXMXn/HV+1+d5LZdEQ==
+  authenticationDB: sampleAdminDB
 ---
 spring:
   profiles: prod
@@ -54,3 +68,10 @@ graphite:
   prefix: 
   host:
   port:
+mongodb:
+  host: DB_PROD_URL
+  port: 27017
+  database: sampleUserDB
+  username: scott
+  password: wiXq/dhaMd370kXBjW9qdQ==
+  authenticationDB: sampleAdminDB

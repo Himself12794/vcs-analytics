@@ -11,3 +11,10 @@ datasource:
   url: DB_TEST_URL
   username: DB_TEST_USERNAME
   password: c3YTqsfwYKRgcFMQB6eBM8qbfIndqdRYA5am9vriOXQ=
+mongodb:
+  host: DB_TEST_URL
+  port: 27017
+  database: sampleUserDB
+  username: scott
+  password: cQZL91KFtL4kC/S0MWLVyg==
+  authenticationDB: sampleAdminDB

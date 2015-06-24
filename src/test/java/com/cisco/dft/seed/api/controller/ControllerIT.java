@@ -16,6 +16,8 @@ import org.springframework.web.client.RestTemplate;
 
 import com.cisco.dft.seed.api.Application;
 
+import static org.junit.Assert.assertEquals;
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = Application.class)
 @WebAppConfiguration
@@ -38,8 +40,8 @@ public class ControllerIT {
 	public void getHello() throws Exception {
 		ResponseEntity<String> response = template.getForEntity(
 				base.toString(), String.class);
-		System.out.println("BODY " + response.getBody());
+		//System.out.println("BODY " + response.getBody());
 
-		//assertEquals(response.getBody(), "Testing");
+		assertEquals(response.getBody(), "Testing");
 	}
 }
