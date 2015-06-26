@@ -31,7 +31,7 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>4.3.5</version>
+			<version>4.3.6</version><!--$NO-MVN-MAN-VER$-->
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.ldap</groupId>
@@ -41,7 +41,7 @@
 		<dependency>
 			<groupId>com.googlecode.json-simple</groupId>
 			<artifactId>json-simple</artifactId>
-			<version>1.1</version>
+			<version>1.1</version><!--$NO-MVN-MAN-VER$-->
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -52,11 +52,17 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- VCS Tools -->
 	   	<dependency>
 	  		<groupId>org.eclipse.jgit</groupId>
 	  		<artifactId>org.eclipse.jgit</artifactId>
 	  		<version>4.0.0.201506090130-r</version>
 	  	</dependency>
+	  	<dependency>
+			<groupId>org.tmatesoft.svnkit</groupId>
+			<artifactId>svnkit</artifactId>
+			<version>1.8.10</version>
+		</dependency>
 		<!-- <dependency> <groupId>org.slf4j</groupId> <artifactId>slf4j-log4j12</artifactId> 
 			<version>1.7.10</version> </dependency> -->
 		<!-- Jasypt Library -->
@@ -85,13 +91,13 @@
 		<dependency>
 			<groupId>commons-dbcp</groupId>
 			<artifactId>commons-dbcp</artifactId>
-			<version>1.4</version>
+			<version>1.4</version><!--$NO-MVN-MAN-VER$-->
 		</dependency>
 		<!-- mongodb java driver -->
 		<dependency>
 			<groupId>org.mongodb</groupId>
 			<artifactId>mongo-java-driver</artifactId>
-			<version>3.0.0</version>
+			<version>3.0.0</version><!--$NO-MVN-MAN-VER$-->
 		</dependency>
 		<!-- Spring data mongodb -->
 		<dependency>
@@ -133,7 +139,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-failsafe-plugin</artifactId>
-				<version>2.6</version>
+				<version>2.6</version><!--$NO-MVN-MAN-VER$-->
 				<executions>
 					<execution>
 						<goals>

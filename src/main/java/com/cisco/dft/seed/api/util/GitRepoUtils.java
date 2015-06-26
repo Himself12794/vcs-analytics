@@ -13,6 +13,11 @@ import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 
 /**
  * Utilities used to perform checks and gather metrics about a remote Git repository.
+ * <p>
+ * <b><u>Note</u></b>: for large repositories, operations other than url verification
+ * might take several minutes to process all the author and commit information. If the git repo
+ * is located at GitHub, use the Subversion clone link with {@link SVNRepoUtils} instead 
+ * since SVN does not require a local copy to pull metrics.
  * 
  * @author phwhitin
  *
@@ -20,7 +25,7 @@ import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 public class GitRepoUtils {
 	
 	/**Default directory to store the repository locally so metrics can be pulled from it*/
-	private static final File DEFAULT_TEMP_CLONE_DIRECTORY = new File("temp/git/test");
+	private static final File DEFAULT_TEMP_CLONE_DIRECTORY = new File("temp/git");
 	
 	/**
 	 * JGit can only perform requests using https, so this attempts to change urls using http
@@ -46,7 +51,7 @@ public class GitRepoUtils {
 	 * @param password password to use in trying to establish connection
 	 * @return
 	 */
-	public static boolean testRemoteRepo(String url, String username, String password) {
+	public static boolean doesRemoteRepoExist(String url, String username, String password) {
 		
 		boolean exists = false;
 		
@@ -65,6 +70,7 @@ public class GitRepoUtils {
 			
 			exists = true;
 		} catch (Exception e) {} 
+		
 		return exists;
 	}
 	
@@ -76,10 +82,9 @@ public class GitRepoUtils {
 	 * @param url
 	 * @return
 	 */
-	public static boolean testRemoteRepo(String url){
-		
-		return testRemoteRepo(url, null, null);
-		
+	public static boolean doesRemoteRepoExist(String url){	
+
+		return doesRemoteRepoExist(url, null, null);
 	}
 	
 	/**
@@ -134,7 +139,20 @@ public class GitRepoUtils {
 		return countedCommits;
 		
 	}
-
+	
+	/**
+	 * Gets commit count for the specified user.
+	 * <p>
+	 * The only way to check this is to clone a local copy, and use git log,
+	 * so systems that do not allow read/write permissions will not allow this 
+	 * action.
+	 * <p>
+	 * Leaving out the password and username assumes that the repository is public.
+	 * 
+	 * @param url the remote repository
+	 * @param user the user to check for
+	 * @return the amount of commits this user has made, or 0 if the user is not found
+	 */
 	public static int getCommitCount(String url, String user){
 		return getCommitCount(url, null, null, user);
 	}
