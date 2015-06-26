@@ -1,15 +1,25 @@
 package com.cisco.dft.sdk.util;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.LsRemoteCommand;
+import org.eclipse.jgit.diff.DiffEntry;
+import org.eclipse.jgit.diff.DiffFormatter;
+import org.eclipse.jgit.diff.Edit;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.ObjectReader;
+import org.eclipse.jgit.patch.FileHeader;
+import org.eclipse.jgit.patch.HunkHeader;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
+import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 
 /**
  * Utilities used to perform checks and gather metrics about a remote Git repository.
@@ -88,21 +98,32 @@ public class GitRepoUtils {
 	}
 	
 	/**
+	 * <u>Don't use this yet, it'll only cause heartbreak. It works, but it could work better. It needs
+	 * to be refined before getting the stamp of approval.</u>
+	 * <p>
 	 * Gets commit count for the specified user.
 	 * <p>
 	 * The only way to check this is to clone a local copy, and use git log,
 	 * so systems that do not allow read/write permissions will not allow this 
 	 * action.
+	 * <p>
+	 * Due to the that commit information is stored, the values will be off if the user was also the one
+	 * who made the initial commit.
 	 * 
 	 * @param url the remote repository
 	 * @param username for validation
 	 * @param password for validation
 	 * @param user the user to check for
-	 * @return the amount of commits this user has made, or 0 if the user is not found
+	 * @return an AuthorInfo object containing the information
 	 */
-	public static int getCommitCount(String url, String username, String password, String user){
+	@Deprecated
+	public static AuthorInfo getCommitCount(String url, String username, String password, String user){
 			
 		int countedCommits = 0;
+		
+		int totalAdditions = 0;
+		
+		int totalDeletions = 0;
 		
 		CredentialsProvider cp = null;
 		
@@ -119,15 +140,65 @@ public class GitRepoUtils {
 				.setDirectory(DEFAULT_TEMP_CLONE_DIRECTORY);
 			
 			if (cp != null) com.setCredentialsProvider(cp);
-						 
-			Iterable<RevCommit> refs = com.call().log().call();
+			
+			Git repoGit = com.call();
+			
+			Iterable<RevCommit> refs = repoGit.log().call();
 			 
+			RevCommit prev = null;
+			
 			for (RevCommit rc : refs) {
 				
 				if (rc.getAuthorIdent().getName().equals(user)) countedCommits++;
+				
+				if (prev == null) {
+					
+					prev = rc;
+					continue;
+					
+				}
+				
+				ObjectReader reader = repoGit.getRepository().newObjectReader();
+				
+				CanonicalTreeParser oldTreeIter = new CanonicalTreeParser();
+				ObjectId oldTree = prev.getTree(); 
+				oldTreeIter.reset( reader, oldTree );
+				
+				CanonicalTreeParser newTreeIter = new CanonicalTreeParser();
+				ObjectId newTree = rc.getTree(); 
+				newTreeIter.reset( reader, newTree );
+				
+				DiffFormatter df = new DiffFormatter( new ByteArrayOutputStream() );
+				df.setRepository( repoGit.getRepository() );
+				List<DiffEntry> entries = df.scan( oldTreeIter, newTreeIter );
+
+				for ( DiffEntry entry : entries ) {
+					FileHeader fh = df.toFileHeader(entry);						
+					
+					for (HunkHeader hunk : fh.getHunks()){
+						
+						for (Edit edit : hunk.toEditList()) {
+							
+							if (rc.getAuthorIdent().getName().equals(user)) {
+								
+								final int additions = (edit.getEndA() - edit.getBeginA());
+								final int deletions = (edit.getEndB() - edit.getBeginB());
+																
+								totalAdditions += additions;
+								totalDeletions += deletions;
+								
+							}
+						}
+						
+					}
+				}
+				
+				df.close();
+				
+				prev = rc;
 			}
 			
-		} catch (Exception e) {
+		} catch (Exception e) {e.printStackTrace();
 		} finally {
 			
 			try {
@@ -136,11 +207,20 @@ public class GitRepoUtils {
 			
 		}	
 		
-		return countedCommits;
+		if (countedCommits > 0) {
+		
+			return new AuthorInfo(user, countedCommits, totalAdditions, totalDeletions);
+			
+		}
+			
+		return null;
 		
 	}
 	
 	/**
+	 * <u>Don't use this yet, it'll only cause heartbreak. It works, but it could work better. It needs
+	 * to be refined before getting the stamp of approval.</u>
+	 * <p>
 	 * Gets commit count for the specified user.
 	 * <p>
 	 * The only way to check this is to clone a local copy, and use git log,
@@ -153,8 +233,55 @@ public class GitRepoUtils {
 	 * @param user the user to check for
 	 * @return the amount of commits this user has made, or 0 if the user is not found
 	 */
-	public static int getCommitCount(String url, String user){
+	@Deprecated
+	public static AuthorInfo getCommitCount(String url, String user){
 		return getCommitCount(url, null, null, user);
+	}
+	
+	/**
+	 * Wrapper class used for author data pulled from the repository.
+	 * 
+	 * @author phwhitin
+	 *
+	 */
+	public static class AuthorInfo {
+		
+		private final String name;
+		
+		private final int commits;
+		
+		private final int additions;
+		
+		private final int deletions;
+		
+		private AuthorInfo(final String name, final int commits, final int additions, final int deletions) {
+			
+			this.name = name;
+			this.commits = commits;
+			this.additions = additions;
+			this.deletions = deletions;
+			
+		}
+		
+		public String getName() {return this.name;}
+		
+		public int getCommits() {return this.commits;}
+		
+		public int getAdditions() {return this.additions;}
+		
+		public int getDeletions() {return this.deletions;}
+		
+		@Override
+		public String toString() {
+			String value = "";
+			value += "Name: " + name + ", ";
+			value += "Commits: " + commits + ", ";
+			value += "Additions: " + additions + ", ";
+			value += "Deletions: " + deletions;
+			
+			return value;
+		}
+		
 	}
 	
 }
