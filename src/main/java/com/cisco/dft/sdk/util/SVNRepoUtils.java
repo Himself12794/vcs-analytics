@@ -1,4 +1,4 @@
-package com.cisco.dft.seed.api.util;
+package com.cisco.dft.sdk.util;
 
 import java.util.Collection;
 

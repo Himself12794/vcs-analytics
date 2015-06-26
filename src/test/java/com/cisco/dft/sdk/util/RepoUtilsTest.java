@@ -1,12 +1,12 @@
-package com.cisco.dft.seed.api.service;
+package com.cisco.dft.sdk.util;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.cisco.dft.seed.api.util.GitRepoUtils;
-import com.cisco.dft.seed.api.util.SVNRepoUtils;
+import com.cisco.dft.sdk.util.GitRepoUtils;
+import com.cisco.dft.sdk.util.SVNRepoUtils;
 
 
 public class RepoUtilsTest {

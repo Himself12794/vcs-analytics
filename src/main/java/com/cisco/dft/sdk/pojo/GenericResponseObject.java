@@ -1,4 +1,4 @@
-package com.cisco.dft.seed.api.pojo;
+package com.cisco.dft.sdk.pojo;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;

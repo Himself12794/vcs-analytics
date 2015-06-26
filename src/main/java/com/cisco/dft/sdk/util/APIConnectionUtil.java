@@ -1,8 +1,8 @@
-package com.cisco.dft.seed.api.util;
+package com.cisco.dft.sdk.util;
 
 import java.io.IOException;
 
-import com.cisco.dft.seed.api.pojo.HttpResponseEntity;
+import com.cisco.dft.sdk.pojo.HttpResponseEntity;
 
 import org.apache.http.HttpMessage;
 import org.apache.http.HttpResponse;
