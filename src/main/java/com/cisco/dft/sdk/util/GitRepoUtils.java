@@ -3,7 +3,10 @@ package com.cisco.dft.sdk.util;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.CloneCommand;
@@ -35,7 +38,7 @@ import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 public class GitRepoUtils {
 	
 	/**Default directory to store the repository locally so metrics can be pulled from it*/
-	private static final File DEFAULT_TEMP_CLONE_DIRECTORY = new File("temp/git");
+	private static final String DEFAULT_TEMP_CLONE_DIRECTORY = "temp/git";
 	
 	/**
 	 * JGit can only perform requests using https, so this attempts to change urls using http
@@ -117,29 +120,30 @@ public class GitRepoUtils {
 	 * @return an AuthorInfo object containing the information
 	 */
 	@Deprecated
-	public static AuthorInfo getCommitCount(String url, String username, String password, String user){
-			
-		int countedCommits = 0;
-		
-		int totalAdditions = 0;
-		
-		int totalDeletions = 0;
-		
+	public static Collection<AuthorInfo> getCommitCount(String url, String username, String password){
+					
 		CredentialsProvider cp = null;
+		
+		final File activeDirectory = new File(FileUtils.getTempDirectory(), GitRepoUtils.DEFAULT_TEMP_CLONE_DIRECTORY);
+		
+		final Map<String, AuthorInfo> info = new HashMap<String, AuthorInfo>();
 		
 		if (!(username == null && password == null)) cp = new UsernamePasswordCredentialsProvider(username, password);
 		
 		try {
 			
 			try {
-				FileUtils.deleteDirectory(DEFAULT_TEMP_CLONE_DIRECTORY);
+				FileUtils.deleteDirectory(activeDirectory);
 			} catch (IOException e) {
 			}
 			
 			 CloneCommand com = Git.cloneRepository().setURI(urlScrubber(url))
-				.setDirectory(DEFAULT_TEMP_CLONE_DIRECTORY);
+				.setDirectory(activeDirectory);
 			
 			if (cp != null) com.setCredentialsProvider(cp);
+
+			
+			com.setBare(true).setNoCheckout(true);
 			
 			Git repoGit = com.call();
 			
@@ -149,7 +153,23 @@ public class GitRepoUtils {
 			
 			for (RevCommit rc : refs) {
 				
-				if (rc.getAuthorIdent().getName().equals(user)) countedCommits++;
+				String user = rc.getAuthorIdent().getName();
+				
+				AuthorInfo ai;
+				
+				if (!info.containsKey(user)) {
+					
+					ai = new AuthorInfo(user, 0, 0, 0);
+					
+					info.put(user, ai);
+					
+				} else {
+					
+					ai = info.get(user);
+					
+				}
+				
+				info.get(user).incrementCommits();
 				
 				if (prev == null) {
 					
@@ -172,22 +192,19 @@ public class GitRepoUtils {
 				df.setRepository( repoGit.getRepository() );
 				List<DiffEntry> entries = df.scan( oldTreeIter, newTreeIter );
 
-				for ( DiffEntry entry : entries ) {
+				for (DiffEntry entry : entries) {
 					FileHeader fh = df.toFileHeader(entry);						
 					
 					for (HunkHeader hunk : fh.getHunks()){
 						
 						for (Edit edit : hunk.toEditList()) {
-							
-							if (rc.getAuthorIdent().getName().equals(user)) {
-								
-								final int additions = (edit.getEndA() - edit.getBeginA());
-								final int deletions = (edit.getEndB() - edit.getBeginB());
-																
-								totalAdditions += additions;
-								totalDeletions += deletions;
-								
-							}
+														
+							final int additions = (edit.getEndA() - edit.getBeginA());
+							final int deletions = (edit.getEndB() - edit.getBeginB());
+															
+							ai.incrementAdditions(additions);
+							ai.incrementDeletions(deletions);
+													
 						}
 						
 					}
@@ -202,18 +219,12 @@ public class GitRepoUtils {
 		} finally {
 			
 			try {
-				FileUtils.deleteDirectory(DEFAULT_TEMP_CLONE_DIRECTORY);
+				FileUtils.deleteDirectory(activeDirectory);
 			} catch (IOException e) {}
-			
-		}	
-		
-		if (countedCommits > 0) {
-		
-			return new AuthorInfo(user, countedCommits, totalAdditions, totalDeletions);
 			
 		}
 			
-		return null;
+		return info.values();
 		
 	}
 	
@@ -234,8 +245,8 @@ public class GitRepoUtils {
 	 * @return the amount of commits this user has made, or 0 if the user is not found
 	 */
 	@Deprecated
-	public static AuthorInfo getCommitCount(String url, String user){
-		return getCommitCount(url, null, null, user);
+	public static Collection<AuthorInfo> getCommitCount(String url, String user){
+		return getCommitCount(url, null, null);
 	}
 	
 	/**
@@ -248,13 +259,13 @@ public class GitRepoUtils {
 		
 		private final String name;
 		
-		private final int commits;
+		private int commits;
 		
-		private final int additions;
+		private int additions;
 		
-		private final int deletions;
+		private int deletions;
 		
-		private AuthorInfo(final String name, final int commits, final int additions, final int deletions) {
+		private AuthorInfo(final String name, int commits, int additions, int deletions) {
 			
 			this.name = name;
 			this.commits = commits;
@@ -267,9 +278,15 @@ public class GitRepoUtils {
 		
 		public int getCommits() {return this.commits;}
 		
+		private void incrementCommits() {++this.commits;}
+		
 		public int getAdditions() {return this.additions;}
 		
+		private void incrementAdditions(int x) {this.additions += x;}
+		
 		public int getDeletions() {return this.deletions;}
+		
+		private void incrementDeletions(int x) {this.deletions += x;}
 		
 		@Override
 		public String toString() {
