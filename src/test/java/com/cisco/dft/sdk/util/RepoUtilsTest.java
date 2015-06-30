@@ -20,6 +20,7 @@ public class RepoUtilsTest {
 		assertFalse(SVNRepoUtils.doesRemoteRepoExist("http://facebook.com"));
 		
 		assertTrue(SVNRepoUtils.getCommitCount("svn://linuxfromscratch.org/BLFS/trunk/BOOK", "fernando") > 0);
+	
 	}
 
 }

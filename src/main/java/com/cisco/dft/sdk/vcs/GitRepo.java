@@ -29,23 +29,17 @@ import org.eclipse.jgit.treewalk.EmptyTreeIterator;
 
 import com.cisco.dft.sdk.pojo.AuthorCommit;
 import com.cisco.dft.sdk.pojo.AuthorInfo;
-import com.cisco.dft.sdk.util.SVNRepoUtils;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 
 /**
- * Utilities used to perform checks and gather metrics about a remote Git repository.
- * <p>
- * <b><u>Note</u></b>: for large repositories, operations other than url verification
- * might take several minutes to process all the author and commit information. If the git repo
- * is located at GitHub, use the Subversion clone link with {@link SVNRepoUtils} instead 
- * since SVN does not require a local copy to pull metrics.
+ * Used to get information about different authors who have committed to a remote repo.
  * 
  * @author phwhitin
  *
  */
 public class GitRepo {
 	
-	/**Default directory relative to %appdata%/Local/Temp to store the repository locally so metrics can be pulled from it*/
+	/**Default directory relative to the system temp folder to store the repository locally so metrics can be pulled from it*/
 	private static final String DEFAULT_TEMP_CLONE_DIRECTORY = "git/";
 	
 	private Git theRepo;
@@ -60,6 +54,16 @@ public class GitRepo {
 	
 	private int loggedCommits = 0;
 	
+	/**
+	 * Links a remote repo with a local version so information can be pulled from it.
+	 * When a repo is created, a cached version is stored. This allows for faster
+	 * time to get user data for the repository if there is already a local version.
+	 * <p>
+	 * The repo is cloned bare to only include necessary information. 
+	 * 
+	 * @param url the url to grab the data from
+	 * @param cp authentication needed to access private repos, not necessary for public repos.
+	 */
 	public GitRepo(String url, UsernamePasswordCredentialsProvider cp) {
 		
 		remote = urlScrubber(url);
@@ -95,7 +99,7 @@ public class GitRepo {
 	 * 
 	 * @return
 	 */
-	public Map<String, AuthorInfo> sync() {
+	public List<AuthorInfo> sync() {
 		
 		DiffFormatter df = new DiffFormatter( new ByteArrayOutputStream() );
 		
@@ -117,12 +121,12 @@ public class GitRepo {
 				
 				if (!info.containsKey(user)) {
 					
-					ai = new AuthorInfo(user, 0, 0, 0);
+					ai = new AuthorInfo(user);
 					info.put(user, ai);
 					
 				} else ai = info.get(user);
 				
-				ai.incrementCommits();
+				ai.incrementCommitCount();
 				
 				if (prev == null) {
 					prev = rc;
@@ -164,7 +168,7 @@ public class GitRepo {
 				
 		df.close();
 			
-		return ImmutableMap.copyOf(info);
+		return getStatistics(false);
 		
 	}
 	
@@ -229,15 +233,51 @@ public class GitRepo {
 	 * The data is stored in memory for efficiency, so data may be inaccurate
 	 * unless {@link GitRepo#sync()} is run.
 	 * 
-	 * @param sync Whether or not the repo should also sync with remote.
 	 * @return a copy of the statistics for this repo. Author name is used as key 
 	 */
-	public Map<String, AuthorInfo> getStatistics(boolean sync) {
+	public List<AuthorInfo> getStatistics(boolean sync) {
 		
 		if (sync) sync();
 		
-		return ImmutableMap.copyOf(info);
+		return Lists.newArrayList(info.values());
 		
+	}
+	
+	public List<AuthorInfo> getSortedStatistics(SortMethod method){
+		
+		List<AuthorInfo> lai = getStatistics(false);
+		switch (method) {
+			case COMMITS:
+				lai.sort((p1, p2) -> Integer.compare(p2.getCommitCount(), p1.getCommitCount()));
+				break;
+			case ADDITIONS:
+				lai.sort((p1, p2) -> Integer.compare(p2.getAdditions(), p1.getAdditions()));
+				break;
+			case DELETIONS:
+				lai.sort((p1, p2) -> Integer.compare(p2.getDeletions(), p1.getDeletions()));
+			case NAME:
+				lai.sort((p1, p2) -> p1.getName().compareTo(p2.getName()));
+				break;
+			default:
+				break;
+		}
+		
+		return lai;
+		
+	}
+	
+	/**
+	 * Looks up information for a specific user. Don't forget to sync to make sure
+	 * that the user information exists.
+	 * <p>
+	 * <b><u>Note</u></b>: it is possible that the same person have committed
+	 * to the repository using different names, so this is not a catch-all.
+	 * 
+	 * @param user
+	 * @return the AuthorInfo for this user if it exists, or null if not.
+	 */
+	public AuthorInfo lookupUser(String user) {
+		return info.containsKey(user) ? info.get(user) : null;
 	}
 	
 	/**
@@ -329,6 +369,12 @@ public class GitRepo {
 	public static boolean doesRemoteRepoExist(String url){	
 
 		return doesRemoteRepoExist(url, null, null);
+	}
+	
+	public static enum SortMethod {
+		
+		COMMITS, ADDITIONS, DELETIONS, NAME
+		
 	}
 	
 }

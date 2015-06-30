@@ -1,7 +1,7 @@
 package com.cisco.dft.sdk.pojo;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Wrapper class used for author data pulled from the repository.
@@ -13,18 +13,22 @@ public class AuthorInfo {
 	
 	private final String name;
 	
-	private int commits;
+	private int commitCount;
 	
 	private int additions;
 	
 	private int deletions;
 	
-	private Set<AuthorCommit> commitList = new HashSet<AuthorCommit>();
+	private List<AuthorCommit> commits = new ArrayList<AuthorCommit>();
+	
+	public AuthorInfo(final String name) {
+		this(name, 0, 0, 0);
+	}
 	
 	public AuthorInfo(final String name, int commits, int additions, int deletions) {
 		
 		this.name = name;
-		this.commits = commits;
+		this.commitCount = commits;
 		this.additions = additions;
 		this.deletions = deletions;
 		
@@ -37,19 +41,24 @@ public class AuthorInfo {
 	 */
 	public void addCommit(AuthorCommit ac) {
 		
-		for (AuthorCommit c : commitList)
+		for (AuthorCommit c : commits)
 			if (c.getTimestamp() == ac.getTimestamp()) return;
 		
-		this.commitList.add(ac);
+		this.commits.add(ac);
 	}
 	
-	public Set<AuthorCommit> getCommitList() {return this.commitList;}
+	public List<AuthorCommit> getCommits() {
+		
+		this.commits.sort((p1, p2) -> Long.compare(p2.getTimestamp(), p1.getTimestamp()));
+		
+		return this.commits;
+	}
 	
 	public String getName() {return this.name;}
 	
-	public int getCommits() {return this.commits;}
+	public int getCommitCount() {return this.commitCount;}
 	
-	public void incrementCommits() {++this.commits;}
+	public void incrementCommitCount() {++this.commitCount;}
 	
 	public int getAdditions() {return this.additions;}
 	
@@ -63,7 +72,7 @@ public class AuthorInfo {
 	public String toString() {
 		String value = "";
 		value += "Name: " + name + ", ";
-		value += "Commits: " + commits + ", ";
+		value += "Commits: " + commitCount + ", ";
 		value += "Additions: " + additions + ", ";
 		value += "Deletions: " + deletions;
 		
