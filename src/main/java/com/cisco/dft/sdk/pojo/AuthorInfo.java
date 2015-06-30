@@ -30,7 +30,18 @@ public class AuthorInfo {
 		
 	}
 	
-	public void addCommit(AuthorCommit ac) {this.commitList.add(ac);}
+	/**
+	 * Adds commit and makes sure it is not a duplicate.
+	 * 
+	 * @param ac
+	 */
+	public void addCommit(AuthorCommit ac) {
+		
+		for (AuthorCommit c : commitList)
+			if (c.getTimestamp() == ac.getTimestamp()) return;
+		
+		this.commitList.add(ac);
+	}
 	
 	public Set<AuthorCommit> getCommitList() {return this.commitList;}
 	

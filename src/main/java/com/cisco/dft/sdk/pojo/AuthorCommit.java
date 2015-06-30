@@ -1,5 +1,11 @@
 package com.cisco.dft.sdk.pojo;
 
+/**
+ * Wrapper class used to store information about a commit.
+ * 
+ * @author phwhitin
+ *
+ */
 public class AuthorCommit {
 	
 	private final long timestamp;
@@ -8,7 +14,7 @@ public class AuthorCommit {
 	
 	private final int deletions;
 	
-	public AuthorCommit(long timestamp, int additions, int deletions) {
+	public AuthorCommit(final long timestamp, final int additions, final int deletions) {
 		
 		this.timestamp = timestamp;
 		this.additions = additions;
