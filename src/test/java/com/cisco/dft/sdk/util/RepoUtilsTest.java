@@ -5,8 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.cisco.dft.sdk.util.GitRepoUtils;
-import com.cisco.dft.sdk.util.SVNRepoUtils;
+import com.cisco.dft.sdk.vcs.GitRepo;
 
 
 public class RepoUtilsTest {
@@ -14,8 +13,8 @@ public class RepoUtilsTest {
 	@Test
 	public void testURIs() throws Exception {
 
-		assertTrue(GitRepoUtils.doesRemoteRepoExist("https://github.com/twbs/bootstrap.git"));
-		assertFalse(GitRepoUtils.doesRemoteRepoExist("http://facebook.com"));
+		assertTrue(GitRepo.doesRemoteRepoExist("https://github.com/twbs/bootstrap.git"));
+		assertFalse(GitRepo.doesRemoteRepoExist("http://facebook.com"));
 		
 		assertTrue(SVNRepoUtils.doesRemoteRepoExist("https://github.com/twbs/bootstrap"));
 		assertFalse(SVNRepoUtils.doesRemoteRepoExist("http://facebook.com"));
