@@ -3,6 +3,7 @@
 bin/
 target/
 *.class
+.gitignore
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
@@ -36,3 +37,4 @@ autorun.inf
 *.DS_Store
 *.swp
 .springBeans
+/temp/

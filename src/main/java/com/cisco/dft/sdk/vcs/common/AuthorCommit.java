@@ -1,4 +1,4 @@
-package com.cisco.dft.sdk.pojo;
+package com.cisco.dft.sdk.vcs.common;
 
 import java.time.Instant;
 import java.util.Date;

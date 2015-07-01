@@ -1,4 +1,4 @@
-package com.cisco.dft.sdk.util;
+package com.cisco.dft.sdk.vcs.svn;
 
 import java.util.Collection;
 

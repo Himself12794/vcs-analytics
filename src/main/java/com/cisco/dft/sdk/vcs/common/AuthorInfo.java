@@ -1,7 +1,9 @@
-package com.cisco.dft.sdk.pojo;
+package com.cisco.dft.sdk.vcs.common;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.google.common.collect.Lists;
 
 /**
  * Wrapper class used for author data pulled from the repository.
@@ -11,9 +13,10 @@ import java.util.List;
  */
 public class AuthorInfo {
 	
-	private final String name;
+	/**Used when no author of a given name is found*/
+	public static final AuthorInfo NOTFOUND = new AuthorInfo("John Doe");
 	
-	private int commitCount;
+	private final String name;
 	
 	private int additions;
 	
@@ -28,7 +31,6 @@ public class AuthorInfo {
 	public AuthorInfo(final String name, int commits, int additions, int deletions) {
 		
 		this.name = name;
-		this.commitCount = commits;
 		this.additions = additions;
 		this.deletions = deletions;
 		
@@ -56,9 +58,7 @@ public class AuthorInfo {
 	
 	public String getName() {return this.name;}
 	
-	public int getCommitCount() {return this.commitCount;}
-	
-	public void incrementCommitCount() {++this.commitCount;}
+	public int getCommitCount() {return this.commits.size();}
 	
 	public int getAdditions() {return this.additions;}
 	
@@ -68,13 +68,34 @@ public class AuthorInfo {
 	
 	public void incrementDeletions(int x) {this.deletions += x;}
 	
+	public int getAuthorCount() {
+		return getCommits().size();		
+	}
+	
+	@Override
+	public AuthorInfo clone() {
+		
+		AuthorInfo theClone = new AuthorInfo(name, getCommitCount(), additions, deletions);
+		theClone.commits = Lists.newArrayList(this.commits);
+		return theClone;
+		
+	}
+	
 	@Override
 	public String toString() {
 		String value = "";
 		value += "Name: " + name + ", ";
-		value += "Commits: " + commitCount + ", ";
+		value += "Commits: " + getCommitCount() + ", ";
 		value += "Additions: " + additions + ", ";
-		value += "Deletions: " + deletions;
+		value += "Deletions: " + deletions + "\n";
+		
+		for (AuthorCommit ac : this.getCommits()) {
+			
+			value += " - " + ac.toString() + "\n";
+			
+		}
+		
+		value += "\n";
 		
 		return value;
 	}
