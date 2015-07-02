@@ -1,7 +1,5 @@
 package com.cisco.dft.sdk.vcs.common;
 
-import java.time.Instant;
-import java.util.Date;
 
 public class AuthorCommit {
 	
@@ -34,9 +32,9 @@ public class AuthorCommit {
 	@Override
 	public String toString() {
 		
-		Date date = Date.from(Instant.ofEpochSecond(timestamp));
+		//Date date = Date.from(Instant.ofEpochSecond(timestamp));
 		
-		String value = "Timestamp: " + date.toString();
+		String value = "Timestamp: " + timestamp;
 		value += ", additions: " + additions;
 		value += ", deletions: " + deletions;
 		
