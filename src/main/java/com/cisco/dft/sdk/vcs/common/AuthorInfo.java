@@ -27,10 +27,10 @@ public class AuthorInfo {
 	private List<AuthorCommit> commits = new ArrayList<AuthorCommit>();
 	
 	public AuthorInfo(final String name) {
-		this(name, 0, 0, 0);
+		this(name, 0, 0);
 	}
 	
-	public AuthorInfo(final String name, int commits, int additions, int deletions) {
+	public AuthorInfo(final String name, int additions, int deletions) {
 		
 		this.name = name;
 		this.additions = additions;
@@ -45,15 +45,17 @@ public class AuthorInfo {
 	 */
 	public void addCommit(AuthorCommit ac) {
 		
-		for (AuthorCommit c : commits)
-			if (c.getTimestamp() == ac.getTimestamp()) return;
+		for (AuthorCommit c : commits) {
+		
+			if (c.getTimestamp() == ac.getTimestamp()) { return; }
+		
+		}
 		
 		this.commits.add(ac);
 	}
 	
 	public List<AuthorCommit> getCommits() {
 		
-		//this.commits.sort((p1, p2) -> Long.compare(p2.getTimestamp(), p1.getTimestamp()));
 		Comparator<AuthorCommit> sorter = new Comparator<AuthorCommit>() {
 
 			@Override
@@ -85,10 +87,9 @@ public class AuthorInfo {
 		return getCommits().size();		
 	}
 	
-	@Override
-	public AuthorInfo clone() {
+	public AuthorInfo copy() {
 		
-		AuthorInfo theClone = new AuthorInfo(name, getCommitCount(), additions, deletions);
+		AuthorInfo theClone = new AuthorInfo(name, additions, deletions);
 		theClone.commits = Lists.newArrayList(this.commits);
 		return theClone;
 		
@@ -96,21 +97,23 @@ public class AuthorInfo {
 	
 	@Override
 	public String toString() {
-		String value = "";
-		value += "Name: " + name + ", ";
-		value += "Commits: " + getCommitCount() + ", ";
-		value += "Additions: " + additions + ", ";
-		value += "Deletions: " + deletions + "\n";
+		
+		StringBuilder value = new StringBuilder();
+				
+		value.append("Name: " + name + ", ");
+		value.append("Commits: " + getCommitCount() + ", ");
+		value.append("Additions: " + additions + ", ");
+		value.append("Deletions: " + deletions + "\n");
 		
 		for (AuthorCommit ac : this.getCommits()) {
 			
-			value += " - " + ac.toString() + "\n";
+			value.append(" - " + ac.toString() + "\n");
 			
 		}
 		
-		value += "\n";
+		value.append("\n");
 		
-		return value;
+		return value.toString();
 	}
 	
 }

@@ -80,21 +80,20 @@ public class RepoInfo {
 	@Override
 	public String toString() {
 		
-		String value = "File Count: " + fileCount;
-		value += "\nLine Count: " + lineCount;
-		value += "\nLanguage Stats:\n\n";
+		StringBuilder value = new StringBuilder("File Count: " + fileCount);
+		value.append("\nLine Count: " + lineCount);
+		value.append("\nLanguage Stats:\n\n");
 		
 		for (Entry<Language, Integer> entry : this.languageCount.entrySet()) {
 			
-			value += " " + entry.getKey().name() + ": \n\tcount: " + entry.getValue() + "\n\tpercentage: " + String.format("%.1f", (entry.getValue().floatValue() * 100)/ fileCount) + "%";
-			value += "\n\n";
+			value.append(" " + entry.getKey().name() + ": \n\tcount: " + entry.getValue() + "\n\tpercentage: " + String.format("%.1f", (entry.getValue().floatValue() * 100)/ fileCount) + "%");
+			value.append("\n\n");
 		}
 		
-		return value;
+		return value.toString();
 	}
 	
-	@Override
-	public RepoInfo clone() {
+	public RepoInfo copy() {
 		return new RepoInfo(fileCount, lineCount, Maps.newHashMap(languageCount));
 	}
 	

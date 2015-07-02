@@ -32,8 +32,6 @@ public class AuthorCommit {
 	@Override
 	public String toString() {
 		
-		//Date date = Date.from(Instant.ofEpochSecond(timestamp));
-		
 		String value = "Timestamp: " + timestamp;
 		value += ", additions: " + additions;
 		value += ", deletions: " + deletions;

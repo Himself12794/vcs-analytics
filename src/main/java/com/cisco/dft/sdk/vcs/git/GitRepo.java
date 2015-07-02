@@ -30,6 +30,8 @@ import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.treewalk.AbstractTreeIterator;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.treewalk.EmptyTreeIterator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.cisco.dft.sdk.vcs.common.AuthorCommit;
 import com.cisco.dft.sdk.vcs.common.AuthorInfo;
@@ -50,6 +52,8 @@ public class GitRepo {
 	
 	/**Default directory relative to the system temp folder to store the repository locally so metrics can be pulled from it*/
 	private static final String DEFAULT_TEMP_CLONE_DIRECTORY = "git/";
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(GitRepo.class);
 	
 	private Git theRepo;
 	
@@ -122,8 +126,8 @@ public class GitRepo {
 		
 		theDirectory = getDirectory(remote);
 		
-		if (cp != null) this.cp = cp;
-		else cp = new UsernamePasswordCredentialsProvider("username", "password");
+		if (cp != null) { this.cp = cp; }
+		else { this.cp = new UsernamePasswordCredentialsProvider("username", "password"); }
 		
 		if (theDirectory.exists()) {
 			
@@ -132,14 +136,18 @@ public class GitRepo {
 
 					DiffFormatter df = new DiffFormatter( new ByteArrayOutputStream() );
 					updateRepoInfo(getNewestCommit(), df);
-					if (autoSync) sync();
+					if (autoSync) { sync(); }
 					df.close();
 					
 			} catch (Exception e) {
 				
+				LOGGER.info("Repo not found in Temp, attempting to clone", e);
+				
 				try {
 					FileUtils.deleteDirectory(theDirectory);
-				} catch (IOException e1) {}
+				} catch (IOException e1) {
+					LOGGER.info("An error occured trying to refresh the directory", e1);
+				}
 				
 				try {
 					createRepo();
@@ -173,13 +181,19 @@ public class GitRepo {
 			
 			try {
 				theRepo.fetch().setRemote(this.remote).call();
-			} catch (Exception e) {}
+			} catch (Exception e) {
+				LOGGER.info("Either local is up to date, or there was an error in connection to remote", e);
+			}
 			
 			updateAuthorInfo(df);
 			
 			updateRepoInfo(getNewestCommit(), df);			
 			
-		} catch (Exception e) {e.printStackTrace();}
+		} catch (Exception e) {
+			
+			LOGGER.error("Could not update repo information", e);
+			
+		}
 				
 		df.close();
 		
@@ -225,10 +239,10 @@ public class GitRepo {
 			
 			if (!authorStatistics.containsKey(user)) {
 				
-				ai = new AuthorInfo(user, 0, 0, 0);
+				ai = new AuthorInfo(user, 0, 0);
 				authorStatistics.put(user, ai);
 				
-			} else ai = authorStatistics.get(user);
+			} else { ai = authorStatistics.get(user); }
 			
 			int[] results = compareCommits(prev, null, df);
 			
@@ -260,7 +274,7 @@ public class GitRepo {
 			
 			Language lang = CodeSniffer.detectLanguage(entry.getNewPath());
 			
-			if (lang != null) repoStatistics.incrementLanguage(lang, 1);
+			if (lang != null) { repoStatistics.incrementLanguage(lang, 1); }
 			
 			for (HunkHeader hunk : df.toFileHeader(entry).getHunks()) {
 				
@@ -347,8 +361,9 @@ public class GitRepo {
 		
 		RevCommit newest = null;
 		try {
-			for (RevCommit rc : theRepo.log().setMaxCount(1).call()) newest = rc;
+			for (RevCommit rc : theRepo.log().setMaxCount(1).call()) { newest = rc; }
 		} catch (Exception e) {
+			LOGGER.error("An error occured in attempting to grab the newest commit", e);
 		}
 		
 		return newest;
@@ -365,7 +380,7 @@ public class GitRepo {
 	 * @return a copy of the statistics object. changing this will not effect statistics as a whole.
 	 */
 	public RepoInfo getRepoStatistics() {
-		return repoStatistics.clone();
+		return repoStatistics.copy();
 	}
 	
 	/**
@@ -379,7 +394,7 @@ public class GitRepo {
 	 * @throws TransportException 
 	 * @throws InvalidRemoteException 
 	 */
-	private void createRepo() throws Exception {
+	private void createRepo() throws InvalidRemoteException, TransportException, IllegalStateException, GitAPIException {
 			
 			theRepo = Git.cloneRepository()
 				.setDirectory(theDirectory)
@@ -395,15 +410,15 @@ public class GitRepo {
 	
 	public String toString() {
 		
-		String value = "";
+		StringBuilder value = new StringBuilder();
 		
 		for (AuthorInfo ai : this.authorStatistics.values()) {
 			
-			value += ai.toString();
+			value.append(ai.toString());
 			
 		}
 		
-		return value;
+		return value.toString();
 		
 	}
 	
@@ -446,17 +461,21 @@ public class GitRepo {
 			
 			CredentialsProvider cp = null;
 			
-			if (!(username == null && password == null)) cp = new UsernamePasswordCredentialsProvider(username, password);
+			if (!(username == null && password == null)) { cp = new UsernamePasswordCredentialsProvider(username, password); }
 			
 			LsRemoteCommand com = Git.lsRemoteRepository()
 					.setRemote(urlScrubber(url));
 			
-			if (cp != null) com.setCredentialsProvider(cp);
+			if (cp != null) { com.setCredentialsProvider(cp); }
 			
 			com.call();
 			
 			exists = true;
-		} catch (Exception e) {} 
+		} catch (Exception e) {
+			
+			LOGGER.debug("Remote repo does not exist", e);
+			
+		} 
 		
 		return exists;
 	}
@@ -488,63 +507,27 @@ public class GitRepo {
 			
 			switch (method) {
 				case COMMITS:
-					//infos.sort((p1, p2) -> Integer.compare(p2.getCommitCount(), p1.getCommitCount()));
-					
 					sorter = new Comparator<AuthorInfo>() {
-
-						@Override
-						public int compare(AuthorInfo p1, AuthorInfo p2) {
-							
-							return Long.compare(p2.getCommitCount(), p1.getCommitCount());
-						}
-						
+						@Override public int compare(AuthorInfo p1, AuthorInfo p2) { return Long.compare(p2.getCommitCount(), p1.getCommitCount()); } 
 					};
-					
 					Collections.sort(this.infos, sorter);
 					break;
 				case ADDITIONS:
-					//infos.sort((p1, p2) -> Integer.compare(p2.getAdditions(), p1.getAdditions()));
-					
 					sorter = new Comparator<AuthorInfo>() {
-
-						@Override
-						public int compare(AuthorInfo p1, AuthorInfo p2) {
-							
-							return Long.compare(p2.getAdditions(), p1.getAdditions());
-						}
-						
+						@Override public int compare(AuthorInfo p1, AuthorInfo p2) { return Long.compare(p2.getAdditions(), p1.getAdditions());	}
 					};
-					
 					Collections.sort(this.infos, sorter);
 					break;
 				case DELETIONS:
-					//infos.sort((p1, p2) -> Integer.compare(p2.getDeletions(), p1.getDeletions()));
-					
 					sorter = new Comparator<AuthorInfo>() {
-
-						@Override
-						public int compare(AuthorInfo p1, AuthorInfo p2) {
-							
-							return Long.compare(p2.getDeletions(), p1.getDeletions());
-						}
-						
+						@Override public int compare(AuthorInfo p1, AuthorInfo p2) { return Long.compare(p2.getDeletions(), p1.getDeletions()); }
 					};
-					
 					Collections.sort(this.infos, sorter);
 					break;
 				case NAME:
-					//infos.sort((p1, p2) -> p1.getName().compareTo(p2.getName()));
-					
 					sorter = new Comparator<AuthorInfo>() {
-
-						@Override
-						public int compare(AuthorInfo p1, AuthorInfo p2) {
-							
-							return p1.getName().compareTo(p2.getName());
-						}
-						
+						@Override public int compare(AuthorInfo p1, AuthorInfo p2) { return p1.getName().compareTo(p2.getName()); }
 					};
-					
 					Collections.sort(this.infos, sorter);
 					break;
 				case UNSORTED:
@@ -570,7 +553,7 @@ public class GitRepo {
 		public AuthorInfo lookupUser(String user) {
 			for (AuthorInfo ai : infos) {
 				
-				if (ai.getName().equals(user)) return ai.clone();
+				if (ai.getName().equals(user)) { return ai.copy(); }
 				
 			}
 			
@@ -586,13 +569,13 @@ public class GitRepo {
 		
 		@Override
 		public String toString() {
-			String value = "";
+			StringBuilder value = new StringBuilder();
 			
-			for (AuthorInfo ai : infos) value += ai.toString();
+			for (AuthorInfo ai : infos) { value.append(ai.toString()); }
 			
-			value += "\n";
+			value.append("\n");
 			
-			return value;
+			return value.toString();
 		}
 		
 	}

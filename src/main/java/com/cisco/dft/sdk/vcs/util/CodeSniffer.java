@@ -81,4 +81,6 @@ public class CodeSniffer {
 		return Language.OTHER;
 		
 	}
+	
+	private CodeSniffer() {}
 }
