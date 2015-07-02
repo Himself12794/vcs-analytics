@@ -8,6 +8,7 @@ import java.io.File;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.junit.Test;
 
+import com.cisco.dft.sdk.vcs.common.RepoInfo;
 import com.cisco.dft.sdk.vcs.git.GitRepo;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
@@ -49,10 +50,24 @@ public class RepoUtilsTest {
 	public void testRepoStatGathering() throws Exception {
 		
 		GitRepo reo = new GitRepo("https://github.com/Himself12794/powersAPI.git");
+		assertTrue(reo.getRepoStatistics().getLangPercent(Language.JAVA) > 0.0F );
 		assertTrue(reo.getRepoStatistics().getLangCount(Language.JAVA) > 0 );
+		assertTrue(reo.getRepoStatistics().getLangPercent(Language.C_SHARP) == 0.0F );
+		assertTrue(reo.getRepoStatistics().getLangCount(Language.C_SHARP) == 0 );
 		assertTrue(reo.getRepoStatistics().getFileCount() > 10 );
 		assertTrue(reo.getRepoStatistics().getLineCount() > 200 );
 		assertTrue(reo.getRepoStatistics().getLangCountMap().containsKey(Language.JAVA) &&  reo.getRepoStatistics().getLangCountMap().containsKey(Language.OTHER));
+		
+		// This is just to satisfy sonar
+		RepoInfo ri = new RepoInfo();
+		
+		ri.incrementFileCount(1);
+		ri.incrementLanguage(Language.HTML, 1);
+		ri.incrementLineCount(1);
+		
+		assertTrue( ri.getFileCount() == 1);
+		assertTrue( ri.getLangCount(Language.HTML) == 1);
+		assertTrue( ri.getLineCount() == 1);
 		
 	}
 	
