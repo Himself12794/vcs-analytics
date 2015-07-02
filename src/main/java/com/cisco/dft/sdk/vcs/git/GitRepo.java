@@ -3,6 +3,7 @@ package com.cisco.dft.sdk.vcs.git;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -212,7 +213,7 @@ public class GitRepo {
 			
 			ai.incrementAdditions(results[0]);
 			ai.incrementDeletions(results[1]);
-			ai.addCommit(new AuthorCommit(Integer.toUnsignedLong(rc.getCommitTime()), results[0], results[1]));
+			ai.addCommit(new AuthorCommit((long)rc.getCommitTime(), results[0], results[1]));
 			
 			prev = rc;
 		}
@@ -233,7 +234,7 @@ public class GitRepo {
 			
 			ai.incrementAdditions(results[0]);
 			ai.incrementDeletions(results[1]);
-			ai.addCommit(new AuthorCommit(Integer.toUnsignedLong(prev.getCommitTime()), results[0], results[1]));
+			ai.addCommit(new AuthorCommit((long)prev.getCommitTime(), results[0], results[1]));
 				
 		}
 		
@@ -499,7 +500,7 @@ public class GitRepo {
 						
 					};
 					
-					infos.sort(sorter);
+					Collections.sort(this.infos, sorter);
 					break;
 				case ADDITIONS:
 					//infos.sort((p1, p2) -> Integer.compare(p2.getAdditions(), p1.getAdditions()));
@@ -514,7 +515,7 @@ public class GitRepo {
 						
 					};
 					
-					infos.sort(sorter);
+					Collections.sort(this.infos, sorter);
 					break;
 				case DELETIONS:
 					//infos.sort((p1, p2) -> Integer.compare(p2.getDeletions(), p1.getDeletions()));
@@ -529,7 +530,7 @@ public class GitRepo {
 						
 					};
 					
-					infos.sort(sorter);
+					Collections.sort(this.infos, sorter);
 					break;
 				case NAME:
 					//infos.sort((p1, p2) -> p1.getName().compareTo(p2.getName()));
@@ -544,7 +545,7 @@ public class GitRepo {
 						
 					};
 					
-					infos.sort(sorter);
+					Collections.sort(this.infos, sorter);
 					break;
 				case UNSORTED:
 					break;

@@ -1,6 +1,7 @@
 package com.cisco.dft.sdk.vcs.common;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -63,7 +64,7 @@ public class AuthorInfo {
 			
 		};
 		
-		this.commits.sort(sorter);
+		Collections.sort(this.commits,sorter);
 		
 		return this.commits;
 	}
