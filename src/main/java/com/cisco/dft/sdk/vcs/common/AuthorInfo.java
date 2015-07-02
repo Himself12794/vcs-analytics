@@ -1,6 +1,7 @@
 package com.cisco.dft.sdk.vcs.common;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import com.google.common.collect.Lists;
@@ -51,7 +52,16 @@ public class AuthorInfo {
 	
 	public List<AuthorCommit> getCommits() {
 		
-		this.commits.sort((p1, p2) -> Long.compare(p2.getTimestamp(), p1.getTimestamp()));
+		//this.commits.sort((p1, p2) -> Long.compare(p2.getTimestamp(), p1.getTimestamp()));
+		this.commits.sort(new Comparator<AuthorCommit>() {
+
+			@Override
+			public int compare(AuthorCommit p1, AuthorCommit p2) {
+				
+				return Long.compare(p2.getTimestamp(), p1.getTimestamp());
+			}
+			
+		});
 		
 		return this.commits;
 	}

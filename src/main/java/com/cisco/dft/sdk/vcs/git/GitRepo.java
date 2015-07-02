@@ -3,6 +3,7 @@ package com.cisco.dft.sdk.vcs.git;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -484,16 +485,52 @@ public class GitRepo {
 			
 			switch (method) {
 				case COMMITS:
-					infos.sort((p1, p2) -> Integer.compare(p2.getCommitCount(), p1.getCommitCount()));
+					//infos.sort((p1, p2) -> Integer.compare(p2.getCommitCount(), p1.getCommitCount()));
+					infos.sort(new Comparator<AuthorInfo>() {
+
+						@Override
+						public int compare(AuthorInfo p1, AuthorInfo p2) {
+							
+							return Long.compare(p2.getCommitCount(), p1.getCommitCount());
+						}
+						
+					});
 					break;
 				case ADDITIONS:
-					infos.sort((p1, p2) -> Integer.compare(p2.getAdditions(), p1.getAdditions()));
+					//infos.sort((p1, p2) -> Integer.compare(p2.getAdditions(), p1.getAdditions()));
+					infos.sort(new Comparator<AuthorInfo>() {
+
+						@Override
+						public int compare(AuthorInfo p1, AuthorInfo p2) {
+							
+							return Long.compare(p2.getAdditions(), p1.getAdditions());
+						}
+						
+					});
 					break;
 				case DELETIONS:
-					infos.sort((p1, p2) -> Integer.compare(p2.getDeletions(), p1.getDeletions()));
+					//infos.sort((p1, p2) -> Integer.compare(p2.getDeletions(), p1.getDeletions()));
+					infos.sort(new Comparator<AuthorInfo>() {
+
+						@Override
+						public int compare(AuthorInfo p1, AuthorInfo p2) {
+							
+							return Long.compare(p2.getDeletions(), p1.getDeletions());
+						}
+						
+					});
 					break;
 				case NAME:
-					infos.sort((p1, p2) -> p1.getName().compareTo(p2.getName()));
+					//infos.sort((p1, p2) -> p1.getName().compareTo(p2.getName()));
+					infos.sort(new Comparator<AuthorInfo>() {
+
+						@Override
+						public int compare(AuthorInfo p1, AuthorInfo p2) {
+							
+							return p1.getName().compareTo(p2.getName());
+						}
+						
+					});
 					break;
 				case UNSORTED:
 					break;

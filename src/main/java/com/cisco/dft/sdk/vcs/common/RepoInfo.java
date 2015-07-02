@@ -1,5 +1,6 @@
 package com.cisco.dft.sdk.vcs.common;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -16,7 +17,7 @@ public class RepoInfo {
 	
 	public RepoInfo() {
 		
-		this(0, 0, Maps.newHashMap());
+		this(0, 0, new HashMap<Language, Integer>());
 		
 	}
 	
