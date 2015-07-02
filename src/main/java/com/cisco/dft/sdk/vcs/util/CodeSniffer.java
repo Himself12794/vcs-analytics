@@ -9,6 +9,8 @@ public class CodeSniffer {
 	
 	private static final Map<String, Language> FILE_ASSOCIATIONS = Maps.newHashMap();
 	
+	private CodeSniffer() {}
+	
 	/**
 	 * Representation of many common programming language
 	 * 
@@ -70,17 +72,7 @@ public class CodeSniffer {
 		
 	}
 	
-	public static Language detectLanguage(File file) {
-		
-		if (file.isFile()) {
-			
+	public static Language detectLanguage(File file) {		
 			return detectLanguage(file.getName());
-			
-		}
-		
-		return Language.OTHER;
-		
 	}
-	
-	private CodeSniffer() {}
 }

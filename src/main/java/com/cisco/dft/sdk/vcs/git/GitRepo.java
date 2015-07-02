@@ -14,12 +14,10 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.LsRemoteCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
-import org.eclipse.jgit.api.errors.NoHeadException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.diff.Edit;
-import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.patch.FileHeader;
@@ -48,7 +46,7 @@ import com.google.common.collect.Maps;
  * @author phwhitin
  *
  */
-public class GitRepo {
+public final class GitRepo {
 	
 	/**Default directory relative to the system temp folder to store the repository locally so metrics can be pulled from it*/
 	private static final String DEFAULT_TEMP_CLONE_DIRECTORY = "git/";
@@ -106,6 +104,13 @@ public class GitRepo {
 		this(url, null, autoSync);
 		
 	}
+	
+	public GitRepo(String url, UsernamePasswordCredentialsProvider cp) throws TransportException {
+		
+		this(url, cp, true);
+		
+	}
+	
 	
 	/**
 	 * Links a remote repo with a local version so information can be pulled from it.
@@ -199,7 +204,7 @@ public class GitRepo {
 		
 	}
 	
-	private void updateAuthorInfo(DiffFormatter df) throws NoHeadException, GitAPIException, IOException {
+	private void updateAuthorInfo(DiffFormatter df) throws GitAPIException, IOException {
 		
 		Iterable<RevCommit> refs = theRepo.log().all().setSkip(this.loggedCommits).call();
 		
@@ -216,7 +221,7 @@ public class GitRepo {
 				ai = new AuthorInfo(user);
 				authorStatistics.put(user, ai);
 				
-			} else ai = authorStatistics.get(user);
+			} else { ai = authorStatistics.get(user); }
 			
 			if (prev == null) {
 				prev = rc;
@@ -254,7 +259,7 @@ public class GitRepo {
 		
 	}
 	
-	private void updateRepoInfo(RevCommit rc, DiffFormatter df) throws IncorrectObjectTypeException, IOException {
+	private void updateRepoInfo(RevCommit rc, DiffFormatter df) throws IOException {
 		
 		ObjectReader reader = theRepo.getRepository().newObjectReader();
 		
@@ -285,7 +290,7 @@ public class GitRepo {
 		}
 	}
 	
-	private int[] compareCommits(RevCommit prev, RevCommit curr, DiffFormatter df) throws IncorrectObjectTypeException, IOException {				
+	private int[] compareCommits(RevCommit prev, RevCommit curr, DiffFormatter df) throws IOException {				
 		
 		ObjectReader reader = theRepo.getRepository().newObjectReader();
 	
@@ -394,7 +399,7 @@ public class GitRepo {
 	 * @throws TransportException 
 	 * @throws InvalidRemoteException 
 	 */
-	private void createRepo() throws InvalidRemoteException, TransportException, IllegalStateException, GitAPIException {
+	private void createRepo() throws IllegalStateException, GitAPIException {
 			
 			theRepo = Git.cloneRepository()
 				.setDirectory(theDirectory)
@@ -438,7 +443,7 @@ public class GitRepo {
 	 * @param url
 	 * @return the url with https
 	 */
-	public static String urlScrubber(String url) {
+	private static String urlScrubber(String url) {
 		return url.startsWith("http://") ? url.replace("http://", "https://") : url;
 	}
 	
@@ -473,7 +478,7 @@ public class GitRepo {
 			exists = true;
 		} catch (Exception e) {
 			
-			LOGGER.debug("Remote repo does not exist", e);
+			LOGGER.info("Remote repo does not exist", e);
 			
 		} 
 		
@@ -501,34 +506,34 @@ public class GitRepo {
 			this.infos = infos;
 		}
 		
+		/**
+		 * Sorts the output by the specified method.
+		 * 
+		 * @param method the sort method to use
+		 * @return the builder instance
+		 */
 		public AuthorInfoViewBuilder sort(SortMethod method){
-			
-			Comparator<AuthorInfo> sorter = null;
 			
 			switch (method) {
 				case COMMITS:
-					sorter = new Comparator<AuthorInfo>() {
+					Collections.sort(this.infos, new Comparator<AuthorInfo>() {
 						@Override public int compare(AuthorInfo p1, AuthorInfo p2) { return Long.compare(p2.getCommitCount(), p1.getCommitCount()); } 
-					};
-					Collections.sort(this.infos, sorter);
+					});
 					break;
-				case ADDITIONS:
-					sorter = new Comparator<AuthorInfo>() {
+				case ADDITIONS: 
+					Collections.sort(this.infos, new Comparator<AuthorInfo>() {
 						@Override public int compare(AuthorInfo p1, AuthorInfo p2) { return Long.compare(p2.getAdditions(), p1.getAdditions());	}
-					};
-					Collections.sort(this.infos, sorter);
+					});
 					break;
 				case DELETIONS:
-					sorter = new Comparator<AuthorInfo>() {
+					Collections.sort(this.infos, new Comparator<AuthorInfo>() {
 						@Override public int compare(AuthorInfo p1, AuthorInfo p2) { return Long.compare(p2.getDeletions(), p1.getDeletions()); }
-					};
-					Collections.sort(this.infos, sorter);
+					});
 					break;
-				case NAME:
-					sorter = new Comparator<AuthorInfo>() {
+				case NAME: 
+					Collections.sort(this.infos, new Comparator<AuthorInfo>() {
 						@Override public int compare(AuthorInfo p1, AuthorInfo p2) { return p1.getName().compareTo(p2.getName()); }
-					};
-					Collections.sort(this.infos, sorter);
+					});
 					break;
 				case UNSORTED:
 					break;

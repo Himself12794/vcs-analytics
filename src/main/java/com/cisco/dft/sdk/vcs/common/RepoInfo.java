@@ -80,8 +80,10 @@ public class RepoInfo {
 	@Override
 	public String toString() {
 		
-		StringBuilder value = new StringBuilder("File Count: " + fileCount);
-		value.append("\nLine Count: " + lineCount);
+		StringBuilder value = new StringBuilder("File Count: ");
+		value.append(fileCount);
+		value.append("\nLine Count: ");
+		value.append(lineCount);
 		value.append("\nLanguage Stats:\n\n");
 		
 		for (Entry<Language, Integer> entry : this.languageCount.entrySet()) {
