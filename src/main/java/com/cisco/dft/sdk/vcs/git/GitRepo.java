@@ -483,10 +483,13 @@ public class GitRepo {
 		
 		public AuthorInfoViewBuilder sort(SortMethod method){
 			
+			Comparator<AuthorInfo> sorter = null;
+			
 			switch (method) {
 				case COMMITS:
 					//infos.sort((p1, p2) -> Integer.compare(p2.getCommitCount(), p1.getCommitCount()));
-					infos.sort(new Comparator<AuthorInfo>() {
+					
+					sorter = new Comparator<AuthorInfo>() {
 
 						@Override
 						public int compare(AuthorInfo p1, AuthorInfo p2) {
@@ -494,11 +497,14 @@ public class GitRepo {
 							return Long.compare(p2.getCommitCount(), p1.getCommitCount());
 						}
 						
-					});
+					};
+					
+					infos.sort(sorter);
 					break;
 				case ADDITIONS:
 					//infos.sort((p1, p2) -> Integer.compare(p2.getAdditions(), p1.getAdditions()));
-					infos.sort(new Comparator<AuthorInfo>() {
+					
+					sorter = new Comparator<AuthorInfo>() {
 
 						@Override
 						public int compare(AuthorInfo p1, AuthorInfo p2) {
@@ -506,11 +512,14 @@ public class GitRepo {
 							return Long.compare(p2.getAdditions(), p1.getAdditions());
 						}
 						
-					});
+					};
+					
+					infos.sort(sorter);
 					break;
 				case DELETIONS:
 					//infos.sort((p1, p2) -> Integer.compare(p2.getDeletions(), p1.getDeletions()));
-					infos.sort(new Comparator<AuthorInfo>() {
+					
+					sorter = new Comparator<AuthorInfo>() {
 
 						@Override
 						public int compare(AuthorInfo p1, AuthorInfo p2) {
@@ -518,11 +527,14 @@ public class GitRepo {
 							return Long.compare(p2.getDeletions(), p1.getDeletions());
 						}
 						
-					});
+					};
+					
+					infos.sort(sorter);
 					break;
 				case NAME:
 					//infos.sort((p1, p2) -> p1.getName().compareTo(p2.getName()));
-					infos.sort(new Comparator<AuthorInfo>() {
+					
+					sorter = new Comparator<AuthorInfo>() {
 
 						@Override
 						public int compare(AuthorInfo p1, AuthorInfo p2) {
@@ -530,7 +542,9 @@ public class GitRepo {
 							return p1.getName().compareTo(p2.getName());
 						}
 						
-					});
+					};
+					
+					infos.sort(sorter);
 					break;
 				case UNSORTED:
 					break;

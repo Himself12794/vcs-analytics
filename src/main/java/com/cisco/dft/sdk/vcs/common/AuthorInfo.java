@@ -53,7 +53,7 @@ public class AuthorInfo {
 	public List<AuthorCommit> getCommits() {
 		
 		//this.commits.sort((p1, p2) -> Long.compare(p2.getTimestamp(), p1.getTimestamp()));
-		this.commits.sort(new Comparator<AuthorCommit>() {
+		Comparator<AuthorCommit> sorter = new Comparator<AuthorCommit>() {
 
 			@Override
 			public int compare(AuthorCommit p1, AuthorCommit p2) {
@@ -61,7 +61,9 @@ public class AuthorInfo {
 				return Long.compare(p2.getTimestamp(), p1.getTimestamp());
 			}
 			
-		});
+		};
+		
+		this.commits.sort(sorter);
 		
 		return this.commits;
 	}
