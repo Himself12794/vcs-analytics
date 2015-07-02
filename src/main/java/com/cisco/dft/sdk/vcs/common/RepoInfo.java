@@ -52,11 +52,23 @@ public class RepoInfo {
 
 	public void incrementLineCount(int x) { lineCount += x; }
 	
+	/**
+	 * Get the percentage of the repo that is made up of this language.
+	 * 
+	 * @param lang
+	 * @return
+	 */
 	public float getLangPercent(Language lang) {
 		return languageCount.containsKey(lang) ? languageCount.get(lang).floatValue() / fileCount : 0.0F;	
 	}
 	
-	public float getLangCount(Language lang) {
+	/**
+	 * Get number of files that us the specified language.
+	 * 
+	 * @param lang
+	 * @return
+	 */
+	public int getLangCount(Language lang) {
 		return languageCount.containsKey(lang) ? languageCount.get(lang) : 0;	
 	}
 	

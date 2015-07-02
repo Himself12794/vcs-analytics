@@ -78,7 +78,7 @@ public class CodeSniffer {
 			
 		}
 		
-		return null;
+		return Language.OTHER;
 		
 	}
 }

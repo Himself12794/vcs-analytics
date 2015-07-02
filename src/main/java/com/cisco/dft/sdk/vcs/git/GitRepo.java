@@ -3,7 +3,6 @@ package com.cisco.dft.sdk.vcs.git;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -37,6 +36,7 @@ import com.cisco.dft.sdk.vcs.util.CodeSniffer;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
 import com.cisco.dft.sdk.vcs.util.SortMethod;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 /**
  * Used to get information about different authors who have committed to a remote repo.
@@ -53,11 +53,11 @@ public class GitRepo {
 	
 	private final File theDirectory;
 	
-	private String remote;
+	private final String remote;
 	
 	private UsernamePasswordCredentialsProvider cp;
 	
-	private Map<String, AuthorInfo> authorStatistics = new HashMap<String, AuthorInfo>();
+	private Map<String, AuthorInfo> authorStatistics = Maps.newHashMap();
 	
 	private RepoInfo repoStatistics = new RepoInfo();
 	
@@ -69,14 +69,17 @@ public class GitRepo {
 	 * time to get user data for the repository if there is already a local version.
 	 * If there is no local copy, the repo automatically clones. 
 	 * <p>
-	 * The repo is cloned bare to only include necessary information. 
+	 * The repo is cloned bare to only include necessary information.
+	 * <p>
+	 * Initializing in this way will automatically sync the data if no local copy is found. 
+	 * If auto-sync is not desired, run with a boolean as false. 
 	 * 
 	 * @param url the url to grab the data from
 	 * @throws Exception 
 	 */
 	public GitRepo(String url) throws TransportException {
 		
-		this(url, null, false);
+		this(url, null, true);
 		
 	}
 	
@@ -124,14 +127,12 @@ public class GitRepo {
 			
 			try {
 				theRepo = Git.open(theDirectory);
-				if (autoSync) sync();
-				else {
 
 					DiffFormatter df = new DiffFormatter( new ByteArrayOutputStream() );
 					updateRepoInfo(getNewestCommit(), df);
-					updateAuthorInfo(df);
+					if (autoSync) sync();
 					df.close();
-				}
+					
 			} catch (Exception e) {
 				
 				try {
@@ -328,6 +329,10 @@ public class GitRepo {
 	 * Gets the statistics that have been logged for the repo.
 	 * The data is stored in memory for efficiency, so data may be inaccurate
 	 * unless {@link GitRepo#sync()} is run.
+	 * <p>
+	 * Because of the potential size of some repositories, this is not updated
+	 * unless the user initializes the repository with autoSync true, or manually
+	 * runs {@link GitRepo#sync()}
 	 * 
 	 * @param sync whether or not the local should sync with remote
 	 * @return a statistics builder for this repo 
@@ -347,6 +352,16 @@ public class GitRepo {
 		return newest;
 	}
 	
+	/**
+	 * Gets the general information about this repository:
+	 * <ol>
+	 * 		<li>Lines of code</li>
+	 * 		<li>Number of files</li>
+	 * 		<li>Language statistics</li>
+	 * </ol>
+	 * 
+	 * @return a copy of the statistics object. changing this will not effect statistics as a whole.
+	 */
 	public RepoInfo getRepoStatistics() {
 		return repoStatistics.clone();
 	}
@@ -371,6 +386,8 @@ public class GitRepo {
 				.setNoCheckout(true)
 				.setCredentialsProvider(cp)
 				.call();
+			
+			sync();
 		
 	}
 	
@@ -393,7 +410,9 @@ public class GitRepo {
 		UUID name = UUID.nameUUIDFromBytes(url.getBytes());
 		return new File(FileUtils.getTempDirectory(), GitRepo.DEFAULT_TEMP_CLONE_DIRECTORY + name.toString());
 		
-	}/**
+	}
+	
+	/**
 	 * JGit seems to have problems using http to clone, so this attempts to change urls using http
 	 * to https instead.
 	 * 
