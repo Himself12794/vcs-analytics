@@ -18,11 +18,14 @@ import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.diff.Edit;
+import org.eclipse.jgit.errors.RevisionSyntaxException;
+import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.patch.FileHeader;
 import org.eclipse.jgit.patch.HunkHeader;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.treewalk.AbstractTreeIterator;
@@ -43,9 +46,11 @@ import com.google.common.collect.Maps;
 /**
  * Used to get information about different authors who have committed to a remote repo.
  * 
+ * 
  * @author phwhitin
  *
  */
+// TODO add support for separate branches
 public final class GitRepo {
 	
 	/**Default directory relative to the system temp folder to store the repository locally so metrics can be pulled from it*/
@@ -138,11 +143,11 @@ public final class GitRepo {
 			
 			try {
 				theRepo = Git.open(theDirectory);
-
-					DiffFormatter df = new DiffFormatter( new ByteArrayOutputStream() );
-					updateRepoInfo(getNewestCommit(), df);
-					if (autoSync) { sync(); }
-					df.close();
+				
+				DiffFormatter df = new DiffFormatter( new ByteArrayOutputStream() );
+				updateRepoInfo(getNewestCommit(), df);
+				if (autoSync) { sync(); }
+				df.close();
 					
 			} catch (Exception e) {
 				
@@ -179,15 +184,20 @@ public final class GitRepo {
 	 * @return
 	 */
 	public void sync() {
+		sync(true);
+	}
+	private void sync(boolean fetch) {
 		
 		DiffFormatter df = new DiffFormatter( new ByteArrayOutputStream() );
 		
 		try {
 			
-			try {
-				theRepo.fetch().setRemote(this.remote).call();
-			} catch (Exception e) {
-				LOGGER.info("Either local is up to date, or there was an error in connection to remote", e);
+			if (fetch) {
+				try {
+					theRepo.fetch().setRemote(this.remote).call();
+				} catch (Exception e) {
+					LOGGER.info("Either local is up to date, or there was an error in connection to remote", e);
+				}
 			}
 			
 			updateAuthorInfo(df);
@@ -206,7 +216,9 @@ public final class GitRepo {
 	
 	private void updateAuthorInfo(DiffFormatter df) throws GitAPIException, IOException {
 		
-		Iterable<RevCommit> refs = theRepo.log().all().setSkip(this.loggedCommits).call();
+		theRepo.getRepository().getBranch();
+		
+		Iterable<RevCommit> refs = theRepo.log().setSkip(this.loggedCommits).call();
 		
 		RevCommit prev = null;
 		
@@ -261,6 +273,10 @@ public final class GitRepo {
 	
 	private void updateRepoInfo(RevCommit rc, DiffFormatter df) throws IOException {
 		
+		if (rc == null) { return; }
+		
+		repoStatistics = new RepoInfo(theRepo.getRepository().getBranch());
+		
 		ObjectReader reader = theRepo.getRepository().newObjectReader();
 		
 		EmptyTreeIterator oldTreeIter = new EmptyTreeIterator();
@@ -279,7 +295,7 @@ public final class GitRepo {
 			
 			Language lang = CodeSniffer.detectLanguage(entry.getNewPath());
 			
-			if (lang != null) { repoStatistics.incrementLanguage(lang, 1); }
+			repoStatistics.incrementLanguage(lang, 1);
 			
 			for (HunkHeader hunk : df.toFileHeader(entry).getHunks()) {
 				
@@ -359,16 +375,26 @@ public final class GitRepo {
 	 * @return a statistics builder for this repo 
 	 */
 	public AuthorInfoViewBuilder getAuthorStatistics() {
-		return new AuthorInfoViewBuilder(Lists.newArrayList(authorStatistics.values()));
+		
+		try {
+			return new AuthorInfoViewBuilder(Lists.newArrayList(authorStatistics.values()), theRepo.getRepository().getBranch());
+		} catch (IOException e) {
+			LOGGER.error("Could not detect the current branch", e);
+			return new AuthorInfoViewBuilder(Lists.newArrayList(authorStatistics.values()));
+		}
 	}
 
 	private RevCommit getNewestCommit() {
 		
 		RevCommit newest = null;
 		try {
-			for (RevCommit rc : theRepo.log().setMaxCount(1).call()) { newest = rc; }
-		} catch (Exception e) {
-			LOGGER.error("An error occured in attempting to grab the newest commit", e);
+			
+			RevWalk revwalk = new RevWalk(theRepo.getRepository());
+			newest = revwalk.parseCommit(theRepo.getRepository().resolve(Constants.HEAD));
+			revwalk.close();
+	        
+		} catch (RevisionSyntaxException | IOException e) {
+			LOGGER.error("Could not get most recent commit", e);
 		}
 		
 		return newest;
@@ -381,6 +407,7 @@ public final class GitRepo {
 	 * 		<li>Number of files</li>
 	 * 		<li>Language statistics</li>
 	 * </ol>
+	 * Currently, this only get information about the master branch.
 	 * 
 	 * @return a copy of the statistics object. changing this will not effect statistics as a whole.
 	 */
@@ -409,22 +436,12 @@ public final class GitRepo {
 				.setCredentialsProvider(cp)
 				.call();
 			
-			sync();
+			sync(false);
 		
 	}
 	
-	public String toString() {
-		
-		StringBuilder value = new StringBuilder();
-		
-		for (AuthorInfo ai : this.authorStatistics.values()) {
-			
-			value.append(ai.toString());
-			
-		}
-		
-		return value.toString();
-		
+	public String toString() {		
+		return getAuthorStatistics().sort(SortMethod.COMMITS).toString() + getRepoStatistics().toString();		
 	}
 	
 	private File getDirectory(String url) {
@@ -502,8 +519,15 @@ public final class GitRepo {
 		
 		private List<AuthorInfo> infos;
 		
+		private String branch;
+		
 		private AuthorInfoViewBuilder(List<AuthorInfo> infos) {
+			this(infos, "Could not detect");
+		}
+		
+		private AuthorInfoViewBuilder(List<AuthorInfo> infos, String branch) {
 			this.infos = infos;
+			this.branch = branch;
 		}
 		
 		/**
@@ -572,9 +596,22 @@ public final class GitRepo {
 		 */
 		public List<AuthorInfo> getList() {return this.infos;}
 		
+		/**
+		 * Returns the branch that this specific statistics instance covers.
+		 * 
+		 * @return
+		 */
+		public String getBranch() {
+			
+			return branch;
+			
+		}
+		
 		@Override
 		public String toString() {
-			StringBuilder value = new StringBuilder();
+			StringBuilder value = new StringBuilder("Branch: ");
+			value.append(getBranch());
+			value.append("\n");
 			
 			for (AuthorInfo ai : infos) { value.append(ai.toString()); }
 			

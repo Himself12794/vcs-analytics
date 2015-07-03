@@ -13,19 +13,29 @@ public class RepoInfo {
 	
 	private int lineCount;
 	
+	private String branch;
+	
 	private final Map<Language, Integer> languageCount;
 	
 	public RepoInfo() {
 		
-		this(0, 0, new HashMap<Language, Integer>());
+		this(0, 0, "Unknown", new HashMap<Language, Integer>());
 		
 	}
 	
-	public RepoInfo(int fileCount, int lineCount, final Map<Language, Integer> languageCount) {
+	public RepoInfo(String branch) {
+		
+		this(0, 0, branch, new HashMap<Language, Integer>());
+		
+	}
+	
+	public RepoInfo(int fileCount, int lineCount, final String branch, final Map<Language, Integer> languageCount) {
 		
 		this.fileCount = fileCount;
 		
 		this.lineCount = lineCount;
+		
+		this.branch = branch;
 		
 		this.languageCount = languageCount;
 		
@@ -63,6 +73,10 @@ public class RepoInfo {
 		return languageCount.containsKey(lang) ? languageCount.get(lang).floatValue() / fileCount : 0.0F;	
 	}
 	
+	public String getBranch() {
+		return branch;
+	}
+	
 	/**
 	 * Get number of files that us the specified language.
 	 * 
@@ -82,6 +96,8 @@ public class RepoInfo {
 		
 		StringBuilder value = new StringBuilder("File Count: ");
 		value.append(fileCount);
+		value.append("\nBranch: ");
+		value.append(branch);
 		value.append("\nLine Count: ");
 		value.append(lineCount);
 		value.append("\nLanguage Stats:\n\n");
@@ -96,7 +112,7 @@ public class RepoInfo {
 	}
 	
 	public RepoInfo copy() {
-		return new RepoInfo(fileCount, lineCount, Maps.newHashMap(languageCount));
+		return new RepoInfo(fileCount, lineCount, branch, Maps.newHashMap(languageCount));
 	}
 	
 }
