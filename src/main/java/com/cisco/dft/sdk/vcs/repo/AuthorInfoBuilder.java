@@ -1,4 +1,4 @@
-package com.cisco.dft.sdk.vcs.common;
+package com.cisco.dft.sdk.vcs.repo;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -6,17 +6,17 @@ import java.util.List;
 
 import com.cisco.dft.sdk.vcs.util.SortMethod;
 
-public class AuthorInfoViewBuilder {
+public class AuthorInfoBuilder {
 	
 	private List<AuthorInfo> infos;
 	
 	private String branch;
 	
-	public AuthorInfoViewBuilder(List<AuthorInfo> infos) {
+	AuthorInfoBuilder(List<AuthorInfo> infos) {
 		this(infos, "Could not detect");
 	}
 	
-	public AuthorInfoViewBuilder(List<AuthorInfo> infos, String branch) {
+	AuthorInfoBuilder(List<AuthorInfo> infos, String branch) {
 		this.infos = infos;
 		this.branch = branch;
 	}
@@ -27,7 +27,7 @@ public class AuthorInfoViewBuilder {
 	 * @param method the sort method to use
 	 * @return the builder instance
 	 */
-	public AuthorInfoViewBuilder sort(SortMethod method){
+	public AuthorInfoBuilder sort(SortMethod method){
 		
 		switch (method) {
 			case COMMITS:
@@ -69,10 +69,9 @@ public class AuthorInfoViewBuilder {
 	 * @return a copy of the AuthorInfo for this user if it exists, or an empty AuthorInfo object.
 	 */
 	public AuthorInfo lookupUser(String user) {
+		
 		for (AuthorInfo ai : infos) {
-			
-			if (ai.getName().equals(user)) { return ai.copy(); }
-			
+			if (ai.getName().equals(user)) { return ai; }
 		}
 		
 		return new AuthorInfo(user);

@@ -1,10 +1,9 @@
-package com.cisco.dft.sdk.vcs.git;
+package com.cisco.dft.sdk.vcs.repo;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
@@ -31,16 +30,9 @@ import org.eclipse.jgit.treewalk.EmptyTreeIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.cisco.dft.sdk.vcs.common.AuthorCommit;
-import com.cisco.dft.sdk.vcs.common.AuthorInfo;
-import com.cisco.dft.sdk.vcs.common.AuthorInfoViewBuilder;
-import com.cisco.dft.sdk.vcs.common.BranchInfo;
-import com.cisco.dft.sdk.vcs.common.RepoInfoViewBuilder;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
-import com.cisco.dft.sdk.vcs.util.SortMethod;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 /**
  * Used to get information about different authors who have committed to a remote repo.
@@ -49,7 +41,6 @@ import com.google.common.collect.Maps;
  * @author phwhitin
  *
  */
-// TODO add support for separate branches
 public final class GitRepo {
 	
 	/**Default directory relative to the system temp folder to store the repository locally so metrics can be pulled from it*/
@@ -57,19 +48,15 @@ public final class GitRepo {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(GitRepo.class);
 	
-	private Git theRepo;
-	
 	private final File theDirectory;
 	
 	private final String remote;
 	
+	private final RepoInfo repoInfo = new RepoInfo();
+	
+	private Git theRepo;
+	
 	private UsernamePasswordCredentialsProvider cp;
-	
-	private Map<String, AuthorInfo> authorStatistics = Maps.newHashMap();
-	
-	private Map<String, BranchInfo> repoStatistics = Maps.newHashMap();
-	
-	//private int loggedCommits = 0;
 
 	/**
 	 * Links a remote repo with a local version so information can be pulled from it.
@@ -86,9 +73,7 @@ public final class GitRepo {
 	 * @throws Exception 
 	 */
 	public GitRepo(String url) throws TransportException {
-		
 		this(url, null, true);
-		
 	}
 	
 	/**
@@ -104,17 +89,12 @@ public final class GitRepo {
 	 * @throws Exception 
 	 */
 	public GitRepo(String url, boolean autoSync) throws TransportException {
-		
 		this(url, null, autoSync);
-		
 	}
 	
-	public GitRepo(String url, UsernamePasswordCredentialsProvider cp) throws TransportException {
-		
-		this(url, cp, true);
-		
+	public GitRepo(String url, UsernamePasswordCredentialsProvider cp) throws TransportException {	
+		this(url, cp, true);	
 	}
-	
 	
 	/**
 	 * Links a remote repo with a local version so information can be pulled from it.
@@ -234,7 +214,9 @@ public final class GitRepo {
 	// TODO fix off by one error in author commits
 	private void updateAuthorInfo(DiffFormatter df) throws GitAPIException, IOException {
 		
-		//for (String branch : getBranches()) {
+		for (String branch : getBranches()) {
+			
+			BranchInfo bi = repoInfo.getBranchInfo(branch);
 		
 			Iterable<RevCommit> refs = theRepo.log().call();
 			
@@ -242,15 +224,8 @@ public final class GitRepo {
 			
 			for (RevCommit rc : refs) {
 				
-				String user = rc.getAuthorIdent().getName();
-				AuthorInfo ai;
-				
-				if (!authorStatistics.containsKey(user)) {
-					
-					ai = new AuthorInfo(user);
-					authorStatistics.put(user, ai);
-					
-				} else { ai = authorStatistics.get(user); }
+				String author = rc.getAuthorIdent().getName();
+				AuthorInfo ai = bi.getAuthorInfo(author);
 				
 				if (prev == null) {
 					prev = rc;
@@ -268,15 +243,8 @@ public final class GitRepo {
 			
 			if (prev != null) {
 				
-				String user = prev.getAuthorIdent().getName();
-				AuthorInfo ai;
-				
-				if (!authorStatistics.containsKey(user)) {
-					
-					ai = new AuthorInfo(user, 0, 0);
-					authorStatistics.put(user, ai);
-					
-				} else { ai = authorStatistics.get(user); }
+				String author = prev.getAuthorIdent().getName();
+				AuthorInfo ai = bi.getAuthorInfo(author);
 				
 				int[] results = compareCommits(prev, null, df);
 				
@@ -285,15 +253,16 @@ public final class GitRepo {
 				ai.addCommit(new AuthorCommit((long)prev.getCommitTime(), results[0], results[1]));
 					
 			}
-		//}
+		}
 	}
 	
 	private void updateRepoInfo(DiffFormatter df) throws IOException {
 		
 		for (String branch : getBranches()) {
-				
-			BranchInfo ri = new BranchInfo(branch);
-			repoStatistics.put(branch, ri);
+			
+			BranchInfo ri = repoInfo.getBranchInfo(branch);
+			
+			ri.resetInfo();
 					
 			RevCommit rc = getNewestCommit(branch);
 			
@@ -309,13 +278,13 @@ public final class GitRepo {
 			df.setRepository(theRepo.getRepository());
 			List<DiffEntry> entries = df.scan( oldTreeIter, newTreeIter );
 			
-			ri.incrementFileCount(entries.size());
-			
 			for (DiffEntry entry : entries ) {
 				
 				Language lang = CodeSniffer.detectLanguage(entry.getNewPath());
 				
 				ri.incrementLanguage(lang, 1);
+				
+				ri.incrementFileCount(1);
 				
 				for (HunkHeader hunk : df.toFileHeader(entry).getHunks()) {
 					
@@ -381,31 +350,7 @@ public final class GitRepo {
 		}
 		
 		return new int[]{additions, deletions};
-	}
-	
-	/**
-	 * Gets the statistics that have been logged for the repo.
-	 * The data is stored in memory for efficiency, so data may be inaccurate
-	 * unless {@link GitRepo#sync()} is run.
-	 * <p>
-	 * Because of the potential size of some repositories, this is not updated
-	 * unless the user initializes the repository with autoSync true, or manually
-	 * runs {@link GitRepo#sync()}
-	 * 
-	 * @param sync whether or not the local should sync with remote
-	 * @return a statistics builder for this repo 
-	 */
-	public AuthorInfoViewBuilder getAuthorStatistics() {
-		
-		try {
-			return new AuthorInfoViewBuilder(Lists.newArrayList(authorStatistics.values()), theRepo.getRepository().getBranch());
-		} catch (IOException e) {
-			LOGGER.error("Could not detect the current branch", e);
-			return new AuthorInfoViewBuilder(Lists.newArrayList(authorStatistics.values()));
-		}
-		
-	}
-	
+	}	
 
 	private RevCommit getNewestCommit(String branch) {
 		
@@ -439,8 +384,8 @@ public final class GitRepo {
 	 * 
 	 * @return a copy of the statistics object. changing this will not effect statistics as a whole.
 	 */
-	public RepoInfoViewBuilder getRepoStatistics() {
-		return new RepoInfoViewBuilder(Lists.newArrayList(repoStatistics.values()));
+	public RepoInfo getRepoStatistics() {
+		return repoInfo;
 	}
 	
 	/**
@@ -466,10 +411,6 @@ public final class GitRepo {
 			
 			sync(false);
 		
-	}
-	
-	public String toString() {		
-		return getAuthorStatistics().sort(SortMethod.COMMITS).toString() + getRepoStatistics().toString();		
 	}
 	
 	private File getDirectory(String url) {

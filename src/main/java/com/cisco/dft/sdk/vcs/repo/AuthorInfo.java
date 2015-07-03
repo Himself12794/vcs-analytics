@@ -1,11 +1,9 @@
-package com.cisco.dft.sdk.vcs.common;
+package com.cisco.dft.sdk.vcs.repo;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import com.google.common.collect.Lists;
 
 /**
  * Wrapper class used for author data pulled from the repository.
@@ -14,9 +12,6 @@ import com.google.common.collect.Lists;
  *
  */
 public class AuthorInfo {
-	
-	/**Used when no author of a given name is found*/
-	public static final AuthorInfo NOTFOUND = new AuthorInfo("John Doe");
 	
 	private final String name;
 	
@@ -77,19 +72,11 @@ public class AuthorInfo {
 	
 	public int getAdditions() {return this.additions;}
 	
-	public void incrementAdditions(int x) {this.additions += x;}
+	void incrementAdditions(int x) {this.additions += x;}
 	
 	public int getDeletions() {return this.deletions;}
 	
-	public void incrementDeletions(int x) {this.deletions += x;}
-	
-	public AuthorInfo copy() {
-		
-		AuthorInfo theClone = new AuthorInfo(name, additions, deletions);
-		theClone.commits = Lists.newArrayList(this.commits);
-		return theClone;
-		
-	}
+	void incrementDeletions(int x) {this.deletions += x;}
 	
 	@Override
 	public String toString() {

@@ -9,15 +9,14 @@ import java.util.List;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.junit.Test;
 
-import com.cisco.dft.sdk.vcs.common.AuthorCommit;
-import com.cisco.dft.sdk.vcs.common.AuthorInfo;
-import com.cisco.dft.sdk.vcs.common.AuthorInfoViewBuilder;
-import com.cisco.dft.sdk.vcs.common.BranchInfo;
-import com.cisco.dft.sdk.vcs.git.GitRepo;
+import com.cisco.dft.sdk.vcs.repo.AuthorCommit;
+import com.cisco.dft.sdk.vcs.repo.AuthorInfo;
+import com.cisco.dft.sdk.vcs.repo.AuthorInfoBuilder;
+import com.cisco.dft.sdk.vcs.repo.BranchInfo;
+import com.cisco.dft.sdk.vcs.repo.GitRepo;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
 import com.cisco.dft.sdk.vcs.util.SortMethod;
-
 
 public class RepoUtilsTest {
 
@@ -57,7 +56,7 @@ public class RepoUtilsTest {
 		
 		GitRepo reo = new GitRepo("https://github.com/Himself12794/powersAPI.git");
 		
-		BranchInfo branch = reo.getRepoStatistics().lookupBranch("refs/heads/master");
+		BranchInfo branch = reo.getRepoStatistics().getBranchInfoFor("refs/heads/master");
 		
 		assertTrue(branch.getLangPercent(Language.JAVA) > 0.0F );
 		assertTrue(branch.getLangCount(Language.JAVA) > 0 );
@@ -68,51 +67,41 @@ public class RepoUtilsTest {
 		assertTrue(branch.getLineCount() > 200 );
 		assertTrue(branch.getLangCountMap().containsKey(Language.JAVA) &&  branch.getLangCountMap().containsKey(Language.OTHER));
 		
-		// This is just to satisfy sonar
-		BranchInfo ri = new BranchInfo();
-		
-		ri.incrementFileCount(1);
-		ri.incrementLanguage(Language.HTML, 1);
-		ri.incrementLineCount(1);
-		
-		assertTrue( ri.getFileCount() == 1);
-		assertTrue( ri.getLangCount(Language.HTML) == 1);
-		assertTrue( ri.getLineCount() == 1);
-		
 	}
 	
 	@Test 
 	public void testAuthorStatGathering() throws Exception {
 		
 		GitRepo reo = new GitRepo("https://github.com/pypa/sampleproject.git");
-		AuthorInfo ai = reo.getAuthorStatistics().lookupUser("Marcus Smith");
+		AuthorInfoBuilder aib = reo.getRepoStatistics().getBranchInfoFor("refs/heads/master").getAuthorStatistics();
+		AuthorInfo ai = aib.lookupUser("Marcus Smith");
 		assertTrue(ai.getCommitCount() >= 26);
 		assertTrue(ai.getCommitCount() >= 26);
 		assertFalse(ai.getCommitCount() > 26);
 		assertTrue(ai.getAdditions() >= 106);
 		assertTrue(ai.getDeletions() >= 86);
 		
-		AuthorInfoViewBuilder aivb = reo.getAuthorStatistics().sort(SortMethod.ADDITIONS);
-		assertTrue(aivb.getList().get(0).getAdditions() >= aivb.getList().get(1).getAdditions());
+		aib.sort(SortMethod.ADDITIONS);
+		assertTrue(aib.getList().get(0).getAdditions() >= aib.getList().get(1).getAdditions());
 		
-		aivb.sort(SortMethod.COMMITS);
-		assertTrue(aivb.getList().get(0).getCommitCount() >= aivb.getList().get(1).getCommitCount());
+		aib.sort(SortMethod.COMMITS);
+		assertTrue(aib.getList().get(0).getCommitCount() >= aib.getList().get(1).getCommitCount());
 		
-		aivb.sort(SortMethod.DELETIONS);
-		assertTrue(aivb.getList().get(0).getDeletions() >= aivb.getList().get(1).getDeletions());
+		aib.sort(SortMethod.DELETIONS);
+		assertTrue(aib.getList().get(0).getDeletions() >= aib.getList().get(1).getDeletions());
 		
-		aivb.sort(SortMethod.ADDITIONS);
-		assertTrue(aivb.getList().get(0).getAdditions() >= aivb.getList().get(1).getAdditions());
+		aib.sort(SortMethod.ADDITIONS);
+		assertTrue(aib.getList().get(0).getAdditions() >= aib.getList().get(1).getAdditions());
 		
-		aivb.sort(SortMethod.NAME);
-		assertTrue(aivb.getList().get(0).getName().compareTo(aivb.getList().get(1).getName()) < 0);
+		aib.sort(SortMethod.NAME);
+		assertTrue(aib.getList().get(0).getName().compareTo(aib.getList().get(1).getName()) < 0);
 		
 		List<AuthorCommit> commits = ai.getCommits();
 		
 		assertTrue(commits.get(0).getAdditions() > 5);
 		assertTrue(commits.get(0).getDeletions() > 5);
 		assertTrue(commits.get(0).getTimestamp() > commits.get(1).getTimestamp());
-		assertTrue(reo.getAuthorStatistics().lookupUser("Unknown").getDeletions() == 0);
+		assertTrue(aib.lookupUser("Unknown").getDeletions() == 0);
 		
 	}
 
