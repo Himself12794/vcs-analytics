@@ -3,8 +3,6 @@ package com.cisco.dft.sdk.vcs.git;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -19,13 +17,12 @@ import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.diff.Edit;
 import org.eclipse.jgit.errors.RevisionSyntaxException;
-import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectReader;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.patch.FileHeader;
 import org.eclipse.jgit.patch.HunkHeader;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.treewalk.AbstractTreeIterator;
@@ -36,7 +33,9 @@ import org.slf4j.LoggerFactory;
 
 import com.cisco.dft.sdk.vcs.common.AuthorCommit;
 import com.cisco.dft.sdk.vcs.common.AuthorInfo;
-import com.cisco.dft.sdk.vcs.common.RepoInfo;
+import com.cisco.dft.sdk.vcs.common.AuthorInfoViewBuilder;
+import com.cisco.dft.sdk.vcs.common.BranchInfo;
+import com.cisco.dft.sdk.vcs.common.RepoInfoViewBuilder;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
 import com.cisco.dft.sdk.vcs.util.SortMethod;
@@ -54,7 +53,7 @@ import com.google.common.collect.Maps;
 public final class GitRepo {
 	
 	/**Default directory relative to the system temp folder to store the repository locally so metrics can be pulled from it*/
-	private static final String DEFAULT_TEMP_CLONE_DIRECTORY = "git/";
+	private static final String DEFAULT_TEMP_CLONE_DIRECTORY = "git_analytics/";
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(GitRepo.class);
 	
@@ -68,9 +67,9 @@ public final class GitRepo {
 	
 	private Map<String, AuthorInfo> authorStatistics = Maps.newHashMap();
 	
-	private RepoInfo repoStatistics = new RepoInfo();
+	private Map<String, BranchInfo> repoStatistics = Maps.newHashMap();
 	
-	private int loggedCommits = 0;
+	//private int loggedCommits = 0;
 
 	/**
 	 * Links a remote repo with a local version so information can be pulled from it.
@@ -145,7 +144,7 @@ public final class GitRepo {
 				theRepo = Git.open(theDirectory);
 				
 				DiffFormatter df = new DiffFormatter( new ByteArrayOutputStream() );
-				updateRepoInfo(getNewestCommit(), df);
+				updateRepoInfo(df);
 				if (autoSync) { sync(); }
 				df.close();
 					
@@ -178,6 +177,24 @@ public final class GitRepo {
 		
 	}
 	
+	public List<String> getBranches() {
+		
+		List<String> branches = Lists.newArrayList();
+		
+		try {
+			for (Ref ref : theRepo.branchList().call()) {
+				
+				branches.add(ref.getName());
+				
+			}
+		} catch (GitAPIException e) {
+			LOGGER.error("An error occured, could not set the branch", e);
+		} 
+		
+		return branches;
+		
+	}
+	
 	/**
 	 * Syncs the repository with the remote, updating history if necessary. 
 	 * 
@@ -202,7 +219,7 @@ public final class GitRepo {
 			
 			updateAuthorInfo(df);
 			
-			updateRepoInfo(getNewestCommit(), df);			
+			updateRepoInfo(df);			
 			
 		} catch (Exception e) {
 			
@@ -214,95 +231,99 @@ public final class GitRepo {
 		
 	}
 	
+	// TODO fix off by one error in author commits
 	private void updateAuthorInfo(DiffFormatter df) throws GitAPIException, IOException {
 		
-		theRepo.getRepository().getBranch();
+		//for (String branch : getBranches()) {
 		
-		Iterable<RevCommit> refs = theRepo.log().setSkip(this.loggedCommits).call();
-		
-		RevCommit prev = null;
-		
-		for (RevCommit rc : refs) {
+			Iterable<RevCommit> refs = theRepo.log().call();
 			
-			++this.loggedCommits;
-			String user = rc.getAuthorIdent().getName();
-			AuthorInfo ai;
+			RevCommit prev = null;
 			
-			if (!authorStatistics.containsKey(user)) {
+			for (RevCommit rc : refs) {
 				
-				ai = new AuthorInfo(user);
-				authorStatistics.put(user, ai);
+				String user = rc.getAuthorIdent().getName();
+				AuthorInfo ai;
 				
-			} else { ai = authorStatistics.get(user); }
-			
-			if (prev == null) {
+				if (!authorStatistics.containsKey(user)) {
+					
+					ai = new AuthorInfo(user);
+					authorStatistics.put(user, ai);
+					
+				} else { ai = authorStatistics.get(user); }
+				
+				if (prev == null) {
+					prev = rc;
+					continue;
+				}
+				
+				int[] results = compareCommits(prev, rc, df);
+				
+				ai.incrementAdditions(results[0]);
+				ai.incrementDeletions(results[1]);
+				ai.addCommit(new AuthorCommit((long)rc.getCommitTime(), results[0], results[1]));
+				
 				prev = rc;
-				continue;
 			}
 			
-			int[] results = compareCommits(prev, rc, df);
-			
-			ai.incrementAdditions(results[0]);
-			ai.incrementDeletions(results[1]);
-			ai.addCommit(new AuthorCommit((long)rc.getCommitTime(), results[0], results[1]));
-			
-			prev = rc;
-		}
-		
-		if (prev != null) {
-			
-			String user = prev.getAuthorIdent().getName();
-			AuthorInfo ai;
-			
-			if (!authorStatistics.containsKey(user)) {
+			if (prev != null) {
 				
-				ai = new AuthorInfo(user, 0, 0);
-				authorStatistics.put(user, ai);
+				String user = prev.getAuthorIdent().getName();
+				AuthorInfo ai;
 				
-			} else { ai = authorStatistics.get(user); }
-			
-			int[] results = compareCommits(prev, null, df);
-			
-			ai.incrementAdditions(results[0]);
-			ai.incrementDeletions(results[1]);
-			ai.addCommit(new AuthorCommit((long)prev.getCommitTime(), results[0], results[1]));
+				if (!authorStatistics.containsKey(user)) {
+					
+					ai = new AuthorInfo(user, 0, 0);
+					authorStatistics.put(user, ai);
+					
+				} else { ai = authorStatistics.get(user); }
 				
-		}
-		
+				int[] results = compareCommits(prev, null, df);
+				
+				ai.incrementAdditions(results[0]);
+				ai.incrementDeletions(results[1]);
+				ai.addCommit(new AuthorCommit((long)prev.getCommitTime(), results[0], results[1]));
+					
+			}
+		//}
 	}
 	
-	private void updateRepoInfo(RevCommit rc, DiffFormatter df) throws IOException {
+	private void updateRepoInfo(DiffFormatter df) throws IOException {
 		
-		if (rc == null) { return; }
-		
-		repoStatistics = new RepoInfo(theRepo.getRepository().getBranch());
-		
-		ObjectReader reader = theRepo.getRepository().newObjectReader();
-		
-		EmptyTreeIterator oldTreeIter = new EmptyTreeIterator();
-		oldTreeIter.reset();
-		
-		CanonicalTreeParser newTreeIter = new CanonicalTreeParser();
-		ObjectId newTree = rc.getTree(); 
-		newTreeIter.reset(reader, newTree);
-
-		df.setRepository(theRepo.getRepository());
-		List<DiffEntry> entries = df.scan( oldTreeIter, newTreeIter );
-		
-		repoStatistics.incrementFileCount(entries.size());
-		
-		for (DiffEntry entry : entries ) {
-			
-			Language lang = CodeSniffer.detectLanguage(entry.getNewPath());
-			
-			repoStatistics.incrementLanguage(lang, 1);
-			
-			for (HunkHeader hunk : df.toFileHeader(entry).getHunks()) {
+		for (String branch : getBranches()) {
 				
-				repoStatistics.incrementLineCount(hunk.getNewLineCount());
+			BranchInfo ri = new BranchInfo(branch);
+			repoStatistics.put(branch, ri);
+					
+			RevCommit rc = getNewestCommit(branch);
+			
+			ObjectReader reader = theRepo.getRepository().newObjectReader();
+			
+			EmptyTreeIterator oldTreeIter = new EmptyTreeIterator();
+			oldTreeIter.reset();
+			
+			CanonicalTreeParser newTreeIter = new CanonicalTreeParser();
+			ObjectId newTree = rc.getTree(); 
+			newTreeIter.reset(reader, newTree);
+	
+			df.setRepository(theRepo.getRepository());
+			List<DiffEntry> entries = df.scan( oldTreeIter, newTreeIter );
+			
+			ri.incrementFileCount(entries.size());
+			
+			for (DiffEntry entry : entries ) {
+				
+				Language lang = CodeSniffer.detectLanguage(entry.getNewPath());
+				
+				ri.incrementLanguage(lang, 1);
+				
+				for (HunkHeader hunk : df.toFileHeader(entry).getHunks()) {
+					
+					ri.incrementLineCount(hunk.getNewLineCount());
+					
+				}
 				
 			}
-			
 		}
 	}
 	
@@ -382,18 +403,25 @@ public final class GitRepo {
 			LOGGER.error("Could not detect the current branch", e);
 			return new AuthorInfoViewBuilder(Lists.newArrayList(authorStatistics.values()));
 		}
+		
 	}
+	
 
-	private RevCommit getNewestCommit() {
+	private RevCommit getNewestCommit(String branch) {
 		
 		RevCommit newest = null;
 		try {
 			
-			RevWalk revwalk = new RevWalk(theRepo.getRepository());
-			newest = revwalk.parseCommit(theRepo.getRepository().resolve(Constants.HEAD));
-			revwalk.close();
+			Iterable<RevCommit> revs = theRepo.log().add(theRepo.getRepository().resolve(branch)).call();
 	        
-		} catch (RevisionSyntaxException | IOException e) {
+			for (RevCommit rc : revs) {
+				
+				newest = rc;
+				break;
+				
+			}
+			
+		} catch (RevisionSyntaxException | IOException | GitAPIException e) {
 			LOGGER.error("Could not get most recent commit", e);
 		}
 		
@@ -411,8 +439,8 @@ public final class GitRepo {
 	 * 
 	 * @return a copy of the statistics object. changing this will not effect statistics as a whole.
 	 */
-	public RepoInfo getRepoStatistics() {
-		return repoStatistics.copy();
+	public RepoInfoViewBuilder getRepoStatistics() {
+		return new RepoInfoViewBuilder(Lists.newArrayList(repoStatistics.values()));
 	}
 	
 	/**
@@ -513,113 +541,6 @@ public final class GitRepo {
 	public static boolean doesRemoteRepoExist(String url){	
 
 		return doesRemoteRepoExist(url, null, null);
-	}
-	
-	public static class AuthorInfoViewBuilder {
-		
-		private List<AuthorInfo> infos;
-		
-		private String branch;
-		
-		private AuthorInfoViewBuilder(List<AuthorInfo> infos) {
-			this(infos, "Could not detect");
-		}
-		
-		private AuthorInfoViewBuilder(List<AuthorInfo> infos, String branch) {
-			this.infos = infos;
-			this.branch = branch;
-		}
-		
-		/**
-		 * Sorts the output by the specified method.
-		 * 
-		 * @param method the sort method to use
-		 * @return the builder instance
-		 */
-		public AuthorInfoViewBuilder sort(SortMethod method){
-			
-			switch (method) {
-				case COMMITS:
-					Collections.sort(this.infos, new Comparator<AuthorInfo>() {
-						@Override public int compare(AuthorInfo p1, AuthorInfo p2) { return Long.compare(p2.getCommitCount(), p1.getCommitCount()); } 
-					});
-					break;
-				case ADDITIONS: 
-					Collections.sort(this.infos, new Comparator<AuthorInfo>() {
-						@Override public int compare(AuthorInfo p1, AuthorInfo p2) { return Long.compare(p2.getAdditions(), p1.getAdditions());	}
-					});
-					break;
-				case DELETIONS:
-					Collections.sort(this.infos, new Comparator<AuthorInfo>() {
-						@Override public int compare(AuthorInfo p1, AuthorInfo p2) { return Long.compare(p2.getDeletions(), p1.getDeletions()); }
-					});
-					break;
-				case NAME: 
-					Collections.sort(this.infos, new Comparator<AuthorInfo>() {
-						@Override public int compare(AuthorInfo p1, AuthorInfo p2) { return p1.getName().compareTo(p2.getName()); }
-					});
-					break;
-				case UNSORTED:
-					break;
-				default:
-					break;
-			}
-			
-			return this;
-			
-		}
-		
-		/**
-		 * Looks up information for a specific user. Don't forget to sync to make sure
-		 * that the user information exists.
-		 * <p>
-		 * <b><u>Note</u></b>: it is possible that the same person have committed
-		 * to the repository using different names, so this is not a catch-all.
-		 * 
-		 * @param user
-		 * @return a copy of the AuthorInfo for this user if it exists, or an empty AuthorInfo object.
-		 */
-		public AuthorInfo lookupUser(String user) {
-			for (AuthorInfo ai : infos) {
-				
-				if (ai.getName().equals(user)) { return ai.copy(); }
-				
-			}
-			
-			return new AuthorInfo(user);
-		}
-		
-		/**
-		 * Gets the statistics for the repo.
-		 * 
-		 * @return a list of AuthorInfo stored for the repo
-		 */
-		public List<AuthorInfo> getList() {return this.infos;}
-		
-		/**
-		 * Returns the branch that this specific statistics instance covers.
-		 * 
-		 * @return
-		 */
-		public String getBranch() {
-			
-			return branch;
-			
-		}
-		
-		@Override
-		public String toString() {
-			StringBuilder value = new StringBuilder("Branch: ");
-			value.append(getBranch());
-			value.append("\n");
-			
-			for (AuthorInfo ai : infos) { value.append(ai.toString()); }
-			
-			value.append("\n");
-			
-			return value.toString();
-		}
-		
 	}
 	
 }

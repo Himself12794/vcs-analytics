@@ -83,10 +83,6 @@ public class AuthorInfo {
 	
 	public void incrementDeletions(int x) {this.deletions += x;}
 	
-	public int getAuthorCount() {
-		return getCommits().size();		
-	}
-	
 	public AuthorInfo copy() {
 		
 		AuthorInfo theClone = new AuthorInfo(name, additions, deletions);

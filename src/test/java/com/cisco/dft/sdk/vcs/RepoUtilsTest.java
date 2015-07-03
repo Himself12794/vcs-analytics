@@ -4,14 +4,19 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.util.List;
 
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.junit.Test;
 
-import com.cisco.dft.sdk.vcs.common.RepoInfo;
+import com.cisco.dft.sdk.vcs.common.AuthorCommit;
+import com.cisco.dft.sdk.vcs.common.AuthorInfo;
+import com.cisco.dft.sdk.vcs.common.AuthorInfoViewBuilder;
+import com.cisco.dft.sdk.vcs.common.BranchInfo;
 import com.cisco.dft.sdk.vcs.git.GitRepo;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
+import com.cisco.dft.sdk.vcs.util.SortMethod;
 
 
 public class RepoUtilsTest {
@@ -31,6 +36,7 @@ public class RepoUtilsTest {
 		assertTrue(CodeSniffer.detectLanguage(new File("Test")) == Language.OTHER);
 		assertTrue(CodeSniffer.detectLanguage("Test.java") == Language.JAVA);
 		assertTrue(CodeSniffer.detectLanguage("Test.none") == Language.OTHER);
+		assertTrue(CodeSniffer.detectLanguage("") == Language.OTHER);
 	
 	}
 	
@@ -50,16 +56,20 @@ public class RepoUtilsTest {
 	public void testRepoStatGathering() throws Exception {
 		
 		GitRepo reo = new GitRepo("https://github.com/Himself12794/powersAPI.git");
-		assertTrue(reo.getRepoStatistics().getLangPercent(Language.JAVA) > 0.0F );
-		assertTrue(reo.getRepoStatistics().getLangCount(Language.JAVA) > 0 );
-		assertTrue(reo.getRepoStatistics().getLangPercent(Language.C_SHARP) == 0.0F );
-		assertTrue(reo.getRepoStatistics().getLangCount(Language.C_SHARP) == 0 );
-		assertTrue(reo.getRepoStatistics().getFileCount() > 10 );
-		assertTrue(reo.getRepoStatistics().getLineCount() > 200 );
-		assertTrue(reo.getRepoStatistics().getLangCountMap().containsKey(Language.JAVA) &&  reo.getRepoStatistics().getLangCountMap().containsKey(Language.OTHER));
+		
+		BranchInfo branch = reo.getRepoStatistics().lookupBranch("refs/heads/master");
+		
+		assertTrue(branch.getLangPercent(Language.JAVA) > 0.0F );
+		assertTrue(branch.getLangCount(Language.JAVA) > 0 );
+		assertTrue(branch.getLangPercent(Language.C_SHARP) == 0.0F );
+		assertTrue(branch.getLangCount(Language.C_SHARP) == 0 );
+		assertTrue(branch.getBranch().equals("refs/heads/master") );
+		assertTrue(branch.getFileCount() > 10 );
+		assertTrue(branch.getLineCount() > 200 );
+		assertTrue(branch.getLangCountMap().containsKey(Language.JAVA) &&  branch.getLangCountMap().containsKey(Language.OTHER));
 		
 		// This is just to satisfy sonar
-		RepoInfo ri = new RepoInfo();
+		BranchInfo ri = new BranchInfo();
 		
 		ri.incrementFileCount(1);
 		ri.incrementLanguage(Language.HTML, 1);
@@ -75,10 +85,33 @@ public class RepoUtilsTest {
 	public void testAuthorStatGathering() throws Exception {
 		
 		GitRepo reo = new GitRepo("https://github.com/pypa/sampleproject.git");
-		assertTrue(reo.getAuthorStatistics().lookupUser("Marcus Smith").getCommitCount() >= 26);
-		assertFalse(reo.getAuthorStatistics().lookupUser("Marcus Smith").getCommitCount() > 26);
-		assertTrue(reo.getAuthorStatistics().lookupUser("Marcus Smith").getAdditions() >= 106);
-		assertTrue(reo.getAuthorStatistics().lookupUser("Marcus Smith").getDeletions() >= 86);
+		AuthorInfo ai = reo.getAuthorStatistics().lookupUser("Marcus Smith");
+		assertTrue(ai.getCommitCount() >= 26);
+		assertTrue(ai.getCommitCount() >= 26);
+		assertFalse(ai.getCommitCount() > 26);
+		assertTrue(ai.getAdditions() >= 106);
+		assertTrue(ai.getDeletions() >= 86);
+		
+		AuthorInfoViewBuilder aivb = reo.getAuthorStatistics().sort(SortMethod.ADDITIONS);
+		assertTrue(aivb.getList().get(0).getAdditions() >= aivb.getList().get(1).getAdditions());
+		
+		aivb.sort(SortMethod.COMMITS);
+		assertTrue(aivb.getList().get(0).getCommitCount() >= aivb.getList().get(1).getCommitCount());
+		
+		aivb.sort(SortMethod.DELETIONS);
+		assertTrue(aivb.getList().get(0).getDeletions() >= aivb.getList().get(1).getDeletions());
+		
+		aivb.sort(SortMethod.ADDITIONS);
+		assertTrue(aivb.getList().get(0).getAdditions() >= aivb.getList().get(1).getAdditions());
+		
+		aivb.sort(SortMethod.NAME);
+		assertTrue(aivb.getList().get(0).getName().compareTo(aivb.getList().get(1).getName()) < 0);
+		
+		List<AuthorCommit> commits = ai.getCommits();
+		
+		assertTrue(commits.get(0).getAdditions() > 5);
+		assertTrue(commits.get(0).getDeletions() > 5);
+		assertTrue(commits.get(0).getTimestamp() > commits.get(1).getTimestamp());
 		assertTrue(reo.getAuthorStatistics().lookupUser("Unknown").getDeletions() == 0);
 		
 	}

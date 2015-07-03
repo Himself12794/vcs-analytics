@@ -7,7 +7,7 @@ import java.util.Map.Entry;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
 import com.google.common.collect.Maps;
 
-public class RepoInfo {
+public class BranchInfo {
 
 	private int fileCount;
 	
@@ -17,19 +17,19 @@ public class RepoInfo {
 	
 	private final Map<Language, Integer> languageCount;
 	
-	public RepoInfo() {
+	public BranchInfo() {
 		
 		this(0, 0, "Unknown", new HashMap<Language, Integer>());
 		
 	}
 	
-	public RepoInfo(String branch) {
+	public BranchInfo(String branch) {
 		
 		this(0, 0, branch, new HashMap<Language, Integer>());
 		
 	}
 	
-	public RepoInfo(int fileCount, int lineCount, final String branch, final Map<Language, Integer> languageCount) {
+	public BranchInfo(int fileCount, int lineCount, final String branch, final Map<Language, Integer> languageCount) {
 		
 		this.fileCount = fileCount;
 		
@@ -94,10 +94,10 @@ public class RepoInfo {
 	@Override
 	public String toString() {
 		
-		StringBuilder value = new StringBuilder("File Count: ");
-		value.append(fileCount);
-		value.append("\nBranch: ");
+		StringBuilder value = new StringBuilder("Branch: ");
 		value.append(branch);
+		value.append("\nFile Count: ");
+		value.append(fileCount);
 		value.append("\nLine Count: ");
 		value.append(lineCount);
 		value.append("\nLanguage Stats:\n\n");
@@ -111,8 +111,8 @@ public class RepoInfo {
 		return value.toString();
 	}
 	
-	public RepoInfo copy() {
-		return new RepoInfo(fileCount, lineCount, branch, Maps.newHashMap(languageCount));
+	public BranchInfo copy() {
+		return new BranchInfo(fileCount, lineCount, branch, Maps.newHashMap(languageCount));
 	}
 	
 }
