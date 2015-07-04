@@ -37,7 +37,6 @@ import com.google.common.collect.Lists;
 /**
  * Used to get information about different authors who have committed to a remote repo.
  * 
- * 
  * @author phwhitin
  *
  */
@@ -218,7 +217,7 @@ public final class GitRepo {
 			
 			BranchInfo bi = repoInfo.getBranchInfo(branch);
 		
-			Iterable<RevCommit> refs = theRepo.log().call();
+			Iterable<RevCommit> refs = theRepo.log().add(theRepo.getRepository().resolve(branch)).call();
 			
 			RevCommit prev = null;
 			
@@ -482,6 +481,18 @@ public final class GitRepo {
 	public static boolean doesRemoteRepoExist(String url){	
 
 		return doesRemoteRepoExist(url, null, null);
+	}
+	
+	/**
+	 * Call this when you are done with this repo.
+	 * Only call this when you are done using it, I can't be responsible
+	 * for incorrect information if this is used incorrectly. :)
+	 */
+	public void close() { theRepo.getRepository().close(); }
+	
+	@Override
+	public String toString() {
+		return repoInfo.toString();
 	}
 	
 }

@@ -1,6 +1,12 @@
 package com.cisco.dft.sdk.vcs.repo;
 
-
+/**
+ * Used to store information about a commit made by author.
+ * 
+ * @author phwhitin
+ *
+ */
+// TODO include commit message in this class
 public class AuthorCommit {
 	
 	private final long timestamp;

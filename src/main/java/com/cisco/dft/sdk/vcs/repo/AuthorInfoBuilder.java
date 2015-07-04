@@ -6,6 +6,13 @@ import java.util.List;
 
 import com.cisco.dft.sdk.vcs.util.SortMethod;
 
+/**
+ * Utility object for organizing printed author output and looking
+ * up specific users.
+ * 
+ * @author phwhitin
+ *
+ */
 public class AuthorInfoBuilder {
 	
 	private List<AuthorInfo> infos;
@@ -63,7 +70,9 @@ public class AuthorInfoBuilder {
 	 * that the user information exists.
 	 * <p>
 	 * <b><u>Note</u></b>: it is possible that the same person have committed
-	 * to the repository using different names, so this is not a catch-all.
+	 * to the repository using different names, so this is not a catch-all for 
+	 * a specific person. Make sure you know what name the persons uses to commit
+	 * with before looking for them.
 	 * 
 	 * @param user
 	 * @return a copy of the AuthorInfo for this user if it exists, or an empty AuthorInfo object.
@@ -82,14 +91,14 @@ public class AuthorInfoBuilder {
 	 * 
 	 * @return a list of AuthorInfo stored for the repo
 	 */
-	public List<AuthorInfo> getList() {return this.infos;}
+	public List<AuthorInfo> getList() { return this.infos; }
 	
 	/**
-	 * Returns the branch that this specific statistics instance covers.
+	 * Returns the branch that this information is from.
 	 * 
 	 * @return
 	 */
-	public String getBranch() {
+	public String getBranchName() {
 		
 		return branch;
 		
@@ -97,8 +106,9 @@ public class AuthorInfoBuilder {
 	
 	@Override
 	public String toString() {
+		
 		StringBuilder value = new StringBuilder("Branch: ");
-		value.append(getBranch());
+		value.append(getBranchName());
 		value.append("\n");
 		
 		for (AuthorInfo ai : infos) { value.append(ai.toString()); }
@@ -106,6 +116,7 @@ public class AuthorInfoBuilder {
 		value.append("\n");
 		
 		return value.toString();
+		
 	}
 	
 }

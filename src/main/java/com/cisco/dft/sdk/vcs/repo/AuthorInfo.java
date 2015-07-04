@@ -39,16 +39,14 @@ public class AuthorInfo {
 	 * @param ac
 	 */
 	public void addCommit(AuthorCommit ac) {
-		
-		for (AuthorCommit c : commits) {
-		
-			if (c.getTimestamp() == ac.getTimestamp()) { return; }
-		
-		}
-		
 		this.commits.add(ac);
 	}
 	
+	/**
+	 * Gets a list of commits this author has made.
+	 * 
+	 * @return
+	 */
 	public List<AuthorCommit> getCommits() {
 		
 		Comparator<AuthorCommit> sorter = new Comparator<AuthorCommit>() {
@@ -61,7 +59,7 @@ public class AuthorInfo {
 			
 		};
 		
-		Collections.sort(this.commits,sorter);
+		Collections.sort(this.commits, sorter);
 		
 		return this.commits;
 	}
@@ -89,9 +87,7 @@ public class AuthorInfo {
 		value.append("Deletions: " + deletions + "\n");
 		
 		for (AuthorCommit ac : this.getCommits()) {
-			
 			value.append(" - " + ac.toString() + "\n");
-			
 		}
 		
 		value.append("\n");

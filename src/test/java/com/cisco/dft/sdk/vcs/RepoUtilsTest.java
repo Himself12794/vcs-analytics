@@ -56,13 +56,13 @@ public class RepoUtilsTest {
 		
 		GitRepo reo = new GitRepo("https://github.com/Himself12794/powersAPI.git");
 		
-		BranchInfo branch = reo.getRepoStatistics().getBranchInfoFor("refs/heads/master");
+		BranchInfo branch = reo.getRepoStatistics().getBranchInfoFor("master");
 		
 		assertTrue(branch.getLangPercent(Language.JAVA) > 0.0F );
 		assertTrue(branch.getLangCount(Language.JAVA) > 0 );
 		assertTrue(branch.getLangPercent(Language.C_SHARP) == 0.0F );
 		assertTrue(branch.getLangCount(Language.C_SHARP) == 0 );
-		assertTrue(branch.getBranch().equals("refs/heads/master") );
+		assertTrue(branch.getName().equals("master") );
 		assertTrue(branch.getFileCount() > 10 );
 		assertTrue(branch.getLineCount() > 200 );
 		assertTrue(branch.getLangCountMap().containsKey(Language.JAVA) &&  branch.getLangCountMap().containsKey(Language.OTHER));

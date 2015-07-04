@@ -5,9 +5,16 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
+import com.cisco.dft.sdk.vcs.util.SortMethod;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+/**
+ * Class used to hold information about a specific branch in a repository.
+ * 
+ * @author phwhitin
+ *
+ */
 public class BranchInfo {
 
 	private int fileCount;
@@ -20,15 +27,15 @@ public class BranchInfo {
 	
 	private final Map<String, AuthorInfo> authorInfo;
 	
-	public BranchInfo() {
+	BranchInfo() {
 		this("Unknown");
 	}
 	
-	public BranchInfo(final String branch) {
+	BranchInfo(final String branch) {
 		this(0, 0, branch);
 	}
 	
-	public BranchInfo(int fileCount, int lineCount, final String branch) {
+	private BranchInfo(int fileCount, int lineCount, final String branch) {
 		this(fileCount, lineCount, branch, new HashMap<Language, Integer>(), new HashMap<String, AuthorInfo>());
 	}
 	
@@ -70,8 +77,8 @@ public class BranchInfo {
 	/**
 	 * Get the percentage of the repo that is made up of this language.
 	 * 
-	 * @param lang
-	 * @return
+	 * @param lang lanugage to look for
+	 * @return percentage
 	 */
 	public float getLangPercent(Language lang) {
 		return languageCount.containsKey(lang) ? languageCount.get(lang).floatValue() / fileCount : 0.0F;	
@@ -81,42 +88,49 @@ public class BranchInfo {
 	 * Get number of files that us the specified language.
 	 * 
 	 * @param lang
-	 * @return
+	 * @return count
 	 */
 	public int getLangCount(Language lang) {
 		return languageCount.containsKey(lang) ? languageCount.get(lang) : 0;	
 	}
 	
+	/**
+	 * @return number of files
+	 */
 	public int getFileCount() { return fileCount; }
 	
 	private void setFileCount(int count) { fileCount = count; }
 	
 	void incrementFileCount(int x) { fileCount += x; }
 	
+	/**
+	 * @return lines of code on this branch
+	 */
 	public int getLineCount() { return lineCount; }
 	
 	private void setLineCount(int count) { lineCount = count; }
 
 	void incrementLineCount(int x) { lineCount += x; }
 	
-	public String getBranch() {
-		return branch;
+	/**
+	 * @return the name of this branch
+	 */
+	public String getName() {
+		return branchTrimmer(branch);
 	}
 	
+	/**
+	 * @return the map of language counts for use with iteration
+	 */
 	public Map<Language, Integer> getLangCountMap() {
 		return Maps.newHashMap(languageCount);		
 	}
 	
 	/**
-	 * Gets the statistics that have been logged for the repo.
+	 * Gets the statistics that have been logged for this branch.
 	 * The data is stored in memory for efficiency, so data may be inaccurate
 	 * unless {@link GitRepo#sync()} is run.
-	 * <p>
-	 * Because of the potential size of some repositories, this is not updated
-	 * unless the user initializes the repository with autoSync true, or manually
-	 * runs {@link GitRepo#sync()}
 	 * 
-	 * @param sync whether or not the local should sync with remote
 	 * @return a statistics builder for this repo 
 	 */
 	public AuthorInfoBuilder getAuthorStatistics() {
@@ -155,7 +169,12 @@ public class BranchInfo {
 			
 			value.append(" " + entry.getKey().name() + ": \n\tcount: " + entry.getValue() + "\n\tpercentage: " + String.format("%.1f", (entry.getValue().floatValue() * 100)/ fileCount) + "%");
 			value.append("\n\n");
+			
 		}
+		
+		value.append("\n");
+		value.append(getAuthorStatistics().sort(SortMethod.COMMITS).toString());
+		
 		
 		return value.toString();
 	}
@@ -168,6 +187,26 @@ public class BranchInfo {
 	 */
 	public static String branchTrimmer(String branch) {
 		return branch.replace("refs/heads/", "");
+	}
+	
+	/**
+	 * Adds the "refs/heads/" prefix to branch names.
+	 * 
+	 * @param branch
+	 * @return the fresh branch name
+	 */
+	public static String branchAdder(String branch) {
+		return "refs/heads/" + branch;
+	}
+	
+	static String branchNameResolver(String branch) {
+		
+		String value = branch;
+		
+		if (!branch.contains("refs/heads/")) { value = branchAdder(branch); }
+		
+		return value;
+		
 	}
 	
 }

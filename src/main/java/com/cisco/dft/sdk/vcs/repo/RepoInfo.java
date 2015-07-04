@@ -17,7 +17,9 @@ public class RepoInfo {
 	 */
 	public BranchInfo getBranchInfoFor(String branch) {
 		
-		if (branches.containsKey(branch)) { return branches.get(branch); }
+		String resolved = BranchInfo.branchNameResolver(branch);
+		
+		if (branches.containsKey(resolved)) { return branches.get(resolved); }
 		else { return new BranchInfo(); }
 		
 	}
@@ -45,6 +47,19 @@ public class RepoInfo {
 	 */
 	public boolean branchExists(String branch) {
 		return branches.containsKey(branch);
+	}
+	
+	@Override
+	public String toString() {
+		
+		StringBuilder value = new StringBuilder();
+		
+		for (BranchInfo bi : branches.values()) {
+			value.append(bi.toString());
+		}
+		
+		return value.toString();
+		
 	}
 
 }
