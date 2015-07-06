@@ -100,7 +100,7 @@ public class AuthorInfoBuilder {
 	 */
 	public String getBranchName() {
 		
-		return branch;
+		return BranchInfo.branchTrimmer(branch);
 		
 	}
 	

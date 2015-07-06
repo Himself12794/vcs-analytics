@@ -65,7 +65,7 @@ public class RepoUtilsTest {
 		assertTrue(branch.getName().equals("master") );
 		assertTrue(branch.getFileCount() > 10 );
 		assertTrue(branch.getLineCount() > 200 );
-		assertTrue(branch.getLangCountMap().containsKey(Language.JAVA) &&  branch.getLangCountMap().containsKey(Language.OTHER));
+		assertTrue(branch.getLangCountMap().containsKey(Language.JAVA) && branch.getLangCountMap().containsKey(Language.OTHER));
 		
 	}
 	

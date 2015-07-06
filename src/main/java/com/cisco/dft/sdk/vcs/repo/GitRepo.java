@@ -120,16 +120,13 @@ public final class GitRepo {
 		if (theDirectory.exists()) {
 			
 			try {
-				theRepo = Git.open(theDirectory);
 				
-				DiffFormatter df = new DiffFormatter( new ByteArrayOutputStream() );
-				updateRepoInfo(df);
+				theRepo = Git.open(theDirectory);
 				if (autoSync) { sync(); }
-				df.close();
 					
 			} catch (Exception e) {
 				
-				LOGGER.info("Repo not found in Temp, attempting to clone", e);
+				LOGGER.info("Temporary data missing or corrupt, attempting to re-clone.", e);
 				
 				try {
 					FileUtils.deleteDirectory(theDirectory);
@@ -182,6 +179,7 @@ public final class GitRepo {
 	public void sync() {
 		sync(true);
 	}
+	
 	private void sync(boolean fetch) {
 		
 		DiffFormatter df = new DiffFormatter( new ByteArrayOutputStream() );
@@ -217,11 +215,13 @@ public final class GitRepo {
 			
 			BranchInfo bi = repoInfo.getBranchInfo(branch);
 		
-			Iterable<RevCommit> refs = theRepo.log().add(theRepo.getRepository().resolve(branch)).call();
+			Iterable<RevCommit> refs = theRepo.log().add(theRepo.getRepository().resolve(branch)).setSkip(bi.getMostRecentLoggedCommit()).call();
 			
 			RevCommit prev = null;
 			
 			for (RevCommit rc : refs) {
+				
+				bi.incrementMostRecentCommit(1);
 				
 				String author = rc.getAuthorIdent().getName();
 				AuthorInfo ai = bi.getAuthorInfo(author);

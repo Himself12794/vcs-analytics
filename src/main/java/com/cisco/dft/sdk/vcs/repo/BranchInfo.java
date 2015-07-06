@@ -21,6 +21,8 @@ public class BranchInfo {
 	
 	private int lineCount;
 	
+	private int mostRecentLoggedCommit;
+	
 	private final String branch;
 	
 	private final Map<Language, Integer> languageCount;
@@ -154,11 +156,23 @@ public class BranchInfo {
 		
 	}
 	
+	void setMostRecentCommit(int objectId) {
+		this.mostRecentLoggedCommit = objectId;
+	}
+	
+	void incrementMostRecentCommit(int amount) {
+		this.mostRecentLoggedCommit += amount;
+	}
+	
+	int getMostRecentLoggedCommit() {
+		return this.mostRecentLoggedCommit;
+	}
+	
 	@Override
 	public String toString() {
 		
 		StringBuilder value = new StringBuilder("Branch: ");
-		value.append(branch);
+		value.append(getName());
 		value.append("\nFile Count: ");
 		value.append(fileCount);
 		value.append("\nLine Count: ");
