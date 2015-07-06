@@ -1,5 +1,6 @@
 package com.cisco.dft.sdk.vcs.repo;
 
+import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.Maps;
@@ -49,14 +50,46 @@ public class RepoInfo {
 		return branches.containsKey(branch);
 	}
 	
+	/**
+	 * Removes data for branches that no longer exist.
+	 * 
+	 * @param branches
+	 */
+	void resolveBranchInfo(List<String> branches) {
+		
+		for (String branch : this.branches.keySet()) {
+			
+			if (!branches.contains(branch)) {
+				this.branches.remove(branch);
+			}
+			
+		}
+		
+	}
+	
 	@Override
 	public String toString() {
 		
 		StringBuilder value = new StringBuilder();
 		
+		value.append("++++++++++++++++++++++++++++++++++++\n");
+		value.append("Time of report: ");
+		value.append(System.currentTimeMillis());
+		value.append("\n");
+		value.append("Branches in this report: ");
+		
+		for (String branch : this.branches.keySet()) {
+			value.append(BranchInfo.branchTrimmer(branch));
+			value.append(", ");
+		}
+		
+		value.append("\n------------------------------------\n");
+		
 		for (BranchInfo bi : branches.values()) {
 			value.append(bi.toString());
 		}
+		
+		value.append("====================================\n");
 		
 		return value.toString();
 		

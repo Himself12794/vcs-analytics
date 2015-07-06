@@ -8,7 +8,6 @@ import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.LsRemoteCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
@@ -16,13 +15,13 @@ import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.diff.Edit;
 import org.eclipse.jgit.errors.RevisionSyntaxException;
+import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.patch.FileHeader;
 import org.eclipse.jgit.patch.HunkHeader;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.treewalk.AbstractTreeIterator;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
@@ -158,11 +157,11 @@ public final class GitRepo {
 		List<String> branches = Lists.newArrayList();
 		
 		try {
-			for (Ref ref : theRepo.branchList().call()) {
-				
-				branches.add(ref.getName());
-				
+			
+			for (Ref ref : theRepo.lsRemote().call()) {
+				if (!ref.getName().equals(Constants.HEAD) && ref.getName().contains("refs/heads/")) { branches.add(ref.getName()); }
 			}
+
 		} catch (GitAPIException e) {
 			LOGGER.error("An error occured, could not set the branch", e);
 		} 
@@ -188,7 +187,7 @@ public final class GitRepo {
 			
 			if (fetch) {
 				try {
-					theRepo.fetch().setRemote(this.remote).call();
+					theRepo.fetch().call();
 				} catch (Exception e) {
 					LOGGER.info("Either local is up to date, or there was an error in connection to remote", e);
 				}
@@ -196,7 +195,9 @@ public final class GitRepo {
 			
 			updateAuthorInfo(df);
 			
-			updateRepoInfo(df);			
+			updateRepoInfo(df);
+			
+			repoInfo.resolveBranchInfo(getBranches());
 			
 		} catch (Exception e) {
 			
@@ -349,7 +350,7 @@ public final class GitRepo {
 		}
 		
 		return new int[]{additions, deletions};
-	}	
+	}
 
 	private RevCommit getNewestCommit(String branch) {
 		
@@ -430,57 +431,6 @@ public final class GitRepo {
 	 */
 	private static String urlScrubber(String url) {
 		return url.startsWith("http://") ? url.replace("http://", "https://") : url;
-	}
-	
-	/**
-	 * Test a remote uri to see if it contains a git repository by trying to clone it.
-	 * <p>
-	 * Returns false if the repository is not a git repository, or valid credentials are
-	 * not provided.
-	 * 
-	 * @param url
-	 * @param username username to try to connect with
-	 * @param password password to use in trying to establish connection
-	 * @return
-	 */
-	public static boolean doesRemoteRepoExist(String url, String username, String password) {
-		
-		boolean exists = false;
-		
-		try {
-			
-			CredentialsProvider cp = null;
-			
-			if (!(username == null && password == null)) { cp = new UsernamePasswordCredentialsProvider(username, password); }
-			
-			LsRemoteCommand com = Git.lsRemoteRepository()
-					.setRemote(urlScrubber(url));
-			
-			if (cp != null) { com.setCredentialsProvider(cp); }
-			
-			com.call();
-			
-			exists = true;
-		} catch (Exception e) {
-			
-			LOGGER.info("Remote repo does not exist", e);
-			
-		} 
-		
-		return exists;
-	}
-	
-	/**
-	 * Test if a remote uri is a valid git repository.
-	 * <p>
-	 * Assumes no credentials are needed to access it.
-	 * 
-	 * @param url
-	 * @return
-	 */
-	public static boolean doesRemoteRepoExist(String url){	
-
-		return doesRemoteRepoExist(url, null, null);
 	}
 	
 	/**

@@ -21,14 +21,6 @@ import com.cisco.dft.sdk.vcs.util.SortMethod;
 public class RepoUtilsTest {
 
 	@Test
-	public void testURIs() throws Exception {
-		
-		assertTrue(GitRepo.doesRemoteRepoExist("https://github.com/twbs/bootstrap.git", "username", "password"));
-		assertFalse(GitRepo.doesRemoteRepoExist("http://facebook.com"));
-	
-	}
-
-	@Test
 	public void testCodeSniffer() throws Exception {
 		
 		assertTrue(CodeSniffer.detectLanguage(new File("Test.java")) == Language.JAVA);
@@ -73,9 +65,8 @@ public class RepoUtilsTest {
 	public void testAuthorStatGathering() throws Exception {
 		
 		GitRepo reo = new GitRepo("https://github.com/pypa/sampleproject.git");
-		AuthorInfoBuilder aib = reo.getRepoStatistics().getBranchInfoFor("refs/heads/master").getAuthorStatistics();
+		AuthorInfoBuilder aib = reo.getRepoStatistics().getBranchInfoFor("master").getAuthorStatistics();
 		AuthorInfo ai = aib.lookupUser("Marcus Smith");
-		assertTrue(ai.getCommitCount() >= 26);
 		assertTrue(ai.getCommitCount() >= 26);
 		assertFalse(ai.getCommitCount() > 26);
 		assertTrue(ai.getAdditions() >= 106);
