@@ -37,7 +37,7 @@ public class RepoUtilsTest {
 		GitRepo repo = new GitRepo("https://github.com/pypa/sampleproject.git");
 		repo = new GitRepo("https://github.com/pypa/sampleproject.git", false);
 		repo = new GitRepo("https://github.com/pypa/sampleproject.git", new UsernamePasswordCredentialsProvider("username", "password"));
-		repo = new GitRepo("https://github.com/pypa/sampleproject.git", new UsernamePasswordCredentialsProvider("username", "password"), false);
+		repo = new GitRepo("https://github.com/pypa/sampleproject.git", new UsernamePasswordCredentialsProvider("username", "password"), false, null);
 		
 		repo.sync();
 		System.out.println(repo);		

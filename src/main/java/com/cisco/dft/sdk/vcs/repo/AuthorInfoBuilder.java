@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import com.cisco.dft.sdk.vcs.util.SortMethod;
+import com.google.common.collect.Lists;
 
 /**
  * Utility object for organizing printed author output and looking
@@ -91,7 +92,7 @@ public class AuthorInfoBuilder {
 	 * 
 	 * @return a list of AuthorInfo stored for the repo
 	 */
-	public List<AuthorInfo> getList() { return this.infos; }
+	public List<AuthorInfo> getList() { return Lists.newArrayList(this.infos); }
 	
 	/**
 	 * Returns the branch that this information is from.
@@ -112,8 +113,6 @@ public class AuthorInfoBuilder {
 		value.append("\n");
 		
 		for (AuthorInfo ai : infos) { value.append(ai.toString()); }
-		
-		value.append("\n");
 		
 		return value.toString();
 		

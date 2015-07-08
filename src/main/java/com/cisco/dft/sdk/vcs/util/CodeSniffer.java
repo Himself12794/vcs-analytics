@@ -12,7 +12,7 @@ import com.google.common.collect.Maps;
  * @author phwhitin
  *
  */
-public class CodeSniffer {
+public final class CodeSniffer {
 	
 	private static final Map<String, Language> FILE_ASSOCIATIONS = Maps.newHashMap();
 	
@@ -59,7 +59,7 @@ public class CodeSniffer {
 	
 	/**
 	 * This is to try to determine which languages provide the bulk of an application, or are
-	 * just there for config and structure.
+	 * just there for config and structure.<p>
 	 * This was implemented to try to weed out files that are necessary for an application, but
 	 * aren't generally part of the core source code. 
 	 * 

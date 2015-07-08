@@ -282,6 +282,12 @@ public class BranchInfo {
 		return "refs/heads/" + branch;
 	}
 	
+	/**
+	 * Ensures the string is prefixed by "refs/heads/"
+	 * 
+	 * @param branch
+	 * @return
+	 */
 	static String branchNameResolver(String branch) {
 		
 		String value = branch;

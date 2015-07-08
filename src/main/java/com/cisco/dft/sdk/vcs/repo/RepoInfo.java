@@ -1,7 +1,10 @@
 package com.cisco.dft.sdk.vcs.repo;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 import com.google.common.collect.Maps;
 
@@ -70,11 +73,16 @@ public class RepoInfo {
 	@Override
 	public String toString() {
 		
+		Date date = new Date(System.currentTimeMillis()); 
+		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss"); 
+		sdf.setTimeZone(TimeZone.getTimeZone("GMT-4")); 
+		String formattedDate = sdf.format(date);
+		
 		StringBuilder value = new StringBuilder();
 		
 		value.append("++++++++++++++++++++++++++++++++++++\n");
 		value.append("Time of report: ");
-		value.append(System.currentTimeMillis());
+		value.append(formattedDate);
 		value.append("\n");
 		value.append("Branches in this report: ");
 		
