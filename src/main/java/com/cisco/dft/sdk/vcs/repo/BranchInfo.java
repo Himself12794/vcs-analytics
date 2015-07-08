@@ -21,6 +21,8 @@ public class BranchInfo {
 	
 	private int lineCount;
 	
+	private int commitCount;
+	
 	private int mostRecentLoggedCommit;
 	
 	private final String branch;
@@ -74,6 +76,44 @@ public class BranchInfo {
 		setFileCount(0);
 		setLineCount(0);
 		
+	}
+	
+	void incrementCommitCount(int x) {
+		
+		commitCount += x;
+		
+	}
+	
+	public int getCommitCount() { return commitCount; }
+	
+	/**
+	 * Gets the number of files for that are registered as {@code LangType.PRIMARY}.
+	 * <p>
+	 * Refer to {@link CodeSniffer.Language} to see which is considered which.
+	 * 
+	 * @return count
+	 */
+	public int getPrimaryLangCount() {
+		int count = 0;
+		for (Entry<Language, Integer> langEntry : languageCount.entrySet()) {
+			if (langEntry.getKey().isPrimary()) { count += langEntry.getValue(); }
+		}
+		return count;
+	}
+	
+	/**
+	 * Gets the number of files for that are registered as {@code LangType.SECONDARY}.
+	 * <p>
+	 * Refer to {@link CodeSniffer.Language} to see which is considered which.
+	 * 
+	 * @return count
+	 */
+	public int getSecondaryLangCount() {
+		int count = 0;
+		for (Entry<Language, Integer> langEntry : languageCount.entrySet()) {
+			if (langEntry.getKey().isSecondary()) { count += langEntry.getValue(); }
+		}
+		return count;
 	}
 	
 	/**
@@ -175,16 +215,45 @@ public class BranchInfo {
 		value.append(getName());
 		value.append("\nFile Count: ");
 		value.append(fileCount);
+		value.append("\nTotal Commits: ");
+		value.append(getCommitCount());
 		value.append("\nLine Count: ");
 		value.append(lineCount);
 		value.append("\nLanguage Stats:\n\n");
+
+		final int primaryCount = this.getPrimaryLangCount();
+		StringBuilder primary = new StringBuilder("\tPrimary Language Stats:\n");
+		
+		primary.append("\tCount: ");
+		primary.append(primaryCount);
+		primary.append("\n");
+		
+		final int secondaryCount = this.getSecondaryLangCount();
+		StringBuilder secondary = new StringBuilder("\tSecondary Language Stats:\n");
+		
+		secondary.append("\tCount: ");
+		secondary.append(secondaryCount);
+		secondary.append("\n");
 		
 		for (Entry<Language, Integer> entry : this.languageCount.entrySet()) {
 			
-			value.append(" " + entry.getKey().name() + ": \n\tcount: " + entry.getValue() + "\n\tpercentage: " + String.format("%.1f", (entry.getValue().floatValue() * 100)/ fileCount) + "%");
-			value.append("\n\n");
+			if (entry.getKey().isPrimary()) {
+				
+				primary.append("\t  " + entry.getKey().name() + ": \n\t\tcount: " + entry.getValue() + "\n\t\tpercentage: " + String.format("%.1f", (entry.getValue().floatValue() * 100)/ primaryCount) + "%");
+				primary.append("\n");
+				
+			} else {
+				
+				secondary.append("\t  " + entry.getKey().name() + ": \n\t\tcount: " + entry.getValue() + "\n\t\tpercentage: " + String.format("%.1f", (entry.getValue().floatValue() * 100)/ secondaryCount) + "%");
+				secondary.append("\n");
+				
+			}
 			
 		}
+		
+		value.append(primary.toString());
+		value.append("\n");
+		value.append(secondary.toString());
 		
 		value.append("\n");
 		value.append(getAuthorStatistics().sort(SortMethod.COMMITS).toString());

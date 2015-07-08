@@ -34,13 +34,13 @@ public class RepoUtilsTest {
 	@Test
 	public void testRepoInitialization() throws Exception {
 		
-		GitRepo reo = new GitRepo("https://github.com/pypa/sampleproject.git");
-		reo = new GitRepo("https://github.com/pypa/sampleproject.git", false);
-		reo = new GitRepo("https://github.com/pypa/sampleproject.git", new UsernamePasswordCredentialsProvider("username", "password"));
-		reo = new GitRepo("https://github.com/pypa/sampleproject.git", new UsernamePasswordCredentialsProvider("username", "password"), false);
+		GitRepo repo = new GitRepo("https://github.com/pypa/sampleproject.git");
+		repo = new GitRepo("https://github.com/pypa/sampleproject.git", false);
+		repo = new GitRepo("https://github.com/pypa/sampleproject.git", new UsernamePasswordCredentialsProvider("username", "password"));
+		repo = new GitRepo("https://github.com/pypa/sampleproject.git", new UsernamePasswordCredentialsProvider("username", "password"), false);
 		
-		reo.sync();
-		System.out.println(reo);		
+		repo.sync();
+		System.out.println(repo);		
 	}
 	
 	@Test 

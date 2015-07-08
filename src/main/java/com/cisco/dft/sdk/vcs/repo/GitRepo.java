@@ -209,7 +209,6 @@ public final class GitRepo {
 		
 	}
 	
-	// TODO fix off by one error in author commits
 	private void updateAuthorInfo(DiffFormatter df) throws GitAPIException, IOException {
 		
 		for (String branch : getBranches()) {
@@ -238,6 +237,8 @@ public final class GitRepo {
 				ai.incrementDeletions(results[1]);
 				ai.addCommit(new AuthorCommit((long)rc.getCommitTime(), results[0], results[1]));
 				
+				bi.incrementCommitCount(1);
+				
 				prev = rc;
 			}
 			
@@ -251,6 +252,8 @@ public final class GitRepo {
 				ai.incrementAdditions(results[0]);
 				ai.incrementDeletions(results[1]);
 				ai.addCommit(new AuthorCommit((long)prev.getCommitTime(), results[0], results[1]));
+				
+				bi.incrementCommitCount(1);
 					
 			}
 		}
