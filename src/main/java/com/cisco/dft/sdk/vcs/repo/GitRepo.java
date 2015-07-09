@@ -109,7 +109,7 @@ public final class GitRepo {
 	 * <p>
 	 * The repo is cloned bare to only include necessary information.
 	 * 
-	 * @param url
+	 * @param scrubbedUrl
 	 *            the url to grab the data from
 	 * @param cp
 	 *            authentication needed to access private repos, not necessary
@@ -121,9 +121,9 @@ public final class GitRepo {
 	public GitRepo(String url, UsernamePasswordCredentialsProvider cp,
 			boolean generateStatistics, File directory) throws TransportException {
 
-		url = urlScrubber(url);
+		String scrubbedUrl = urlScrubber(url);
 
-		this.theDirectory = getDirectory(url, directory);
+		this.theDirectory = getDirectory(scrubbedUrl, directory);
 
 		this.cp = cp != null ? cp : new UsernamePasswordCredentialsProvider("username", "password");
 
@@ -151,7 +151,7 @@ public final class GitRepo {
 				}
 
 				try {
-					createRepo(url);
+					createRepo(scrubbedUrl);
 				} catch (Exception e1) {
 					throw new TransportException("Could not connect to local or remote repository.", e1);
 				}
@@ -160,7 +160,7 @@ public final class GitRepo {
 		} else {
 
 			try {
-				createRepo(url);
+				createRepo(scrubbedUrl);
 			} catch (Exception e1) {
 				throw new TransportException("Could not connect to local or remote repository.", e1);
 			}
@@ -230,16 +230,16 @@ public final class GitRepo {
 	/**
 	 * Synchronizes with remote. Only updates info about the specified branch.
 	 * 
-	 * @param branch
+	 * @param branchResolved
 	 *            the branch about which to update info
 	 * @param generateStatistics
 	 *            whether or not to update info
 	 */
 	public void sync(String branch, boolean generateStatistics) {
 
-		branch = BranchInfo.branchNameResolver(branch);
+		String branchResolved = BranchInfo.branchNameResolver(branch);
 
-		if (!getBranches().contains(branch)) { return; }
+		if (!getBranches().contains(branchResolved)) { return; }
 
 		DiffFormatter df = new DiffFormatter(new ByteArrayOutputStream());
 
@@ -250,8 +250,8 @@ public final class GitRepo {
 
 			if (!flag || generateStatistics) {
 
-				updateAuthorInfo(branch, df);
-				updateRepoInfo(branch, df);
+				updateAuthorInfo(branchResolved, df);
+				updateRepoInfo(branchResolved, df);
 				repoInfo.resolveBranchInfo(getBranches());
 
 			}
