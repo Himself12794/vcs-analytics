@@ -6,7 +6,6 @@ package com.cisco.dft.sdk.vcs.repo;
  * @author phwhitin
  *
  */
-// TODO perhaps find a way to see total lines changed
 public class AuthorCommit {
 
 	private final long timestamp;
@@ -17,15 +16,19 @@ public class AuthorCommit {
 
 	private final int deletions;
 
+	private final int totalChange;
+
 	private final String message;
 
 	public AuthorCommit(final long timestamp, final int changedFiles,
-			final int additions, final int deletions, final String message) {
+			final int additions, final int deletions, final int totalChange,
+			final String message) {
 
 		this.timestamp = timestamp;
 		this.changedFiles = changedFiles;
 		this.additions = additions;
 		this.deletions = deletions;
+		this.totalChange = totalChange;
 		this.message = message;
 
 	}
@@ -45,6 +48,10 @@ public class AuthorCommit {
 	public int getDeletions() {
 		return deletions;
 	}
+	
+	public int getTotalChange() {
+		return totalChange;
+	}
 
 	public String getMessage() {
 		return message;
@@ -57,6 +64,7 @@ public class AuthorCommit {
 		value += ", changed files: " + changedFiles;
 		value += ", additions: " + additions;
 		value += ", deletions: " + deletions;
+		value += ", total line change: " + totalChange;
 		value += ", message: " + message;
 
 		return value;

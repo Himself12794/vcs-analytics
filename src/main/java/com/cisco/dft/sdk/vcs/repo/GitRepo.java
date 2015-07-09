@@ -21,6 +21,8 @@ import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.patch.FileHeader;
 import org.eclipse.jgit.patch.HunkHeader;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevSort;
+import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.treewalk.AbstractTreeIterator;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
@@ -39,7 +41,6 @@ import com.google.common.collect.Lists;
  * @author phwhitin
  *
  */
-// TODO make directory configurable
 public final class GitRepo {
 
 	/**
@@ -76,7 +77,7 @@ public final class GitRepo {
 	 * @throws Exception
 	 */
 	public GitRepo(String url) throws TransportException {
-		this(url, null, true, null);
+		this(url, true);
 	}
 
 	/**
@@ -125,8 +126,7 @@ public final class GitRepo {
 
 		this.remote = urlScrubber(url);
 
-		this.theDirectory = directory == null ? getDirectory(remote) : (directory
-				.exists() && directory.isDirectory() ? directory : getDirectory(remote));
+		this.theDirectory = getDirectory(remote, directory);
 
 		this.cp = cp != null ? cp : new UsernamePasswordCredentialsProvider("username", "password");
 
@@ -198,7 +198,6 @@ public final class GitRepo {
 	 * 
 	 * @return
 	 */
-	// TODO make branch specific
 	public void sync() {
 		sync(true);
 	}
@@ -232,9 +231,7 @@ public final class GitRepo {
 				try {
 					theRepo.fetch().setCredentialsProvider(cp).call();
 				} catch (Exception e) {
-					LOGGER.info(
-							"There was an error in connection to remote",
-							e);
+					LOGGER.info("There was an error in connection to remote", e);
 				}
 			}
 
@@ -258,29 +255,32 @@ public final class GitRepo {
 
 		BranchInfo bi = repoInfo.getBranchInfo(branch);
 
-		Iterable<RevCommit> refs = theRepo.log()
-				.add(theRepo.getRepository().resolve(branch))
-				.setSkip(bi.getMostRecentLoggedCommit()).call();
+		RevWalk walk = new RevWalk(theRepo.getRepository());
+		ObjectId from = theRepo.getRepository().resolve(branch);
+		walk.sort(RevSort.REVERSE);
+
+		if (bi.getMostRecentLoggedCommit() != null) {
+			ObjectId to = theRepo.getRepository().resolve(
+					bi.getMostRecentLoggedCommit());
+			walk.markUninteresting(walk.parseCommit(to));
+
+		}
+
+		walk.markStart(walk.parseCommit(from));
 
 		RevCommit prev = null;
 
-		for (RevCommit rc : refs) {
-
-			bi.incrementMostRecentCommit(1);
+		for (RevCommit rc : walk) {
 
 			String author = rc.getAuthorIdent().getName();
 			AuthorInfo ai = bi.getAuthorInfo(author);
-
-			if (prev == null) {
-				prev = rc;
-				continue;
-			}
 
 			int[] results = compareCommits(prev, rc, df);
 
 			ai.incrementAdditions(results[0]);
 			ai.incrementDeletions(results[1]);
-			ai.addCommit(new AuthorCommit((long) rc.getCommitTime(), results[2], results[0], results[1], rc
+			ai.incrementTotalChange(results[3]);
+			ai.addCommit(new AuthorCommit((long) rc.getCommitTime(), results[2], results[0], results[1], results[3], rc
 					.getShortMessage()));
 
 			bi.incrementCommitCount(1);
@@ -289,20 +289,12 @@ public final class GitRepo {
 		}
 
 		if (prev != null) {
-
-			String author = prev.getAuthorIdent().getName();
-			AuthorInfo ai = bi.getAuthorInfo(author);
-
-			int[] results = compareCommits(prev, null, df);
-
-			ai.incrementAdditions(results[0]);
-			ai.incrementDeletions(results[1]);
-			ai.addCommit(new AuthorCommit((long) prev.getCommitTime(), results[2], results[0], results[1], prev
-					.getShortMessage()));
-
-			bi.incrementCommitCount(1);
-
+			bi.setMostRecentCommit(prev.getId().name());
 		}
+		
+		walk.close();
+		walk.dispose();
+
 	}
 
 	private void updateRepoInfo(String branch, DiffFormatter df) throws IOException {
@@ -377,29 +369,38 @@ public final class GitRepo {
 		df.setRepository(theRepo.getRepository());
 		List<DiffEntry> entries = df.scan(oldTreeIter, newTreeIter);
 
-		int additions = 0;
-
 		int deletions = 0;
 
+		int additions = 0;
+
 		int changedFiles = 0;
+
+		int totalChange = 0;
 
 		for (DiffEntry entry : entries) {
 
 			changedFiles += 1;
 			FileHeader fh = df.toFileHeader(entry);
-
+			
 			for (HunkHeader hunk : fh.getHunks()) {
 
 				for (Edit edit : hunk.toEditList()) {
 
-					additions += (edit.getEndA() - edit.getBeginA());
-					deletions += (edit.getEndB() - edit.getBeginB());
+					final int deletionLines = (edit.getEndA() - edit
+							.getBeginA());
+					final int additionLines = (edit.getEndB() - edit
+							.getBeginB());
+
+					deletions += deletionLines;
+					additions += additionLines;
+
+					totalChange += (additionLines - deletionLines);
 
 				}
 			}
 		}
 
-		return new int[] { additions, deletions, changedFiles };
+		return new int[] { additions, deletions, changedFiles, totalChange };
 	}
 
 	private RevCommit getNewestCommit(String branch) {
@@ -431,7 +432,7 @@ public final class GitRepo {
 	 * <li>Number of files</li>
 	 * <li>Language statistics</li>
 	 * </ol>
-	 * Currently, this only get information about the master branch.
+	 * Note: Merge requests do not seem to show any additions or deletions.
 	 * 
 	 * @return a copy of the statistics object. changing this will not effect
 	 *         statistics as a whole.
@@ -459,7 +460,9 @@ public final class GitRepo {
 
 	}
 
-	private File getDirectory(String url) {
+	private File getDirectory(String url, File alternate) {
+
+		if (alternate != null && alternate.exists() && alternate.isDirectory()) { return alternate; }
 
 		UUID name = UUID.nameUUIDFromBytes(url.getBytes());
 		return new File(FileUtils.getTempDirectory(), GitRepo.DEFAULT_TEMP_CLONE_DIRECTORY

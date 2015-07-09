@@ -21,6 +21,8 @@ public class AuthorInfo {
 	
 	private int deletions;
 	
+	private int totalChange;
+	
 	private List<AuthorCommit> commits = new ArrayList<AuthorCommit>();
 	
 	public AuthorInfo(final String name) {
@@ -78,6 +80,10 @@ public class AuthorInfo {
 	
 	void incrementDeletions(int x) {this.deletions += x;}
 	
+	public int getTotalChange() {return this.totalChange;}
+	
+	void incrementTotalChange(int x) {this.totalChange += x;}
+	
 	@Override
 	public String toString() {
 		
@@ -86,7 +92,8 @@ public class AuthorInfo {
 		value.append("Name: " + name + ", ");
 		value.append("Commits: " + getCommitCount() + ", ");
 		value.append("Additions: " + additions + ", ");
-		value.append("Deletions: " + deletions + "\n");
+		value.append("Deletions: " + deletions + ", ");
+		value.append("Total line contribution: " + totalChange + "\n");
 		
 		for (AuthorCommit ac : this.getCommits()) {
 			value.append(" - " + ac.toString() + "\n");
