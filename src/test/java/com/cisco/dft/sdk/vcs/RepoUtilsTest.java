@@ -39,7 +39,8 @@ public class RepoUtilsTest {
 		repo = new GitRepo("https://github.com/pypa/sampleproject.git", new UsernamePasswordCredentialsProvider("username", "password"), false, null);
 		
 		repo.sync();
-		System.out.println(repo);		
+		System.out.println(repo);
+		repo.close();
 	}
 	
 	@Test 
@@ -59,6 +60,8 @@ public class RepoUtilsTest {
 		assertTrue(branch.getLangCountMap().containsKey(Language.JAVA) && branch.getLangCountMap().containsKey(Language.OTHER));
 		
 		reo.sync("master");
+		
+		reo.close();
 	}
 	
 	@Test 
@@ -92,6 +95,8 @@ public class RepoUtilsTest {
 		assertTrue(commits.get(0).getDeletions() > 5);
 		assertTrue(commits.get(0).getTimestamp() > commits.get(1).getTimestamp());
 		assertTrue(aib.lookupUser("Unknown").getDeletions() == 0);
+		
+		reo.close();
 		
 	}
 

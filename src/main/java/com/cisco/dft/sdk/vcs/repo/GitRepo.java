@@ -45,13 +45,11 @@ public final class GitRepo {
 
 	/**
 	 * Default directory relative to the system temp folder to store the
-	 * repository locally so metrics can be pulled from it
+	 * repository locally so metrics can be pulled from it.
 	 */
 	private static final String DEFAULT_TEMP_CLONE_DIRECTORY = "git_analytics/";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(GitRepo.class);
-
-	private final String remote;
 
 	private final RepoInfo repoInfo = new RepoInfo();
 
@@ -116,17 +114,16 @@ public final class GitRepo {
 	 * @param cp
 	 *            authentication needed to access private repos, not necessary
 	 *            for public repos.
-	 * @param autoSync
-	 *            whether repositories with local data should automatically sync
-	 *            data
+	 * @param generateStatistics
+	 *            whether statistics should be generated about the repository
 	 * @throws Exception
 	 */
 	public GitRepo(String url, UsernamePasswordCredentialsProvider cp,
-			boolean autoSync, File directory) throws TransportException {
+			boolean generateStatistics, File directory) throws TransportException {
 
-		this.remote = urlScrubber(url);
+		url = urlScrubber(url);
 
-		this.theDirectory = getDirectory(remote, directory);
+		this.theDirectory = getDirectory(url, directory);
 
 		this.cp = cp != null ? cp : new UsernamePasswordCredentialsProvider("username", "password");
 
@@ -135,7 +132,7 @@ public final class GitRepo {
 			try {
 
 				theRepo = Git.open(theDirectory);
-				if (autoSync) {
+				if (generateStatistics) {
 					sync();
 				}
 
@@ -154,7 +151,7 @@ public final class GitRepo {
 				}
 
 				try {
-					createRepo();
+					createRepo(url);
 				} catch (Exception e1) {
 					throw new TransportException("Could not connect to local or remote repository.", e1);
 				}
@@ -163,7 +160,7 @@ public final class GitRepo {
 		} else {
 
 			try {
-				createRepo();
+				createRepo(url);
 			} catch (Exception e1) {
 				throw new TransportException("Could not connect to local or remote repository.", e1);
 			}
@@ -172,6 +169,11 @@ public final class GitRepo {
 
 	}
 
+	/**
+	 * Returns a list of the branches in this repository.
+	 * 
+	 * @return
+	 */
 	public List<String> getBranches() {
 
 		List<String> branches = Lists.newArrayList();
@@ -211,40 +213,53 @@ public final class GitRepo {
 		sync(branch, true);
 	}
 
-	private void sync(boolean fetch) {
+	/**
+	 * Synchronizes with remote.
+	 * 
+	 * @param generateStatistics
+	 *            whether or not statistics should be generated or updated
+	 */
+	public void sync(boolean generateStatistics) {
 
 		for (String branch : getBranches()) {
-			sync(branch, fetch);
+			sync(branch, generateStatistics);
 		}
 
 	}
 
-	private void sync(String branch, boolean fetch) {
+	/**
+	 * Synchronizes with remote. Only updates info about the specified branch.
+	 * 
+	 * @param branch
+	 *            the branch about which to update info
+	 * @param generateStatistics
+	 *            whether or not to update info
+	 */
+	public void sync(String branch, boolean generateStatistics) {
 
-		if (!getBranches().contains(BranchInfo.branchNameResolver(branch))) { return; }
+		branch = BranchInfo.branchNameResolver(branch);
+
+		if (!getBranches().contains(branch)) { return; }
 
 		DiffFormatter df = new DiffFormatter(new ByteArrayOutputStream());
 
 		try {
+			boolean flag = theRepo.fetch().setCredentialsProvider(cp)
+					.setRemoveDeletedRefs(true).call().getTrackingRefUpdates()
+					.isEmpty();
 
-			if (fetch) {
-				try {
-					theRepo.fetch().setCredentialsProvider(cp).call();
-				} catch (Exception e) {
-					LOGGER.info("There was an error in connection to remote", e);
-				}
+			if (!flag || generateStatistics) {
+
+				updateAuthorInfo(branch, df);
+				updateRepoInfo(branch, df);
+				repoInfo.resolveBranchInfo(getBranches());
+
 			}
 
-			updateAuthorInfo(branch, df);
-
-			updateRepoInfo(branch, df);
-
-			repoInfo.resolveBranchInfo(getBranches());
-
 		} catch (Exception e) {
-
-			LOGGER.error("Could not update repo information", e);
-
+			LOGGER.info(
+					"There was an error in connection to remote, could not update info",
+					e);
 		}
 
 		df.close();
@@ -286,9 +301,9 @@ public final class GitRepo {
 				totalDeletions += results[1];
 				totalFilesAffected += results[2];
 				totalLineChange += results[3];
-				
+
 			} else {
-				
+
 				for (RevCommit rev : rc.getParents()) {
 
 					int[] results = compareCommits(rev, rc, df);
@@ -296,9 +311,9 @@ public final class GitRepo {
 					totalDeletions += results[1];
 					totalFilesAffected += results[2];
 					totalLineChange += results[3];
-					
+
 				}
-				
+
 			}
 
 			ai.incrementAdditions(totalAdditions);
@@ -484,13 +499,13 @@ public final class GitRepo {
 	 * @throws GitAPIException
 	 * @throws IllegalStateException
 	 */
-	private void createRepo() throws IllegalStateException, GitAPIException {
+	private void createRepo(String remote) throws IllegalStateException, GitAPIException {
 
 		theRepo = Git.cloneRepository().setDirectory(theDirectory)
 				.setURI(remote).setBare(true).setNoCheckout(true)
 				.setCredentialsProvider(cp).call();
 
-		sync(false);
+		sync(true);
 
 	}
 

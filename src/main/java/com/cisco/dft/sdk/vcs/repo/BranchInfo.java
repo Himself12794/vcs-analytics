@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.eclipse.jgit.lib.Constants;
+
 import com.cisco.dft.sdk.vcs.util.CodeSniffer;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
 import com.cisco.dft.sdk.vcs.util.SortMethod;
@@ -305,7 +307,7 @@ public class BranchInfo {
 	 * @return the freshly trimmed branch
 	 */
 	public static String branchTrimmer(String branch) {
-		return branch.replace("refs/heads/", "");
+		return branch.replace(Constants.R_HEADS, "");
 	}
 
 	/**
@@ -315,7 +317,7 @@ public class BranchInfo {
 	 * @return the fresh branch name
 	 */
 	public static String branchAdder(String branch) {
-		return "refs/heads/" + branch;
+		return Constants.R_HEADS + branch;
 	}
 
 	/**
@@ -327,8 +329,7 @@ public class BranchInfo {
 	static String branchNameResolver(String branch) {
 
 		String value = branch;
-
-		if (!branch.contains("refs/heads/")) {
+		if (!branch.contains(Constants.R_HEADS)) {
 			value = branchAdder(branch);
 		}
 
