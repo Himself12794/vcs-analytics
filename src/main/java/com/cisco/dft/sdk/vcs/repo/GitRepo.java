@@ -180,7 +180,7 @@ public final class GitRepo {
 
 			for (Ref ref : theRepo.lsRemote().call()) {
 				if (!ref.getName().equals(Constants.HEAD)
-						&& ref.getName().contains("refs/heads/")) {
+						&& ref.getName().contains(Constants.R_HEADS)) {
 					branches.add(ref.getName());
 				}
 			}
@@ -271,16 +271,40 @@ public final class GitRepo {
 		RevCommit prev = null;
 
 		for (RevCommit rc : walk) {
-
 			String author = rc.getAuthorIdent().getName();
 			AuthorInfo ai = bi.getAuthorInfo(author);
 
-			int[] results = compareCommits(prev, rc, df);
+			int totalAdditions = 0;
+			int totalDeletions = 0;
+			int totalFilesAffected = 0;
+			int totalLineChange = 0;
 
-			ai.incrementAdditions(results[0]);
-			ai.incrementDeletions(results[1]);
-			ai.incrementTotalChange(results[3]);
-			ai.addCommit(new AuthorCommit((long) rc.getCommitTime(), results[2], results[0], results[1], results[3], rc
+			if (rc.getParentCount() == 0) {
+
+				int[] results = compareCommits(null, rc, df);
+				totalAdditions += results[0];
+				totalDeletions += results[1];
+				totalFilesAffected += results[2];
+				totalLineChange += results[3];
+				
+			} else {
+				
+				for (RevCommit rev : rc.getParents()) {
+
+					int[] results = compareCommits(rev, rc, df);
+					totalAdditions += results[0];
+					totalDeletions += results[1];
+					totalFilesAffected += results[2];
+					totalLineChange += results[3];
+					
+				}
+				
+			}
+
+			ai.incrementAdditions(totalAdditions);
+			ai.incrementDeletions(totalDeletions);
+			ai.incrementTotalChange(totalLineChange);
+			ai.addCommit(new AuthorCommit((long) rc.getCommitTime(), totalFilesAffected, totalAdditions, totalDeletions, totalLineChange, rc
 					.getShortMessage()));
 
 			bi.incrementCommitCount(1);
@@ -291,7 +315,7 @@ public final class GitRepo {
 		if (prev != null) {
 			bi.setMostRecentCommit(prev.getId().name());
 		}
-		
+
 		walk.close();
 		walk.dispose();
 
@@ -334,6 +358,17 @@ public final class GitRepo {
 		}
 	}
 
+	/**
+	 * Compares two commits.
+	 * 
+	 * 
+	 * @param prev
+	 * @param curr
+	 * @param df
+	 * @return array containing info - index reference: 0 = additions, 1 =
+	 *         deletions, 2 = files changed, 3 = totalChanges
+	 * @throws IOException
+	 */
 	private int[] compareCommits(RevCommit prev, RevCommit curr, DiffFormatter df) throws IOException {
 
 		ObjectReader reader = theRepo.getRepository().newObjectReader();
@@ -378,10 +413,9 @@ public final class GitRepo {
 		int totalChange = 0;
 
 		for (DiffEntry entry : entries) {
-
 			changedFiles += 1;
 			FileHeader fh = df.toFileHeader(entry);
-			
+
 			for (HunkHeader hunk : fh.getHunks()) {
 
 				for (Edit edit : hunk.toEditList()) {
