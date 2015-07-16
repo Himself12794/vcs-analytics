@@ -19,7 +19,7 @@ public final class CodeSniffer {
 	private CodeSniffer() {}
 	
 	/**
-	 * Representation of many common programming language.
+	 * Representation of many common programming languages.
 	 * 
 	 * @author phwhitin
 	 *
@@ -94,6 +94,7 @@ public final class CodeSniffer {
 		a.put("lua",Language.LUA);
 		a.put("html",Language.HTML);
 		a.put("xhtml",Language.HTML);
+		a.put("shtml",Language.HTML);
 		a.put("php", Language.PHP);
 		a.put("php3", Language.PHP);
 		a.put("phpt", Language.PHP);

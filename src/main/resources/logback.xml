@@ -12,7 +12,7 @@ TRACE -	Designates finer-grained informational events than the DEBUG.
 <configuration>
 
     <!-- Enter your app name here instead of <seed-api-sb> -->
-    <property name="APP_NAME" value="seed-api-sb" />
+    <property name="APP_NAME" value="vcs-tools" />
 
 	<!-- Regular file appender -->
 	<appender name="fileAppender" class="ch.qos.logback.core.FileAppender">
@@ -41,7 +41,7 @@ TRACE -	Designates finer-grained informational events than the DEBUG.
 	    </rollingPolicy>
 		<encoder>
 			<!-- pattern followed -[DEBUG][DATE and TIME][Class-line][THREAD][MSG] [number of lines of exception] -->
-			<pattern>[%-5level] [%d] [%logger{35} - %L] [%thread ] - %msg %n
+			<pattern>[%d] [%thread ] [%logger{35} - %L] [%-5level] - %msg %n
 			</pattern>
 		</encoder>	
 	</appender>
@@ -49,7 +49,7 @@ TRACE -	Designates finer-grained informational events than the DEBUG.
 	<!-- Console appender -->
 	<appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
-			<pattern>[%-5level] [%d] [%logger{35} - %L] [%thread ] - %msg %n
+			<pattern>[%d] [%thread ] [%logger{35} - %L] [%-5level] - %msg %n
 			</pattern>
 		</encoder>
 		<!-- Show only INFO level on console, no matter what the root level is -->

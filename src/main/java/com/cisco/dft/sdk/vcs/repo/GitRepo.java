@@ -49,9 +49,9 @@ public final class GitRepo {
 	 */
 	private static final String DEFAULT_TEMP_CLONE_DIRECTORY = "git_analytics/";
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(GitRepo.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(GitRepo.class.getSimpleName());
 
-	private final RepoInfo repoInfo = new RepoInfo();
+	private final RepoInfo repoInfo;
 
 	private final File theDirectory;
 
@@ -122,7 +122,9 @@ public final class GitRepo {
 			boolean generateStatistics, File directory) throws TransportException {
 
 		String scrubbedUrl = urlScrubber(url);
-
+		
+		repoInfo = new RepoInfo(guessName(scrubbedUrl));
+		
 		this.theDirectory = getDirectory(scrubbedUrl, directory);
 
 		this.cp = cp != null ? cp : new UsernamePasswordCredentialsProvider("username", "password");
@@ -238,6 +240,8 @@ public final class GitRepo {
 	public void sync(String branch, boolean generateStatistics) {
 
 		String branchResolved = BranchInfo.branchNameResolver(branch);
+		
+		LOGGER.info("Syncing data for branch " + BranchInfo.branchTrimmer(branch));
 
 		if (!getBranches().contains(branchResolved)) { return; }
 
@@ -249,7 +253,7 @@ public final class GitRepo {
 					.isEmpty();
 
 			if (!flag || generateStatistics) {
-
+				
 				updateAuthorInfo(branchResolved, df);
 				updateRepoInfo(branchResolved, df);
 				repoInfo.resolveBranchInfo(getBranches());
@@ -267,9 +271,11 @@ public final class GitRepo {
 	}
 
 	private void updateAuthorInfo(String branch, DiffFormatter df) throws GitAPIException, IOException {
-
+		
 		BranchInfo bi = repoInfo.getBranchInfo(branch);
-
+		
+		LOGGER.info("Updating statistics for branch " + bi.getName());
+		
 		RevWalk walk = new RevWalk(theRepo.getRepository());
 		ObjectId from = theRepo.getRepository().resolve(branch);
 		walk.sort(RevSort.REVERSE);
@@ -288,6 +294,7 @@ public final class GitRepo {
 		for (RevCommit rc : walk) {
 			String author = rc.getAuthorIdent().getName();
 			AuthorInfo ai = bi.getAuthorInfo(author);
+			boolean isMergeCommit = rc.getParentCount() > 1;
 
 			int totalAdditions = 0;
 			int totalDeletions = 0;
@@ -319,7 +326,7 @@ public final class GitRepo {
 			ai.incrementAdditions(totalAdditions);
 			ai.incrementDeletions(totalDeletions);
 			ai.incrementTotalChange(totalLineChange);
-			ai.addCommit(new AuthorCommit((long) rc.getCommitTime(), totalFilesAffected, totalAdditions, totalDeletions, totalLineChange, rc
+			ai.addCommit(new AuthorCommit((long) rc.getCommitTime(), totalFilesAffected, totalAdditions, totalDeletions, totalLineChange, isMergeCommit, rc
 					.getShortMessage()));
 
 			bi.incrementCommitCount(1);
@@ -531,6 +538,17 @@ public final class GitRepo {
 	 */
 	private static String urlScrubber(String url) {
 		return url.startsWith("http://") ? url.replace("http://", "https://") : url;
+	}
+	
+	private static String guessName(String url) {
+		String value = "";
+		String[] splitten = {"Repo"};
+		
+		if (url.endsWith(".git")) { value = url.replace(".git", ""); }
+		if (value.contains("/")) { splitten = value.split("/"); }
+		else if (value.contains("\\")) { splitten = value.split("\\"); }
+		
+		return splitten[splitten.length - 1];
 	}
 
 	/**

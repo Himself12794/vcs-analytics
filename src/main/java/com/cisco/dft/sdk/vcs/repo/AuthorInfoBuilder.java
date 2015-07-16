@@ -2,8 +2,11 @@ package com.cisco.dft.sdk.vcs.repo;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
+import com.cisco.dft.sdk.vcs.util.DateLimitedData;
+import com.cisco.dft.sdk.vcs.util.DateLimitedDataContainer;
 import com.cisco.dft.sdk.vcs.util.SortMethod;
 import com.google.common.collect.Lists;
 
@@ -14,18 +17,16 @@ import com.google.common.collect.Lists;
  * @author phwhitin
  *
  */
-public class AuthorInfoBuilder {
-	
-	private List<AuthorInfo> infos;
+public class AuthorInfoBuilder extends DateLimitedDataContainer<AuthorInfo> implements DateLimitedData {
 	
 	private String branch;
 	
-	AuthorInfoBuilder(List<AuthorInfo> infos) {
+	AuthorInfoBuilder(final List<AuthorInfo> infos) {
 		this(infos, "Could not detect");
 	}
 	
-	AuthorInfoBuilder(List<AuthorInfo> infos, String branch) {
-		this.infos = infos;
+	AuthorInfoBuilder(final List<AuthorInfo> infos, String branch) {
+		super(infos);
 		this.branch = branch;
 	}
 	
@@ -37,24 +38,26 @@ public class AuthorInfoBuilder {
 	 */
 	public AuthorInfoBuilder sort(SortMethod method){
 		
+		List<AuthorInfo> theList = getData();
+		
 		switch (method) {
 			case COMMITS:
-				Collections.sort(this.infos, new Comparator<AuthorInfo>() {
+				Collections.sort(theList, new Comparator<AuthorInfo>() {
 					@Override public int compare(AuthorInfo p1, AuthorInfo p2) { return Long.compare(p2.getCommitCount(), p1.getCommitCount()); } 
 				});
 				break;
 			case ADDITIONS: 
-				Collections.sort(this.infos, new Comparator<AuthorInfo>() {
+				Collections.sort(theList, new Comparator<AuthorInfo>() {
 					@Override public int compare(AuthorInfo p1, AuthorInfo p2) { return Long.compare(p2.getAdditions(), p1.getAdditions());	}
 				});
 				break;
 			case DELETIONS:
-				Collections.sort(this.infos, new Comparator<AuthorInfo>() {
+				Collections.sort(theList, new Comparator<AuthorInfo>() {
 					@Override public int compare(AuthorInfo p1, AuthorInfo p2) { return Long.compare(p2.getDeletions(), p1.getDeletions()); }
 				});
 				break;
 			case NAME: 
-				Collections.sort(this.infos, new Comparator<AuthorInfo>() {
+				Collections.sort(theList, new Comparator<AuthorInfo>() {
 					@Override public int compare(AuthorInfo p1, AuthorInfo p2) { return p1.getName().compareTo(p2.getName()); }
 				});
 				break;
@@ -80,8 +83,18 @@ public class AuthorInfoBuilder {
 	 */
 	public AuthorInfo lookupUser(String user) {
 		
-		for (AuthorInfo ai : infos) {
-			if (ai.getName().equals(user)) { return ai; }
+		if (!isLimited()) {
+			
+			for (AuthorInfo ai : data) {
+				if (ai.getName().equals(user)) { return ai; }
+			}
+			
+		} else {
+			
+			for (AuthorInfo ai : limitedData) {
+				if (ai.getName().equals(user)) { return ai; }
+			}
+			
 		}
 		
 		return new AuthorInfo(user);
@@ -92,17 +105,21 @@ public class AuthorInfoBuilder {
 	 * 
 	 * @return a list of AuthorInfo stored for the repo
 	 */
-	public List<AuthorInfo> getList() { return Lists.newArrayList(this.infos); }
+	public List<AuthorInfo> getList() { return Lists.newArrayList(this.data); }
 	
 	/**
 	 * Returns the branch that this information is from.
 	 * 
 	 * @return
 	 */
-	public String getBranchName() {
+	public String getBranchName() { return BranchInfo.branchTrimmer(branch); }
+	
+	@Override
+	public AuthorInfoBuilder limitToRange(Date start, Date end, boolean inclusive) {
 		
-		return BranchInfo.branchTrimmer(branch);
+		super.limitToRange(start, end, inclusive);
 		
+		return this;
 	}
 	
 	@Override
@@ -112,10 +129,20 @@ public class AuthorInfoBuilder {
 		value.append(getBranchName());
 		value.append("\n");
 		
-		for (AuthorInfo ai : infos) { value.append(ai.toString()); }
+		for (AuthorInfo ai : getData()) { value.append(ai.toString()); }
 		
 		return value.toString();
 		
+	}
+
+	@Override
+	public boolean isInDateRange(Date start, Date end, boolean inclusive) {
+		
+		boolean flag = false;
+		for (AuthorInfo ai : data) {
+			flag |= ai.isInDateRange(start, end, inclusive);
+		}
+		return flag;
 	}
 	
 }

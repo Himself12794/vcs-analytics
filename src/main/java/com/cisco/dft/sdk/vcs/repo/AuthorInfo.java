@@ -3,8 +3,11 @@ package com.cisco.dft.sdk.vcs.repo;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
+import com.cisco.dft.sdk.vcs.util.DateLimitedData;
+import com.cisco.dft.sdk.vcs.util.DateLimitedDataContainer;
 import com.google.common.collect.Lists;
 
 /**
@@ -13,95 +16,144 @@ import com.google.common.collect.Lists;
  * @author phwhitin
  *
  */
-public class AuthorInfo {
-	
+public class AuthorInfo extends DateLimitedDataContainer<AuthorCommit> implements DateLimitedData {
+
 	private final String name;
-	
-	private int additions;
-	
-	private int deletions;
-	
-	private int totalChange;
-	
-	private List<AuthorCommit> commits = new ArrayList<AuthorCommit>();
-	
-	public AuthorInfo(final String name) {
+
+	private int additions, deletions, totalChange;
+
+	private int limitedAdditions, limitedDeletions, limitedTotalChange;
+
+	AuthorInfo(final String name) {
 		this(name, 0, 0);
 	}
-	
-	public AuthorInfo(final String name, int additions, int deletions) {
-		
+
+	AuthorInfo(final String name, int additions, int deletions) {
+		super(new ArrayList<AuthorCommit>());
 		this.name = name;
 		this.additions = additions;
 		this.deletions = deletions;
-		
+
 	}
 	
+	public AuthorInfo limitToRange(Date start, Date end, boolean inclusive) {
+		includeAll();
+		super.limitToRange(start, end, inclusive);
+		
+		for (AuthorCommit ac : limitedData) {
+			limitedAdditions += ac.getAdditions();
+			limitedDeletions += ac.getDeletions();
+			limitedTotalChange += ac.getTotalChange();
+		}
+		
+		
+		return this;
+	}
+	
+	public AuthorInfo includeAll() {
+		super.includeAll();		
+		limitedAdditions = 0; 
+		limitedDeletions = 0; 
+		limitedTotalChange = 0;
+		
+		return this;
+	}
+
 	/**
 	 * Adds commit and makes sure it is not a duplicate.
 	 * 
 	 * @param ac
 	 */
 	void addCommit(AuthorCommit ac) {
-		this.commits.add(ac);
+		this.data.add(ac);
 	}
-	
+
 	/**
-	 * Gets a list of commits this author has made.
+	 * Gets a list of commits this author has made. 
+	 * Use {@link AuthorInfo#limitToRange(Date, Date, boolean)} to set the range.
 	 * 
-	 * @return
+	 * @return list of author commits
 	 */
 	public List<AuthorCommit> getCommits() {
 		
+		List<AuthorCommit> toUse = getData();
+
 		Comparator<AuthorCommit> sorter = new Comparator<AuthorCommit>() {
 
 			@Override
 			public int compare(AuthorCommit p1, AuthorCommit p2) {
-				
+
 				return Long.compare(p2.getTimestamp(), p1.getTimestamp());
 			}
-			
+
 		};
-		
-		Collections.sort(this.commits, sorter);
-		
-		return Lists.newArrayList(this.commits);
+
+		Collections.sort(toUse, sorter);
+
+		return Lists.newArrayList(toUse);
 	}
-	
-	public String getName() {return this.name;}
-	
-	public int getCommitCount() {return this.commits.size();}
-	
-	public int getAdditions() {return this.additions;}
-	
-	void incrementAdditions(int x) {this.additions += x;}
-	
-	public int getDeletions() {return this.deletions;}
-	
-	void incrementDeletions(int x) {this.deletions += x;}
-	
-	public int getTotalChange() {return this.totalChange;}
-	
-	void incrementTotalChange(int x) {this.totalChange += x;}
-	
+
+	public String getName() {
+		return name;
+	}
+
+	public int getCommitCount() {
+		return isLimited() ? limitedData.size() : data.size();
+	}
+
+	public int getAdditions() {
+		return isLimited() ? limitedAdditions : additions;
+	}
+
+	void incrementAdditions(int x) {
+		this.additions += x;
+	}
+
+	public int getDeletions() {
+		return isLimited() ? limitedDeletions : deletions;
+	}
+
+	void incrementDeletions(int x) {
+		deletions += x;
+	}
+
+	public int getTotalChange() {
+		return isLimited() ? limitedTotalChange : totalChange;
+	}
+
+	void incrementTotalChange(int x) {
+		totalChange += x;
+	}
+
 	@Override
 	public String toString() {
-		
+
 		StringBuilder value = new StringBuilder();
-				
+
 		value.append("Name: " + name + ", ");
 		value.append("Commits: " + getCommitCount() + ", ");
 		value.append("Additions: " + additions + ", ");
 		value.append("Deletions: " + deletions + ", ");
-		value.append("Total line contribution: " + totalChange + "\n");
-		
-		for (AuthorCommit ac : this.getCommits()) {
+		value.append("Total line contribution: " + getTotalChange() + "\n");
+
+		for (AuthorCommit ac : getCommits()) {
 			value.append(" - " + ac.toString() + "\n");
 		}
-		
+
 		value.append("\n");
-		
+
 		return value.toString();
 	}
-	
+
+	@Override
+	public boolean isInDateRange(Date start, Date end, boolean inclusive) {
+		boolean flag = false;
+		
+		for (AuthorCommit ac : data) {
+			flag |= ac.isInDateRange(start, end, inclusive);
+		}
+		
+		return flag;
+	}
+
 }

@@ -10,7 +10,13 @@ import com.google.common.collect.Maps;
 
 public class RepoInfo {
 	
-	private Map<String, BranchInfo> branches = Maps.newHashMap();
+	private final String name; 
+
+	private final Map<String, BranchInfo> branches = Maps.newHashMap();
+	
+	RepoInfo(String name) {
+		this.name = name;
+	}
 	
 	/**
 	 * Get the information for a specific branch.
@@ -70,6 +76,15 @@ public class RepoInfo {
 		
 	}
 	
+	/**
+	 * Gets the repo name as guessed from the url
+	 * 
+	 * @return
+	 */
+	public String getName() {
+		return name;
+	}
+	
 	@Override
 	public String toString() {
 		
@@ -81,7 +96,8 @@ public class RepoInfo {
 		StringBuilder value = new StringBuilder();
 		
 		value.append("++++++++++++++++++++++++++++++++++++\n");
-		value.append("Time of report: ");
+		value.append("Report for repo: " + getName());
+		value.append("\nTime of report: ");
 		value.append(formattedDate);
 		value.append("\n");
 		value.append("Branches in this report: ");
@@ -95,6 +111,7 @@ public class RepoInfo {
 		
 		for (BranchInfo bi : branches.values()) {
 			value.append(bi.toString());
+			value.append("************************************\n");
 		}
 		
 		value.append("====================================\n");
