@@ -6,8 +6,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-import com.cisco.dft.sdk.vcs.util.DateLimitedData;
-import com.cisco.dft.sdk.vcs.util.DateLimitedDataContainer;
+import com.cisco.dft.sdk.vcs.util.DateLimitedDataContainerRecursive;
 import com.google.common.collect.Lists;
 
 /**
@@ -16,7 +15,7 @@ import com.google.common.collect.Lists;
  * @author phwhitin
  *
  */
-public class AuthorInfo extends DateLimitedDataContainer<AuthorCommit> implements DateLimitedData {
+public class AuthorInfo extends DateLimitedDataContainerRecursive<AuthorCommit> {
 
 	private final String name;
 
@@ -35,47 +34,38 @@ public class AuthorInfo extends DateLimitedDataContainer<AuthorCommit> implement
 		this.deletions = deletions;
 
 	}
-	
-	public AuthorInfo limitToRange(Date start, Date end, boolean inclusive) {
+
+	@Override
+	public void limitToDateRange(Date start, Date end, boolean inclusive) {
 		includeAll();
-		super.limitToRange(start, end, inclusive);
-		
+		super.limitToDateRange(start, end, inclusive);
+
 		for (AuthorCommit ac : limitedData) {
 			limitedAdditions += ac.getAdditions();
 			limitedDeletions += ac.getDeletions();
 			limitedTotalChange += ac.getTotalChange();
 		}
 		
-		
-		return this;
 	}
-	
+
+	@Override
 	public AuthorInfo includeAll() {
-		super.includeAll();		
-		limitedAdditions = 0; 
-		limitedDeletions = 0; 
+		super.includeAll();
+		limitedAdditions = 0;
+		limitedDeletions = 0;
 		limitedTotalChange = 0;
-		
+
 		return this;
 	}
 
 	/**
-	 * Adds commit and makes sure it is not a duplicate.
-	 * 
-	 * @param ac
-	 */
-	void addCommit(AuthorCommit ac) {
-		this.data.add(ac);
-	}
-
-	/**
-	 * Gets a list of commits this author has made. 
-	 * Use {@link AuthorInfo#limitToRange(Date, Date, boolean)} to set the range.
+	 * Gets a list of commits this author has made. Use
+	 * {@link AuthorInfo#limitToDateRange(Date, Date, boolean)} to set the range.
 	 * 
 	 * @return list of author commits
 	 */
 	public List<AuthorCommit> getCommits() {
-		
+
 		List<AuthorCommit> toUse = getData();
 
 		Comparator<AuthorCommit> sorter = new Comparator<AuthorCommit>() {
@@ -137,23 +127,12 @@ public class AuthorInfo extends DateLimitedDataContainer<AuthorCommit> implement
 		value.append("Total line contribution: " + getTotalChange() + "\n");
 
 		for (AuthorCommit ac : getCommits()) {
-			value.append(" - " + ac.toString() + "\n");
+			value.append(" - " + ac.toString() + "\n\n");
 		}
 
 		value.append("\n");
 
 		return value.toString();
-	}
-
-	@Override
-	public boolean isInDateRange(Date start, Date end, boolean inclusive) {
-		boolean flag = false;
-		
-		for (AuthorCommit ac : data) {
-			flag |= ac.isInDateRange(start, end, inclusive);
-		}
-		
-		return flag;
 	}
 
 }

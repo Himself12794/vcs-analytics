@@ -3,10 +3,13 @@ package com.cisco.dft.sdk.vcs;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.util.Date;
 import java.util.List;
 
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.cisco.dft.sdk.vcs.repo.AuthorCommit;
 import com.cisco.dft.sdk.vcs.repo.AuthorInfo;
@@ -18,6 +21,8 @@ import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
 import com.cisco.dft.sdk.vcs.util.SortMethod;
 
 public class RepoUtilsTest {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger("UnitTesting");
 
 	@Test
 	public void testCodeSniffer() throws Exception {
@@ -67,6 +72,10 @@ public class RepoUtilsTest {
 	@Test 
 	public void testAuthorStatGathering() throws Exception {
 		
+		Date start = new Date(1416402821000L);
+		Date end = new Date(1420377221000L);
+		
+		LOGGER.info("Testing author information gathering.");
 		GitRepo reo = new GitRepo("https://github.com/pypa/sampleproject.git");
 		AuthorInfoBuilder aib = reo.getRepoStatistics().getBranchInfoFor("master").getAuthorStatistics();
 		AuthorInfo ai = aib.lookupUser("Marcus Smith");
@@ -74,21 +83,20 @@ public class RepoUtilsTest {
 		assertTrue(ai.getAdditions() >= 106);
 		assertTrue(ai.getDeletions() >= 86);
 		
+		LOGGER.info("Testing author statistics sorting methods.");
 		aib.sort(SortMethod.ADDITIONS);
-		assertTrue(aib.getList().get(0).getAdditions() >= aib.getList().get(1).getAdditions());
+		assertTrue(aib.getData().get(0).getAdditions() >= aib.getData().get(1).getAdditions());
 		
 		aib.sort(SortMethod.COMMITS);
-		assertTrue(aib.getList().get(0).getCommitCount() >= aib.getList().get(1).getCommitCount());
+		assertTrue(aib.getData().get(0).getCommitCount() >= aib.getData().get(1).getCommitCount());
 		
 		aib.sort(SortMethod.DELETIONS);
-		assertTrue(aib.getList().get(0).getDeletions() >= aib.getList().get(1).getDeletions());
-		
-		aib.sort(SortMethod.ADDITIONS);
-		assertTrue(aib.getList().get(0).getAdditions() >= aib.getList().get(1).getAdditions());
+		assertTrue(aib.getData().get(0).getDeletions() >= aib.getData().get(1).getDeletions());
 		
 		aib.sort(SortMethod.NAME);
-		assertTrue(aib.getList().get(0).getName().compareTo(aib.getList().get(1).getName()) < 0);
+		assertTrue(aib.getData().get(0).getName().compareTo(aib.getData().get(1).getName()) < 0);
 		
+		LOGGER.info("Testing commit info accuracy");
 		List<AuthorCommit> commits = ai.getCommits();
 		
 		assertTrue(commits.get(0).getAdditions() > 5);
@@ -96,8 +104,17 @@ public class RepoUtilsTest {
 		assertTrue(commits.get(0).getTimestamp() > commits.get(1).getTimestamp());
 		assertTrue(aib.lookupUser("Unknown").getDeletions() == 0);
 		
+		LOGGER.info("Testing date range limiting.");
+		assertTrue(aib.getData().size() >= 13);
+		assertTrue(aib.lookupUser("Matt Iversen").getCommitCount() >= 1 );
+		aib.limitToDateRange(start, end, true);
+		assertTrue(aib.getData().size() == 4);
+		assertTrue(aib.lookupUser("Matt Iversen").getCommitCount() == 0 );
+		System.out.println(aib);
+		
 		reo.close();
 		
 	}
 
 }
+;

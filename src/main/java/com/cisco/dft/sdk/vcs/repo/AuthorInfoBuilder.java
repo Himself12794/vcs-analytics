@@ -5,8 +5,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-import com.cisco.dft.sdk.vcs.util.DateLimitedData;
-import com.cisco.dft.sdk.vcs.util.DateLimitedDataContainer;
+import com.cisco.dft.sdk.vcs.util.DateLimitedDataContainerRecursive;
 import com.cisco.dft.sdk.vcs.util.SortMethod;
 import com.google.common.collect.Lists;
 
@@ -17,7 +16,7 @@ import com.google.common.collect.Lists;
  * @author phwhitin
  *
  */
-public class AuthorInfoBuilder extends DateLimitedDataContainer<AuthorInfo> implements DateLimitedData {
+public class AuthorInfoBuilder extends DateLimitedDataContainerRecursive<AuthorInfo> {
 	
 	private String branch;
 	
@@ -38,28 +37,22 @@ public class AuthorInfoBuilder extends DateLimitedDataContainer<AuthorInfo> impl
 	 */
 	public AuthorInfoBuilder sort(SortMethod method){
 		
-		List<AuthorInfo> theList = getData();
-		
 		switch (method) {
 			case COMMITS:
-				Collections.sort(theList, new Comparator<AuthorInfo>() {
-					@Override public int compare(AuthorInfo p1, AuthorInfo p2) { return Long.compare(p2.getCommitCount(), p1.getCommitCount()); } 
-				});
+				Collections.sort(data, SORTER_COMMITS); 
+				Collections.sort(limitedData, SORTER_COMMITS); 
 				break;
 			case ADDITIONS: 
-				Collections.sort(theList, new Comparator<AuthorInfo>() {
-					@Override public int compare(AuthorInfo p1, AuthorInfo p2) { return Long.compare(p2.getAdditions(), p1.getAdditions());	}
-				});
+				Collections.sort(data, SORTER_ADDITIONS );
+				Collections.sort(limitedData, SORTER_ADDITIONS );
 				break;
 			case DELETIONS:
-				Collections.sort(theList, new Comparator<AuthorInfo>() {
-					@Override public int compare(AuthorInfo p1, AuthorInfo p2) { return Long.compare(p2.getDeletions(), p1.getDeletions()); }
-				});
+				Collections.sort(data, SORTER_DELETIONS);
+				Collections.sort(limitedData, SORTER_DELETIONS);
 				break;
 			case NAME: 
-				Collections.sort(theList, new Comparator<AuthorInfo>() {
-					@Override public int compare(AuthorInfo p1, AuthorInfo p2) { return p1.getName().compareTo(p2.getName()); }
-				});
+				Collections.sort(data, SORTER_NAMES);
+				Collections.sort(limitedData, SORTER_NAMES);
 				break;
 			default:
 				break;
@@ -105,7 +98,8 @@ public class AuthorInfoBuilder extends DateLimitedDataContainer<AuthorInfo> impl
 	 * 
 	 * @return a list of AuthorInfo stored for the repo
 	 */
-	public List<AuthorInfo> getList() { return Lists.newArrayList(this.data); }
+	@Override
+	public List<AuthorInfo> getData() { return Lists.newArrayList(super.getData()); }
 	
 	/**
 	 * Returns the branch that this information is from.
@@ -114,10 +108,28 @@ public class AuthorInfoBuilder extends DateLimitedDataContainer<AuthorInfo> impl
 	 */
 	public String getBranchName() { return BranchInfo.branchTrimmer(branch); }
 	
+	/**
+	 * Limit author information returned to those who have committed within given time frame.
+	 * 
+	 * @param start the start date
+	 * @param end the end date
+	 * @param inclusive whether or not the range includes the endpoints
+	 * @return
+	 */
 	@Override
-	public AuthorInfoBuilder limitToRange(Date start, Date end, boolean inclusive) {
+	public void limitToDateRange(Date start, Date end, boolean inclusive) {
+		super.limitToDateRange(start, end, inclusive);
+	}
+	
+	/**
+	 * Remove the date limitations placed.
+	 * 
+	 * @return
+	 */
+	@Override
+	public AuthorInfoBuilder includeAll() {
 		
-		super.limitToRange(start, end, inclusive);
+		super.includeAll();
 		
 		return this;
 	}
@@ -144,5 +156,25 @@ public class AuthorInfoBuilder extends DateLimitedDataContainer<AuthorInfo> impl
 		}
 		return flag;
 	}
+	
+	private static final Comparator<AuthorInfo> SORTER_COMMITS = new Comparator<AuthorInfo>() {
+		@Override 
+		public int compare(AuthorInfo p1, AuthorInfo p2) { return Long.compare(p2.getCommitCount(), p1.getCommitCount()); } 
+	};
+	
+	private static final Comparator<AuthorInfo> SORTER_ADDITIONS = new Comparator<AuthorInfo>() {
+		@Override 
+		public int compare(AuthorInfo p1, AuthorInfo p2) { return Long.compare(p2.getAdditions(), p1.getAdditions());	}
+	};
+	
+	private static final Comparator<AuthorInfo> SORTER_DELETIONS = new Comparator<AuthorInfo>() {
+		@Override 
+		public int compare(AuthorInfo p1, AuthorInfo p2) { return Long.compare(p2.getDeletions(), p1.getDeletions()); }
+	};
+	
+	private static final Comparator<AuthorInfo> SORTER_NAMES = new Comparator<AuthorInfo>() {
+		@Override 
+		public int compare(AuthorInfo p1, AuthorInfo p2) { return p1.getName().compareTo(p2.getName()); }
+	};
 	
 }

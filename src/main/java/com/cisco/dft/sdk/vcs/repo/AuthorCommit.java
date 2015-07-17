@@ -3,6 +3,7 @@ package com.cisco.dft.sdk.vcs.repo;
 import java.util.Date;
 
 import com.cisco.dft.sdk.vcs.util.DateLimitedData;
+import com.cisco.dft.sdk.vcs.util.DateLimitedDataContainer;
 
 /**
  * Used to store information about a commit made by author.
@@ -11,6 +12,8 @@ import com.cisco.dft.sdk.vcs.util.DateLimitedData;
  *
  */
 public class AuthorCommit implements DateLimitedData {
+	
+	private final String id;
 
 	private final long timestamp;
 
@@ -26,10 +29,11 @@ public class AuthorCommit implements DateLimitedData {
 
 	private final String message;
 
-	public AuthorCommit(final long timestamp, final int changedFiles,
+	public AuthorCommit(final String id, final long timestamp, final int changedFiles,
 			final int additions, final int deletions, final int totalChange,
 			final boolean isMergeCommit, final String message) {
-
+		
+		this.id = id;
 		this.timestamp = timestamp;
 		this.changedFiles = changedFiles;
 		this.additions = additions;
@@ -39,7 +43,15 @@ public class AuthorCommit implements DateLimitedData {
 		this.message = message;
 
 	}
-	
+	/**
+	 * Gets the SHA-1 id.
+	 * 
+	 * @return
+	 */
+	public String getId() {
+		return id;
+	}
+
 	/**
 	 * Unix-time. (in seconds)
 	 * 
@@ -75,24 +87,26 @@ public class AuthorCommit implements DateLimitedData {
 
 	@Override
 	public String toString() {
-
-		String value = "Timestamp: " + timestamp;
-		value += ", changed files: " + changedFiles;
-		value += ", additions: " + additions;
-		value += ", deletions: " + deletions;
-		value += ", total line change: " + totalChange;
-		value += ", merge commit: " + isMergeCommit;
-		value += ", message: " + message;
+		String value = "Commit id: " + id;
+		value += ", Timestamp: " + timestamp;
+		value += ", Changed Files: " + changedFiles;
+		value += ", Additions: " + additions;
+		value += ", Deletions: " + deletions;
+		value += ", Total Line Change: " + totalChange;
+		value += isMergeCommit ? "\n\tMerge Commit, " : "\n\t";
+		value += "Message: " + message;
 
 		return value;
 	}
 
 	@Override
 	public boolean isInDateRange(Date start, Date end, boolean inclusive) {
+		Date startF = start == null ? DateLimitedDataContainer.DEFAULT_START : start;
+		Date endF = end == null ? DateLimitedDataContainer.DEFAULT_START : end;
 		Date time = new Date(getTimestamp() * 1000);
-		return  inclusive ? (time.getTime() >= start.getTime() && time
-				.getTime() <= end.getTime()) : (time.after(start) && time
-				.before(end));
+		return  inclusive ? (time.getTime() >= startF.getTime() && time
+				.getTime() <= endF.getTime()) : (time.after(startF) && time
+				.before(endF));
 	}
 
 }

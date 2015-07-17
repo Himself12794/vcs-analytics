@@ -96,7 +96,8 @@ public class RepoInfo {
 		StringBuilder value = new StringBuilder();
 		
 		value.append("++++++++++++++++++++++++++++++++++++\n");
-		value.append("Report for repo: " + getName());
+		value.append("Report for repo: ");
+		value.append(getName());
 		value.append("\nTime of report: ");
 		value.append(formattedDate);
 		value.append("\n");

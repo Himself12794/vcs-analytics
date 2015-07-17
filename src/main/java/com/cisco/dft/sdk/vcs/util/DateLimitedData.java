@@ -2,6 +2,12 @@ package com.cisco.dft.sdk.vcs.util;
 
 import java.util.Date;
 
+/**
+ * Indicates a data type that can fall within a time frame.
+ * 
+ * @author phwhitin
+ *
+ */
 public interface DateLimitedData {
 	
 	/**
