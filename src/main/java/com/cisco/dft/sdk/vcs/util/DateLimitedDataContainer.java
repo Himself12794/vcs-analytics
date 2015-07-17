@@ -148,6 +148,38 @@ public class DateLimitedDataContainer<T extends DateLimitedData> {
 	}
 	
 	/**
+	 * Convenience sub class of {@link DateLimitedDataContainer} that also provides an implementation of 
+	 * {@link DateLimitedData} for ease of recursion.
+	 * 
+	 * @author phwhitin
+	 *
+	 * @param <T>
+	 */
+	public static class RecursiveDateLimitedDataContainer<T extends DateLimitedData> extends
+			DateLimitedDataContainer<T> implements DateLimitedData {
+
+
+		public RecursiveDateLimitedDataContainer(List<T> data) {
+			super(data);
+		}
+		
+		/**
+		 * Checks to see if this particular piece of data falls within a time range.
+		 */
+		@Override
+		public boolean isInDateRange(DateRange dateRange) {
+			boolean flag = false;
+
+			for (T t : data) {
+				flag |= t.isInDateRange(dateRange);
+			}
+
+			return flag;
+		}
+
+	}
+	
+	/**
 	 * Wrapper class for a date range.
 	 * 
 	 * @author phwhitin
@@ -172,11 +204,7 @@ public class DateLimitedDataContainer<T extends DateLimitedData> {
 		}
 
 		public DateRange(Date start, Date end, boolean inclusive) {
-
-			this.start = start;
-			this.end = end;
-			this.inclusive = inclusive;
-
+			setRange(start, end, inclusive);
 		}
 
 		public void setRange(Date start, Date end, boolean inclusive) {
@@ -203,7 +231,7 @@ public class DateLimitedDataContainer<T extends DateLimitedData> {
 		}
 
 		public Date getStart() {
-			return start;
+			return new Date(start.getTime());
 		}
 
 		public void setStart(Date start) {
@@ -211,7 +239,7 @@ public class DateLimitedDataContainer<T extends DateLimitedData> {
 		}
 
 		public Date getEnd() {
-			return end;
+			return new Date(end.getTime());
 		}
 
 		public void setEnd(Date end) {

@@ -113,7 +113,13 @@ public class RepoUtilsTest {
 		assertTrue(aib.getInfo().size() >= 13);
 		assertTrue(aib.lookupUser("Matt Iversen").getCommitCount() >= 1 );
 		System.out.println(aib);
+		
 		aib.limitToDateRange(start, end, true);
+		assertTrue(aib.getInfo().size() == 4);
+		assertTrue(aib.lookupUser("Matt Iversen").getCommitCount() == 0 );
+		System.out.println(aib);
+		
+		aib.limitToDateRange(start, end, false);
 		assertTrue(aib.getInfo().size() == 4);
 		assertTrue(aib.lookupUser("Matt Iversen").getCommitCount() == 0 );
 		System.out.println(aib);

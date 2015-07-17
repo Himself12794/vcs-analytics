@@ -7,7 +7,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.cisco.dft.sdk.vcs.util.CommitNotFoundException;
-import com.cisco.dft.sdk.vcs.util.RecursiveDateLimitedDataContainer;
+import com.cisco.dft.sdk.vcs.util.DateLimitedDataContainer.RecursiveDateLimitedDataContainer;
 import com.google.common.collect.Lists;
 
 /**
