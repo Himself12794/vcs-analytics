@@ -329,7 +329,7 @@ public final class GitRepo {
 			ai.incrementAdditions(totalAdditions);
 			ai.incrementDeletions(totalDeletions);
 			ai.incrementTotalChange(totalLineChange);
-			ai.add(new AuthorCommit(rc.name(), (long) rc.getCommitTime(), totalFilesAffected, totalAdditions, totalDeletions, totalLineChange, isMergeCommit, rc
+			ai.add(new AuthorCommit(rc.name(), (long) rc.getCommitTime(), totalFilesAffected, totalAdditions, totalDeletions, isMergeCommit, rc
 					.getShortMessage()));
 
 			bi.incrementCommitCount(1);

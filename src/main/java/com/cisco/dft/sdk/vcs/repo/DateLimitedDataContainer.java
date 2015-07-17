@@ -1,4 +1,4 @@
-package com.cisco.dft.sdk.vcs.util;
+package com.cisco.dft.sdk.vcs.repo;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -30,9 +30,9 @@ public class DateLimitedDataContainer<T extends DateLimitedData> {
 	
 	protected List<T> limitedData = Lists.newArrayList();
 	
-	private Date start, end;
+	protected Date start, end;
 	
-	private boolean inclusive = DEFAULT_INCLUSION;
+	protected boolean inclusive = DEFAULT_INCLUSION;
 	
 	protected DateLimitedDataContainer() {
 		this(new ArrayList<T>());
@@ -72,7 +72,7 @@ public class DateLimitedDataContainer<T extends DateLimitedData> {
 	 * @return whether or not the data is limited
 	 */
 	public boolean isLimited() {
-		return start != DEFAULT_START && end != DEFAULT_END;
+		return !start.equals(DEFAULT_START) && !end.equals(DEFAULT_END);
 	}
 	
 	/**
@@ -98,7 +98,7 @@ public class DateLimitedDataContainer<T extends DateLimitedData> {
 	 * @return the object instance for convenience
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	protected void limitToDateRange(Date start, Date end, boolean inclusive) {
+	public void limitToDateRange(Date start, Date end, boolean inclusive) {
 		
 		includeAll();
 		setRange(start, end, inclusive);
@@ -118,7 +118,7 @@ public class DateLimitedDataContainer<T extends DateLimitedData> {
 	 * @param t
 	 * @return
 	 */
-	public boolean add(T t) {
+	boolean add(T t) {
 		return t.isInDateRange(start, end, inclusive) ? data.add(t) && limitedData.add(t) : data.add(t);
 	}
 	
@@ -131,6 +131,17 @@ public class DateLimitedDataContainer<T extends DateLimitedData> {
 	 */
 	public T get(int index) {
 		return isLimited() ? limitedData.get(index) : data.get(index);
+	}
+	
+	public DateLimitedDataContainer<T> copy() {
+		
+		DateLimitedDataContainer<T> theCopy = new DateLimitedDataContainer<T>(this.data);
+		theCopy.end = this.end;
+		theCopy.inclusive = this.inclusive;
+		theCopy.start = this.start;
+		theCopy.limitedData = this.limitedData;
+		
+		return theCopy;
 	}
 	
 }

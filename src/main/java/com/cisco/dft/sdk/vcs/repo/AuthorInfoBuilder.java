@@ -5,7 +5,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-import com.cisco.dft.sdk.vcs.util.DateLimitedDataContainerRecursive;
 import com.cisco.dft.sdk.vcs.util.SortMethod;
 import com.google.common.collect.Lists;
 
@@ -16,16 +15,18 @@ import com.google.common.collect.Lists;
  * @author phwhitin
  *
  */
-public class AuthorInfoBuilder extends DateLimitedDataContainerRecursive<AuthorInfo> {
+public class AuthorInfoBuilder {
 	
 	private String branch;
+	
+	private DateLimitedDataContainer<AuthorInfo> authorInfo;
 	
 	AuthorInfoBuilder(final List<AuthorInfo> infos) {
 		this(infos, "Could not detect");
 	}
 	
 	AuthorInfoBuilder(final List<AuthorInfo> infos, String branch) {
-		super(infos);
+		authorInfo = new DateLimitedDataContainer<AuthorInfo>(infos);
 		this.branch = branch;
 	}
 	
@@ -39,20 +40,16 @@ public class AuthorInfoBuilder extends DateLimitedDataContainerRecursive<AuthorI
 		
 		switch (method) {
 			case COMMITS:
-				Collections.sort(data, SORTER_COMMITS); 
-				Collections.sort(limitedData, SORTER_COMMITS); 
+				Collections.sort(authorInfo.getData(), SORTER_COMMITS); 
 				break;
 			case ADDITIONS: 
-				Collections.sort(data, SORTER_ADDITIONS );
-				Collections.sort(limitedData, SORTER_ADDITIONS );
+				Collections.sort(authorInfo.getData(), SORTER_ADDITIONS );
 				break;
 			case DELETIONS:
-				Collections.sort(data, SORTER_DELETIONS);
-				Collections.sort(limitedData, SORTER_DELETIONS);
+				Collections.sort(authorInfo.getData(), SORTER_DELETIONS);
 				break;
 			case NAME: 
-				Collections.sort(data, SORTER_NAMES);
-				Collections.sort(limitedData, SORTER_NAMES);
+				Collections.sort(authorInfo.getData(), SORTER_NAMES);
 				break;
 			default:
 				break;
@@ -76,18 +73,8 @@ public class AuthorInfoBuilder extends DateLimitedDataContainerRecursive<AuthorI
 	 */
 	public AuthorInfo lookupUser(String user) {
 		
-		if (!isLimited()) {
-			
-			for (AuthorInfo ai : data) {
-				if (ai.getName().equals(user)) { return ai; }
-			}
-			
-		} else {
-			
-			for (AuthorInfo ai : limitedData) {
-				if (ai.getName().equals(user)) { return ai; }
-			}
-			
+		for (AuthorInfo ai : authorInfo.getData()) {
+			if (ai.getName().equals(user)) { return ai; }
 		}
 		
 		return new AuthorInfo(user);
@@ -98,8 +85,7 @@ public class AuthorInfoBuilder extends DateLimitedDataContainerRecursive<AuthorI
 	 * 
 	 * @return a list of AuthorInfo stored for the repo
 	 */
-	@Override
-	public List<AuthorInfo> getData() { return Lists.newArrayList(super.getData()); }
+	public List<AuthorInfo> getInfo() { return Lists.newArrayList(authorInfo.getData()); }
 	
 	/**
 	 * Returns the branch that this information is from.
@@ -116,9 +102,8 @@ public class AuthorInfoBuilder extends DateLimitedDataContainerRecursive<AuthorI
 	 * @param inclusive whether or not the range includes the endpoints
 	 * @return
 	 */
-	@Override
 	public void limitToDateRange(Date start, Date end, boolean inclusive) {
-		super.limitToDateRange(start, end, inclusive);
+		authorInfo.limitToDateRange(start, end, inclusive);
 	}
 	
 	/**
@@ -126,10 +111,9 @@ public class AuthorInfoBuilder extends DateLimitedDataContainerRecursive<AuthorI
 	 * 
 	 * @return
 	 */
-	@Override
 	public AuthorInfoBuilder includeAll() {
 		
-		super.includeAll();
+		authorInfo.includeAll();
 		
 		return this;
 	}
@@ -141,20 +125,10 @@ public class AuthorInfoBuilder extends DateLimitedDataContainerRecursive<AuthorI
 		value.append(getBranchName());
 		value.append("\n");
 		
-		for (AuthorInfo ai : getData()) { value.append(ai.toString()); }
+		for (AuthorInfo ai : authorInfo.getData()) { value.append(ai.toString()); }
 		
 		return value.toString();
 		
-	}
-
-	@Override
-	public boolean isInDateRange(Date start, Date end, boolean inclusive) {
-		
-		boolean flag = false;
-		for (AuthorInfo ai : data) {
-			flag |= ai.isInDateRange(start, end, inclusive);
-		}
-		return flag;
 	}
 	
 	private static final Comparator<AuthorInfo> SORTER_COMMITS = new Comparator<AuthorInfo>() {

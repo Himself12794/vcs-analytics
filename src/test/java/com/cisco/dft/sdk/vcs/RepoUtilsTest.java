@@ -85,30 +85,35 @@ public class RepoUtilsTest {
 		
 		LOGGER.info("Testing author statistics sorting methods.");
 		aib.sort(SortMethod.ADDITIONS);
-		assertTrue(aib.getData().get(0).getAdditions() >= aib.getData().get(1).getAdditions());
+		assertTrue(aib.getInfo().get(0).getAdditions() >= aib.getInfo().get(1).getAdditions());
 		
 		aib.sort(SortMethod.COMMITS);
-		assertTrue(aib.getData().get(0).getCommitCount() >= aib.getData().get(1).getCommitCount());
+		assertTrue(aib.getInfo().get(0).getCommitCount() >= aib.getInfo().get(1).getCommitCount());
 		
 		aib.sort(SortMethod.DELETIONS);
-		assertTrue(aib.getData().get(0).getDeletions() >= aib.getData().get(1).getDeletions());
+		assertTrue(aib.getInfo().get(0).getDeletions() >= aib.getInfo().get(1).getDeletions());
 		
 		aib.sort(SortMethod.NAME);
-		assertTrue(aib.getData().get(0).getName().compareTo(aib.getData().get(1).getName()) < 0);
+		assertTrue(aib.getInfo().get(0).getName().compareTo(aib.getInfo().get(1).getName()) < 0);
 		
 		LOGGER.info("Testing commit info accuracy");
 		List<AuthorCommit> commits = ai.getCommits();
+		AuthorCommit ac = ai.getCommitById("f9b9131491db5110f4dbc839f40b94b0f28fcf85");
 		
-		assertTrue(commits.get(0).getAdditions() > 5);
-		assertTrue(commits.get(0).getDeletions() > 5);
-		assertTrue(commits.get(0).getTimestamp() > commits.get(1).getTimestamp());
+		assertTrue(ac.getAdditions() == 19);
+		assertTrue(ac.getDeletions() == 9);
+		assertTrue(ac.getTimestamp() >= commits.get(0).getTimestamp());
+		assertTrue(ac.getMessage().equals("Merge pull request #29 from RichardBronosky/master"));
+		assertTrue(ac.isMergeCommit());
+		assertTrue(ac.getChangedFiles() == 1);
+		assertTrue(ac.getTotalChange() == 10);
 		assertTrue(aib.lookupUser("Unknown").getDeletions() == 0);
 		
 		LOGGER.info("Testing date range limiting.");
-		assertTrue(aib.getData().size() >= 13);
+		assertTrue(aib.getInfo().size() >= 13);
 		assertTrue(aib.lookupUser("Matt Iversen").getCommitCount() >= 1 );
 		aib.limitToDateRange(start, end, true);
-		assertTrue(aib.getData().size() == 4);
+		assertTrue(aib.getInfo().size() == 4);
 		assertTrue(aib.lookupUser("Matt Iversen").getCommitCount() == 0 );
 		System.out.println(aib);
 		

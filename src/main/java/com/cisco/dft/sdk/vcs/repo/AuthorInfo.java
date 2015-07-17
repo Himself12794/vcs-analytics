@@ -6,7 +6,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-import com.cisco.dft.sdk.vcs.util.DateLimitedDataContainerRecursive;
+import com.cisco.dft.sdk.vcs.util.CommitNotFoundException;
 import com.google.common.collect.Lists;
 
 /**
@@ -15,7 +15,7 @@ import com.google.common.collect.Lists;
  * @author phwhitin
  *
  */
-public class AuthorInfo extends DateLimitedDataContainerRecursive<AuthorCommit> {
+public class AuthorInfo extends RecursiveDateLimitedDataContainer<AuthorCommit> {
 
 	private final String name;
 
@@ -46,6 +46,16 @@ public class AuthorInfo extends DateLimitedDataContainerRecursive<AuthorCommit> 
 			limitedTotalChange += ac.getTotalChange();
 		}
 		
+	}
+	
+	/**
+	 * Checks if the specified data falls in the range this object currently has.
+	 * 
+	 * @param dld
+	 * @return
+	 */
+	public boolean isInRange(DateLimitedData dld) {
+		return dld.isInDateRange(start, end, inclusive);
 	}
 
 	@Override
@@ -113,6 +123,15 @@ public class AuthorInfo extends DateLimitedDataContainerRecursive<AuthorCommit> 
 
 	void incrementTotalChange(int x) {
 		totalChange += x;
+	}
+	
+	public AuthorCommit getCommitById(String id) {
+		
+		for (AuthorCommit ac : data) {
+			if (ac.getId().equals(id)) { return ac; }
+		}
+		
+		throw new CommitNotFoundException();
 	}
 
 	@Override

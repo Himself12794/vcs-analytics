@@ -2,9 +2,6 @@ package com.cisco.dft.sdk.vcs.repo;
 
 import java.util.Date;
 
-import com.cisco.dft.sdk.vcs.util.DateLimitedData;
-import com.cisco.dft.sdk.vcs.util.DateLimitedDataContainer;
-
 /**
  * Used to store information about a commit made by author.
  * 
@@ -12,7 +9,7 @@ import com.cisco.dft.sdk.vcs.util.DateLimitedDataContainer;
  *
  */
 public class AuthorCommit implements DateLimitedData {
-	
+
 	private final String id;
 
 	private final long timestamp;
@@ -29,20 +26,21 @@ public class AuthorCommit implements DateLimitedData {
 
 	private final String message;
 
-	public AuthorCommit(final String id, final long timestamp, final int changedFiles,
-			final int additions, final int deletions, final int totalChange,
+	public AuthorCommit(final String id, final long timestamp,
+			final int changedFiles, final int additions, final int deletions,
 			final boolean isMergeCommit, final String message) {
-		
+
 		this.id = id;
 		this.timestamp = timestamp;
 		this.changedFiles = changedFiles;
 		this.additions = additions;
 		this.deletions = deletions;
-		this.totalChange = totalChange;
+		this.totalChange = additions - deletions;
 		this.isMergeCommit = isMergeCommit;
 		this.message = message;
 
 	}
+
 	/**
 	 * Gets the SHA-1 id.
 	 * 
@@ -76,7 +74,7 @@ public class AuthorCommit implements DateLimitedData {
 	public int getTotalChange() {
 		return totalChange;
 	}
-	
+
 	public boolean isMergeCommit() {
 		return isMergeCommit;
 	}
@@ -104,7 +102,7 @@ public class AuthorCommit implements DateLimitedData {
 		Date startF = start == null ? DateLimitedDataContainer.DEFAULT_START : start;
 		Date endF = end == null ? DateLimitedDataContainer.DEFAULT_START : end;
 		Date time = new Date(getTimestamp() * 1000);
-		return  inclusive ? (time.getTime() >= startF.getTime() && time
+		return inclusive ? (time.getTime() >= startF.getTime() && time
 				.getTime() <= endF.getTime()) : (time.after(startF) && time
 				.before(endF));
 	}
