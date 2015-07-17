@@ -1,6 +1,5 @@
-package com.cisco.dft.sdk.vcs.repo;
+package com.cisco.dft.sdk.vcs.util;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -23,11 +22,11 @@ public class RecursiveDateLimitedDataContainer<T extends DateLimitedData> extend
 	 * Checks to see if this particular piece of data falls within a time range.
 	 */
 	@Override
-	public boolean isInDateRange(Date start, Date end, boolean inclusive) {
+	public boolean isInDateRange(DateRange dateRange) {
 		boolean flag = false;
 
 		for (T t : data) {
-			flag |= t.isInDateRange(start, end, inclusive);
+			flag |= t.isInDateRange(dateRange);
 		}
 
 		return flag;

@@ -2,6 +2,9 @@ package com.cisco.dft.sdk.vcs.repo;
 
 import java.util.Date;
 
+import com.cisco.dft.sdk.vcs.util.DateLimitedData;
+import com.cisco.dft.sdk.vcs.util.DateLimitedDataContainer.DateRange;
+
 /**
  * Used to store information about a commit made by author.
  * 
@@ -98,13 +101,11 @@ public class AuthorCommit implements DateLimitedData {
 	}
 
 	@Override
-	public boolean isInDateRange(Date start, Date end, boolean inclusive) {
-		Date startF = start == null ? DateLimitedDataContainer.DEFAULT_START : start;
-		Date endF = end == null ? DateLimitedDataContainer.DEFAULT_START : end;
+	public boolean isInDateRange(DateRange dateRange) {
 		Date time = new Date(getTimestamp() * 1000);
-		return inclusive ? (time.getTime() >= startF.getTime() && time
-				.getTime() <= endF.getTime()) : (time.after(startF) && time
-				.before(endF));
+		return dateRange.isInclusive() ? (time.getTime() >= dateRange.getStart().getTime() && time
+				.getTime() <= dateRange.getEnd().getTime()) : (time.after(dateRange.getStart()) && time
+				.before(dateRange.getEnd()));
 	}
 
 }

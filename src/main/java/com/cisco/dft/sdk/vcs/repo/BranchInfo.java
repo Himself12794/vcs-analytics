@@ -198,7 +198,8 @@ public class BranchInfo {
 	/**
 	 * Gets the statistics that have been logged for this branch. The data is
 	 * stored in memory for efficiency, so data may be inaccurate unless
-	 * {@link GitRepo#sync()} is run.
+	 * {@link GitRepo#sync()} is run. All data is copied, so there is no
+	 * danger in compromising internal information.
 	 * 
 	 * @return a statistics builder for this repo
 	 */

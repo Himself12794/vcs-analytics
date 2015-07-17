@@ -5,12 +5,15 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
+import com.cisco.dft.sdk.vcs.util.DateLimitedDataContainer;
 import com.cisco.dft.sdk.vcs.util.SortMethod;
 import com.google.common.collect.Lists;
 
 /**
  * Utility object for organizing printed author output and looking
- * up specific users.
+ * up specific users. All information is copied, so worries in compromising
+ * internal data. The downside is that a new instance must be acquired after
+ * every sync.
  * 
  * @author phwhitin
  *
@@ -26,7 +29,13 @@ public class AuthorInfoBuilder {
 	}
 	
 	AuthorInfoBuilder(final List<AuthorInfo> infos, String branch) {
-		authorInfo = new DateLimitedDataContainer<AuthorInfo>(infos);
+		
+		List<AuthorInfo> copiedList = Lists.newArrayList();
+		for (AuthorInfo ai : infos) {
+			copiedList.add(ai.copy());
+		}
+		
+		authorInfo = new DateLimitedDataContainer<AuthorInfo>(copiedList);
 		this.branch = branch;
 	}
 	
@@ -100,10 +109,12 @@ public class AuthorInfoBuilder {
 	 * @param start the start date
 	 * @param end the end date
 	 * @param inclusive whether or not the range includes the endpoints
+	 * @return 
 	 * @return
 	 */
-	public void limitToDateRange(Date start, Date end, boolean inclusive) {
+	public AuthorInfoBuilder limitToDateRange(Date start, Date end, boolean inclusive) {
 		authorInfo.limitToDateRange(start, end, inclusive);
+		return this;
 	}
 	
 	/**

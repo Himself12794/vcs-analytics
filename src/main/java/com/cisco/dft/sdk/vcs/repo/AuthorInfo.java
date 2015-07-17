@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.cisco.dft.sdk.vcs.util.CommitNotFoundException;
+import com.cisco.dft.sdk.vcs.util.RecursiveDateLimitedDataContainer;
 import com.google.common.collect.Lists;
 
 /**
@@ -24,15 +25,20 @@ public class AuthorInfo extends RecursiveDateLimitedDataContainer<AuthorCommit> 
 	private int limitedAdditions, limitedDeletions, limitedTotalChange;
 
 	AuthorInfo(final String name) {
-		this(name, 0, 0);
+		this(name, 0, 0, new ArrayList<AuthorCommit>());
 	}
 
-	AuthorInfo(final String name, int additions, int deletions) {
-		super(new ArrayList<AuthorCommit>());
+	AuthorInfo(final String name, int additions, int deletions, List<AuthorCommit> commits) {
+		super(commits);
 		this.name = name;
 		this.additions = additions;
 		this.deletions = deletions;
 
+	}
+
+	@Override
+	public void limitToDateRange(DateRange dateRange) {
+		limitToDateRange(dateRange.getStart(), dateRange.getEnd(), dateRange.isInclusive());
 	}
 
 	@Override
@@ -46,16 +52,6 @@ public class AuthorInfo extends RecursiveDateLimitedDataContainer<AuthorCommit> 
 			limitedTotalChange += ac.getTotalChange();
 		}
 		
-	}
-	
-	/**
-	 * Checks if the specified data falls in the range this object currently has.
-	 * 
-	 * @param dld
-	 * @return
-	 */
-	public boolean isInRange(DateLimitedData dld) {
-		return dld.isInDateRange(start, end, inclusive);
 	}
 
 	@Override
@@ -132,6 +128,12 @@ public class AuthorInfo extends RecursiveDateLimitedDataContainer<AuthorCommit> 
 		}
 		
 		throw new CommitNotFoundException();
+	}
+	
+	public AuthorInfo copy() {
+		AuthorInfo theCopy = new AuthorInfo(name, additions, deletions, data);
+		theCopy.limitToDateRange(this.getDateRange());
+		return theCopy;
 	}
 
 	@Override

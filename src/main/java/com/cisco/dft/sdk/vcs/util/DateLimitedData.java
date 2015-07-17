@@ -1,6 +1,6 @@
-package com.cisco.dft.sdk.vcs.repo;
+package com.cisco.dft.sdk.vcs.util;
 
-import java.util.Date;
+import com.cisco.dft.sdk.vcs.util.DateLimitedDataContainer.DateRange;
 
 /**
  * Indicates a data type that can fall within a time frame.
@@ -18,6 +18,6 @@ public interface DateLimitedData {
 	 * @param inclusive
 	 * @return
 	 */
-	boolean isInDateRange(Date start, Date end, boolean inclusive);
+	boolean isInDateRange(DateRange dateRange);
 	
 }

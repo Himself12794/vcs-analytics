@@ -112,6 +112,7 @@ public class RepoUtilsTest {
 		LOGGER.info("Testing date range limiting.");
 		assertTrue(aib.getInfo().size() >= 13);
 		assertTrue(aib.lookupUser("Matt Iversen").getCommitCount() >= 1 );
+		System.out.println(aib);
 		aib.limitToDateRange(start, end, true);
 		assertTrue(aib.getInfo().size() == 4);
 		assertTrue(aib.lookupUser("Matt Iversen").getCommitCount() == 0 );
