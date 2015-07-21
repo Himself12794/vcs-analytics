@@ -1,16 +1,34 @@
 package com.cisco.dft.sdk.vcs.repo;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.diff.DiffEntry;
+import org.eclipse.jgit.diff.DiffFormatter;
+import org.eclipse.jgit.errors.CorruptObjectException;
+import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.ObjectReader;
+import org.eclipse.jgit.patch.HunkHeader;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.treewalk.CanonicalTreeParser;
+import org.eclipse.jgit.treewalk.EmptyTreeIterator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.cisco.dft.sdk.vcs.util.CodeSniffer;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
+import com.cisco.dft.sdk.vcs.util.CodeSniffer;
+import com.cisco.dft.sdk.vcs.util.DateLimitedDataContainer.DateRange;
 import com.cisco.dft.sdk.vcs.util.SortMethod;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 /**
  * Class used to hold information about a specific branch in a repository.
@@ -18,57 +36,35 @@ import com.google.common.collect.Maps;
  * @author phwhitin
  *
  */
-public class BranchInfo {
+public class BranchInfo extends HistoryViewer {
 
-	private int fileCount;
-
-	private int lineCount;
+	private static final Logger LOGGER = LoggerFactory
+			.getLogger(BranchInfo.class);
 
 	private int commitCount;
 
 	private String mostRecentLoggedCommit;
 
-	private final String branch;
-
-	private final Map<Language, Integer> languageCount;
-
 	private final Map<String, AuthorInfo> authorInfo;
 
-	BranchInfo() {
-		this("Unknown");
+	BranchInfo(Git theRepo) {
+		this("Unknown", theRepo);
 	}
 
-	BranchInfo(final String branch) {
-		this(0, 0, branch);
-	}
-
-	private BranchInfo(int fileCount, int lineCount, final String branch) {
-		this(fileCount, lineCount, branch, new HashMap<Language, Integer>(), new HashMap<String, AuthorInfo>());
+	BranchInfo(final String branch, Git theRepo) {
+		this(0, 0, branch, theRepo);
 	}
 
 	private BranchInfo(int fileCount, int lineCount, final String branch,
-			final Map<Language, Integer> languageCount,
-			final Map<String, AuthorInfo> authorInfo) {
-
-		this.fileCount = fileCount;
-		this.lineCount = lineCount;
-		this.branch = branch;
-		this.languageCount = languageCount;
-		this.authorInfo = authorInfo;
-
+			Git theRepo) {
+		this(fileCount, lineCount, branch, theRepo, new HashMap<Language, Integer>(), new HashMap<String, AuthorInfo>());
 	}
 
-	void incrementLanguage(Language lang, int x) {
-
-		if (!languageCount.containsKey(lang)) {
-
-			languageCount.put(lang, x);
-
-		} else {
-
-			languageCount.put(lang, languageCount.get(lang) + x);
-
-		}
+	private BranchInfo(int fileCount, int lineCount, final String branch,
+			Git theRepo, final Map<Language, Integer> languageCount,
+			final Map<String, AuthorInfo> authorInfo) {
+		super(fileCount, lineCount, branch, theRepo, "", new Date(), languageCount);
+		this.authorInfo = authorInfo;
 
 	}
 
@@ -94,112 +90,10 @@ public class BranchInfo {
 	}
 
 	/**
-	 * Gets the number of files for that are registered as
-	 * {@code LangType.PRIMARY}.
-	 * <p>
-	 * Refer to {@link CodeSniffer.Language} to see which is considered which.
-	 * 
-	 * @return count
-	 */
-	public int getPrimaryLangCount() {
-		int count = 0;
-		for (Entry<Language, Integer> langEntry : languageCount.entrySet()) {
-			if (langEntry.getKey().isPrimary()) {
-				count += langEntry.getValue();
-			}
-		}
-		return count;
-	}
-
-	/**
-	 * Gets the number of files for that are registered as
-	 * {@code LangType.SECONDARY}.
-	 * <p>
-	 * Refer to {@link CodeSniffer.Language} to see which is considered which.
-	 * 
-	 * @return count
-	 */
-	public int getSecondaryLangCount() {
-		int count = 0;
-		for (Entry<Language, Integer> langEntry : languageCount.entrySet()) {
-			if (langEntry.getKey().isSecondary()) {
-				count += langEntry.getValue();
-			}
-		}
-		return count;
-	}
-
-	/**
-	 * Get the percentage of the repo that is made up of this language.
-	 * 
-	 * @param lang
-	 *            lanugage to look for
-	 * @return percentage
-	 */
-	public float getLangPercent(Language lang) {
-		return languageCount.containsKey(lang) ? languageCount.get(lang)
-				.floatValue() / fileCount : 0.0F;
-	}
-
-	/**
-	 * Get number of files that us the specified language.
-	 * 
-	 * @param lang
-	 * @return count
-	 */
-	public int getLangCount(Language lang) {
-		return languageCount.containsKey(lang) ? languageCount.get(lang) : 0;
-	}
-
-	/**
-	 * @return number of files
-	 */
-	public int getFileCount() {
-		return fileCount;
-	}
-
-	private void setFileCount(int count) {
-		fileCount = count;
-	}
-
-	void incrementFileCount(int x) {
-		fileCount += x;
-	}
-
-	/**
-	 * @return lines of code on this branch
-	 */
-	public int getLineCount() {
-		return lineCount;
-	}
-
-	private void setLineCount(int count) {
-		lineCount = count;
-	}
-
-	void incrementLineCount(int x) {
-		lineCount += x;
-	}
-
-	/**
-	 * @return the name of this branch
-	 */
-	public String getName() {
-		return branchTrimmer(branch);
-	}
-
-	/**
-	 * @return the map of language counts for use with iteration
-	 */
-	public Map<Language, Integer> getLangCountMap() {
-		return Maps.newHashMap(languageCount);
-	}
-
-	/**
 	 * Gets the statistics that have been logged for this branch. The data is
 	 * stored in memory for efficiency, so data may be inaccurate unless
-	 * {@link GitRepo#sync()} is run. All data is copied, so there is no
-	 * danger in compromising internal information.
+	 * {@link GitRepo#sync()} is run. All data is copied, so there is no danger
+	 * in compromising internal information.
 	 * 
 	 * @return a statistics builder for this repo
 	 */
@@ -226,6 +120,124 @@ public class BranchInfo {
 
 	}
 
+	/**
+	 * Generates a snapshot of the repository at the certain date. If no history
+	 * is found before this date, the object returned is empty.
+	 * <p>
+	 * Note that the Date object counts time down to the millisecond, so make sure
+	 * you add an appreciable margin if your date is more general.
+	 * 
+	 * @param date
+	 * @return the history object, never null
+	 */
+	public HistoryViewer getHistoryForDate(Date date) {
+		
+		Date prev = DateRange.DEFAULT_END_A;
+		
+		AuthorCommit temp2 = new AuthorCommit();
+		
+		for (AuthorInfo ai : authorInfo.values()) {
+			
+			ai.limitToDateRange(prev, date, true);
+			
+			List<AuthorCommit> acs = ai.getCommits();
+			
+			for (AuthorCommit ac : acs) {
+				
+				Date date2 = ac.getTimestampAsDate();
+				if (date2.after(prev)) {
+					temp2 = ac;
+					prev = date2;
+				}
+				
+			}
+			
+		}
+		
+		HistoryViewer hv = getHistoryForCommit(temp2.getId());
+		hv.setDate(date);
+		return hv;
+		
+	}
+
+	/**
+	 * Looks up the history for the specified commit and generates a snapshot.
+	 * 
+	 * @param commitId
+	 * @return
+	 */
+	public HistoryViewer getHistoryForCommit(String commitId) {
+
+		HistoryViewer hv = new HistoryViewer(branch, theRepo, commitId, new Date());
+		DiffFormatter df = new DiffFormatter(new ByteArrayOutputStream());
+
+		try {
+
+			hv = lookupHistoryFor(commitId, df);
+
+		} catch (Exception e) {
+			LOGGER.error("Could not find history for commit id " + commitId, e);
+		} finally {
+			df.close();
+		}
+
+		return hv;
+
+	}
+
+	/**
+	 * Generates a snapshot of the repository at this commit. If the commit id
+	 * is invalid, it returns an empty data object.
+	 * 
+	 * @param commitId
+	 * @return data object containing information for this commit. This never
+	 *         returns null.
+	 * @throws IOException
+	 * @throws MissingObjectException
+	 * @throws CorruptObjectException
+	 */
+	private HistoryViewer lookupHistoryFor(String commitId, DiffFormatter df) throws CorruptObjectException, MissingObjectException, IOException {
+		
+		RevWalk rw = new RevWalk(theRepo.getRepository());
+		RevCommit rc = rw
+				.parseCommit(theRepo.getRepository().resolve(commitId));
+
+		rw.close();
+		
+		HistoryViewer hv = new HistoryViewer(branch, theRepo, rc.getId().name(), new Date(((long)rc.getCommitTime()) * 1000));
+
+		ObjectReader reader = theRepo.getRepository().newObjectReader();
+
+		EmptyTreeIterator oldTreeIter = new EmptyTreeIterator();
+		oldTreeIter.reset();
+
+		CanonicalTreeParser newTreeIter = new CanonicalTreeParser();
+		ObjectId newTree = rc.getTree();
+		newTreeIter.reset(reader, newTree);
+
+		df.setRepository(theRepo.getRepository());
+		List<DiffEntry> entries = df.scan(oldTreeIter, newTreeIter);
+
+		for (DiffEntry entry : entries) {
+
+			Language lang = CodeSniffer.detectLanguage(entry.getNewPath());
+
+			hv.incrementLanguage(lang, 1);
+
+			hv.incrementFileCount(1);
+
+			for (HunkHeader hunk : df.toFileHeader(entry).getHunks()) {
+
+				hv.incrementLineCount(hunk.getNewLineCount());
+
+			}
+
+		}
+
+		return hv;
+
+	}
+
 	void setMostRecentCommit(String string) {
 		this.mostRecentLoggedCommit = string;
 	}
@@ -238,7 +250,7 @@ public class BranchInfo {
 	public String toString() {
 
 		StringBuilder value = new StringBuilder("Branch: ");
-		value.append(getName());
+		value.append(getBranchName());
 		value.append("\nFile Count: ");
 		value.append(fileCount);
 		value.append("\nTotal Commits: ");

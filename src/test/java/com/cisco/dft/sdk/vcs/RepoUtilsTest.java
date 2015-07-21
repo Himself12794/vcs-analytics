@@ -7,15 +7,19 @@ import java.util.Date;
 import java.util.List;
 
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.classic.Level;
 
 import com.cisco.dft.sdk.vcs.repo.AuthorCommit;
 import com.cisco.dft.sdk.vcs.repo.AuthorInfo;
 import com.cisco.dft.sdk.vcs.repo.AuthorInfoBuilder;
 import com.cisco.dft.sdk.vcs.repo.BranchInfo;
 import com.cisco.dft.sdk.vcs.repo.GitRepo;
+import com.cisco.dft.sdk.vcs.repo.HistoryViewer;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
 import com.cisco.dft.sdk.vcs.util.SortMethod;
@@ -23,6 +27,16 @@ import com.cisco.dft.sdk.vcs.util.SortMethod;
 public class RepoUtilsTest {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger("UnitTesting");
+	
+	private void enableDebugLogging() {
+		ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
+	    root.setLevel(Level.DEBUG);
+	}
+	
+	@Before
+	public void configure() {
+		enableDebugLogging();
+	}
 
 	@Test
 	public void testCodeSniffer() throws Exception {
@@ -59,13 +73,29 @@ public class RepoUtilsTest {
 		assertTrue(branch.getLangCount(Language.JAVA) > 0 );
 		assertTrue(branch.getLangPercent(Language.C_SHARP) == 0.0F );
 		assertTrue(branch.getLangCount(Language.C_SHARP) == 0 );
-		assertTrue(branch.getName().equals("master") );
+		assertTrue(branch.getBranchName().equals("master") );
 		assertTrue(branch.getFileCount() > 10 );
 		assertTrue(branch.getLineCount() > 200 );
 		assertTrue(branch.getLangCountMap().containsKey(Language.JAVA) && branch.getLangCountMap().containsKey(Language.OTHER));
 		
 		reo.sync("master");
 		
+		BranchInfo bi = reo.getRepoStatistics().getBranchInfoFor("master");
+		System.out.println(bi);
+		
+		Date arbitraryDate = new Date(1434125085000L);
+		
+		HistoryViewer hv = reo.getRepoStatistics().getBranchInfoFor("master").getHistoryForDate(arbitraryDate);
+		System.out.println(hv);
+		assertTrue("8d7abf9d55a6170af465dce7887c4f399d31a7ba".equals(hv.getLastCommitId()));
+		assertTrue(hv.getFileCount() == 37);
+		assertTrue(hv.getLineCount() == 2671);
+		assertTrue("master".equals(hv.getBranchName()));
+		assertTrue(hv.getLangCount(Language.JAVA) == 23);
+		assertTrue(hv.getLangPercent(Language.JAVA) >= 0.5F);
+		assertTrue(hv.getSecondaryLangCount() == 14);
+		assertTrue(hv.getPrimaryLangCount() == 23);
+		assertTrue(hv.getDate().equals(arbitraryDate));
 		reo.close();
 	}
 	

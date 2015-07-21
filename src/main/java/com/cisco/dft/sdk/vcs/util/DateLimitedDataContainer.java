@@ -79,7 +79,7 @@ public class DateLimitedDataContainer<T extends DateLimitedData> {
 	 *            the date range to use
 	 */
 	public void limitToDateRange(DateRange dateRange) {
-		limitToDateRange(dateRange.start, dateRange.end, dateRange.inclusive);
+		limitToDateRange(dateRange.endA, dateRange.endB, dateRange.inclusive);
 	}
 
 	/**
@@ -119,8 +119,8 @@ public class DateLimitedDataContainer<T extends DateLimitedData> {
 	 * @return
 	 */
 	public boolean add(T t) {
-		return dateRange.isInRange(t) ? data.add(t) && limitedData.add(t) : data
-				.add(t);
+		return dateRange.isInRange(t) ? data.add(t) && limitedData.add(t)
+				: data.add(t);
 	}
 
 	/**
@@ -143,28 +143,34 @@ public class DateLimitedDataContainer<T extends DateLimitedData> {
 		return theCopy;
 	}
 	
+	/**
+	 * The current date range used for this repo. 
+	 * 
+	 * @return
+	 */
 	public DateRange getDateRange() {
 		return this.dateRange;
 	}
-	
+
 	/**
-	 * Convenience sub class of {@link DateLimitedDataContainer} that also provides an implementation of 
-	 * {@link DateLimitedData} for ease of recursion.
+	 * Convenience sub class of {@link DateLimitedDataContainer} that also
+	 * provides an implementation of {@link DateLimitedData} for ease of
+	 * recursion.
 	 * 
 	 * @author phwhitin
 	 *
 	 * @param <T>
 	 */
-	public static class RecursiveDateLimitedDataContainer<T extends DateLimitedData> extends
-			DateLimitedDataContainer<T> implements DateLimitedData {
-
+	public static class RecursiveDateLimitedDataContainer<T extends DateLimitedData>
+			extends DateLimitedDataContainer<T> implements DateLimitedData {
 
 		public RecursiveDateLimitedDataContainer(List<T> data) {
 			super(data);
 		}
-		
+
 		/**
-		 * Checks to see if this particular piece of data falls within a time range.
+		 * Checks to see if this particular piece of data falls within a time
+		 * range.
 		 */
 		@Override
 		public boolean isInDateRange(DateRange dateRange) {
@@ -178,7 +184,7 @@ public class DateLimitedDataContainer<T extends DateLimitedData> {
 		}
 
 	}
-	
+
 	/**
 	 * Wrapper class for a date range.
 	 * 
@@ -188,14 +194,14 @@ public class DateLimitedDataContainer<T extends DateLimitedData> {
 	public static class DateRange {
 
 		/** The epoch start date */
-		public static final Date DEFAULT_START = new Date(0L);
+		public static final Date DEFAULT_END_A = new Date(0L);
 
 		/** Nov of 5138. An nice thrown out there date for a good end point. */
-		public static final Date DEFAULT_END = new Date(99999999999999L);
+		public static final Date DEFAULT_END_B = new Date(99999999999999L);
 
 		public static final boolean DEFAULT_INCLUSION = true;
 
-		private Date start, end;
+		private Date endA, endB;
 
 		private boolean inclusive;
 
@@ -203,21 +209,22 @@ public class DateLimitedDataContainer<T extends DateLimitedData> {
 			setDefault();
 		}
 
-		public DateRange(Date start, Date end, boolean inclusive) {
-			setRange(start, end, inclusive);
+		public DateRange(Date endA, Date endB, boolean inclusive) {
+			setRange(endA, endB, inclusive);
 		}
 
-		public void setRange(Date start, Date end, boolean inclusive) {
-			setStart(start);
-			setEnd(end);
+		public DateRange setRange(Date endA, Date endB, boolean inclusive) {
+			setStart(endA);
+			setEnd(endB);
 			setInclusive(inclusive);
+			return this;
 		}
 
 		/**
 		 * Sets range open-ended.
 		 */
 		public void setDefault() {
-			setRange(DEFAULT_START, DEFAULT_END, DEFAULT_INCLUSION);
+			setRange(DEFAULT_END_A, DEFAULT_END_B, DEFAULT_INCLUSION);
 		}
 
 		/**
@@ -226,24 +233,24 @@ public class DateLimitedDataContainer<T extends DateLimitedData> {
 		 * @return
 		 */
 		public boolean hasAll() {
-			return this.start.equals(DEFAULT_START)
-					&& this.end.equals(DEFAULT_END);
+			return this.endA.equals(DEFAULT_END_A)
+					&& this.endB.equals(DEFAULT_END_B);
 		}
 
 		public Date getStart() {
-			return new Date(start.getTime());
+			return new Date(endA.getTime());
 		}
 
 		public void setStart(Date start) {
-			this.start = start != null ? start : DEFAULT_START;
+			this.endA = start != null ? start : DEFAULT_END_A;
 		}
 
 		public Date getEnd() {
-			return new Date(end.getTime());
+			return new Date(endB.getTime());
 		}
 
 		public void setEnd(Date end) {
-			this.end = end != null ? end : DEFAULT_END;
+			this.endB = end != null ? end : DEFAULT_END_B;
 		}
 
 		public boolean isInclusive() {
@@ -256,13 +263,29 @@ public class DateLimitedDataContainer<T extends DateLimitedData> {
 
 		/**
 		 * Checks if the specified data falls in the range this object currently
-		 * has. 
+		 * has.
 		 * 
 		 * @param dld
 		 * @return
 		 */
 		public boolean isInRange(DateLimitedData dld) {
 			return dld.isInDateRange(this);
+		}
+		
+		/**
+		 * Checks if the date is in the range.
+		 * 
+		 * @param date
+		 * @return
+		 */
+		public boolean isInRange(Date date) {
+			long a = endA.getTime();
+			long b = endB.getTime();
+			long c = date.getTime();
+
+			return inclusive ? (a < b ? (c > a && c < b) : (c > b && c < a))
+					: (a < b ? (c >= a && c <= b) : (c >= b && c <= a));
+
 		}
 
 	}

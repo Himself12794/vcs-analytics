@@ -6,11 +6,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
+import org.eclipse.jgit.api.Git;
+
 import com.google.common.collect.Maps;
 
 public class RepoInfo {
 	
 	private final String name; 
+	
+	private Git theRepo;
 
 	private final Map<String, BranchInfo> branches = Maps.newHashMap();
 	
@@ -19,7 +23,8 @@ public class RepoInfo {
 	}
 	
 	/**
-	 * Get the information for a specific branch.
+	 * Get the information for a specific branch. To find what branches the repo has,
+	 * use {@link RepoInfo#getBranches()}
 	 * 
 	 * @param branch for which to get information
 	 * @return Information on the branch, or empty information if the branch does not exist.
@@ -30,7 +35,7 @@ public class RepoInfo {
 		String resolved = BranchInfo.branchNameResolver(branch);
 		
 		if (branches.containsKey(resolved)) { return branches.get(resolved); }
-		else { return new BranchInfo(); }
+		else { return new BranchInfo(theRepo); }
 		
 	}
 	
@@ -40,7 +45,7 @@ public class RepoInfo {
 		
 		if (!branches.containsKey(branch)) { 
 			
-			bi = new BranchInfo(branch);
+			bi = new BranchInfo(branch, theRepo);
 			branches.put(branch, bi);
 			
 		} else { bi = branches.get(branch); }
@@ -83,6 +88,19 @@ public class RepoInfo {
 	 */
 	public String getName() {
 		return name;
+	}
+	
+	/**
+	 * Gets an array of all the branches for which this repo has information.
+	 * 
+	 * @return
+	 */
+	public String[] getBranches() {
+		return (String[]) branches.keySet().toArray();
+	}
+	
+	void setRepo(Git theRepo) {
+		this.theRepo = theRepo;
 	}
 	
 	@Override

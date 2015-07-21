@@ -123,7 +123,7 @@ public final class GitRepo {
 			boolean generateStatistics, File directory) throws TransportException {
 
 		String scrubbedUrl = urlScrubber(url);
-
+		
 		repoInfo = new RepoInfo(guessName(scrubbedUrl));
 
 		this.theDirectory = getDirectory(scrubbedUrl, directory);
@@ -135,6 +135,8 @@ public final class GitRepo {
 			try {
 
 				theRepo = Git.open(theDirectory);
+				repoInfo.setRepo(theRepo);
+				
 				if (generateStatistics) {
 					sync();
 				}
@@ -277,7 +279,7 @@ public final class GitRepo {
 		BranchInfo bi = repoInfo.getBranchInfo(branch);
 
 		LOGGER.info(repoInfo.getName() + ": Updating statistics for branch "
-				+ bi.getName());
+				+ bi.getBranchName());
 
 		RevWalk walk = new RevWalk(theRepo.getRepository());
 		ObjectId from = theRepo.getRepository().resolve(branch);
@@ -381,6 +383,10 @@ public final class GitRepo {
 			}
 
 		}
+	}
+	
+	BranchInfo getSnapshotForCommit(String commit, DiffFormatter df) {
+		return null;
 	}
 
 	/**
@@ -515,6 +521,8 @@ public final class GitRepo {
 				.setURI(remote).setBare(true).setNoCheckout(true)
 				.setCredentialsProvider(cp).call();
 
+		repoInfo.setRepo(theRepo);
+		
 		sync(true);
 
 	}

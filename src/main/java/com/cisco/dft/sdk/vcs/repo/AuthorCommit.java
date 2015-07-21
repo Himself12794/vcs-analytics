@@ -28,6 +28,10 @@ public class AuthorCommit implements DateLimitedData {
 	private final boolean isMergeCommit;
 
 	private final String message;
+	
+	public AuthorCommit() {
+		this("", 0L, 0, 0, 0, false, "");
+	}
 
 	public AuthorCommit(final String id, final long timestamp,
 			final int changedFiles, final int additions, final int deletions,
@@ -60,6 +64,10 @@ public class AuthorCommit implements DateLimitedData {
 	 */
 	public long getTimestamp() {
 		return timestamp;
+	}
+	
+	public Date getTimestampAsDate() {
+		return new Date(timestamp * 1000);
 	}
 
 	public int getChangedFiles() {
