@@ -80,13 +80,14 @@ public class RepoUtilsTest {
 		
 		reo.sync("master");
 		
-		BranchInfo bi = reo.getRepoStatistics().getBranchInfoFor("master");
-		System.out.println(bi);
-		
 		Date arbitraryDate = new Date(1434125085000L);
 		
+		HistoryViewer bi = (HistoryViewer)reo.getRepoStatistics().getBranchInfoFor("master");
 		HistoryViewer hv = reo.getRepoStatistics().getBranchInfoFor("master").getHistoryForDate(arbitraryDate);
+		
+		System.out.println(bi);
 		System.out.println(hv);
+		
 		assertTrue("8d7abf9d55a6170af465dce7887c4f399d31a7ba".equals(hv.getLastCommitId()));
 		assertTrue(hv.getFileCount() == 37);
 		assertTrue(hv.getLineCount() == 2671);

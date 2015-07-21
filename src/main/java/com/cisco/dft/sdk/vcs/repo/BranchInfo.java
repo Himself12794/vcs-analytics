@@ -31,7 +31,8 @@ import com.cisco.dft.sdk.vcs.util.SortMethod;
 import com.google.common.collect.Lists;
 
 /**
- * Class used to hold information about a specific branch in a repository.
+ * Class used to hold information about a specific branch in a repository. Also a history viewer class
+ * whose date is that of the most recent commit.
  * 
  * @author phwhitin
  *

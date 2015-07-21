@@ -96,7 +96,7 @@ public class RepoInfo {
 	 * @return
 	 */
 	public String[] getBranches() {
-		return (String[]) branches.keySet().toArray();
+		return branches.keySet().toArray(new String[branches.keySet().size()]);
 	}
 	
 	void setRepo(Git theRepo) {

@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Range;
 
 /**
  * Represents a data structure whose data entries can be restricted to a certain
@@ -279,12 +280,11 @@ public class DateLimitedDataContainer<T extends DateLimitedData> {
 		 * @return
 		 */
 		public boolean isInRange(Date date) {
-			long a = endA.getTime();
-			long b = endB.getTime();
+			Range<Long> rangeInclusive = Range.closed(endA.getTime(), endB.getTime());
+			Range<Long> rangeNonInclusive = Range.open(endA.getTime(), endB.getTime());
 			long c = date.getTime();
 
-			return inclusive ? (a < b ? (c > a && c < b) : (c > b && c < a))
-					: (a < b ? (c >= a && c <= b) : (c >= b && c <= a));
+			return inclusive ? rangeInclusive.contains(c) : rangeNonInclusive.contains(c);
 
 		}
 

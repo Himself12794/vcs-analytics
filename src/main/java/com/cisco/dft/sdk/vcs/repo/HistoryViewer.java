@@ -93,7 +93,7 @@ public class HistoryViewer {
 	}
 
 	public Date getDate() {
-		return theDate;
+		return (Date) theDate.clone();
 	}
 
 	public String getLastCommitId() {
@@ -191,8 +191,10 @@ public class HistoryViewer {
 
 		StringBuilder value = new StringBuilder("Branch: ");
 		value.append(getBranchName());
-		value.append("\nSnapshot for date: " + theDate.toString());
-		value.append("\nHistory up to commit: " + history);
+		value.append("\nSnapshot for date: ");
+		value.append(theDate.toString());
+		value.append("\nHistory up to commit: ");
+		value.append(history);
 		value.append("\nFile Count: ");
 		value.append(fileCount);
 		value.append("\nLine Count: ");
