@@ -23,6 +23,7 @@ import com.cisco.dft.sdk.vcs.repo.HistoryViewer;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
 import com.cisco.dft.sdk.vcs.util.SortMethod;
+import com.google.common.collect.Range;
 
 public class RepoUtilsTest {
 	
@@ -145,12 +146,12 @@ public class RepoUtilsTest {
 		assertTrue(aib.lookupUser("Matt Iversen").getCommitCount() >= 1 );
 		System.out.println(aib);
 		
-		aib.limitToDateRange(start, end, true);
+		aib.limitToDateRange(Range.closed(start, end));
 		assertTrue(aib.getInfo().size() == 4);
 		assertTrue(aib.lookupUser("Matt Iversen").getCommitCount() == 0 );
 		System.out.println(aib);
 		
-		aib.limitToDateRange(start, end, false);
+		aib.limitToDateRange(Range.open(start, end));
 		assertTrue(aib.getInfo().size() == 4);
 		assertTrue(aib.lookupUser("Matt Iversen").getCommitCount() == 0 );
 		System.out.println(aib);

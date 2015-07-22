@@ -24,11 +24,11 @@ import org.eclipse.jgit.treewalk.EmptyTreeIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer;
-import com.cisco.dft.sdk.vcs.util.DateLimitedDataContainer.DateRange;
+import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
 import com.cisco.dft.sdk.vcs.util.SortMethod;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Range;
 
 /**
  * Class used to hold information about a specific branch in a repository. Also a history viewer class
@@ -133,20 +133,20 @@ public class BranchInfo extends HistoryViewer {
 	 */
 	public HistoryViewer getHistoryForDate(Date date) {
 		
-		Date prev = DateRange.DEFAULT_END_A;
+		Date prev = new Date(0L);
 		
 		AuthorCommit temp2 = new AuthorCommit();
 		
 		for (AuthorInfo ai : authorInfo.values()) {
 			
-			ai.limitToDateRange(prev, date, true);
+			ai.limitToDateRange(Range.closed(prev, date));
 			
 			List<AuthorCommit> acs = ai.getCommits();
 			
 			for (AuthorCommit ac : acs) {
 				
 				Date date2 = ac.getTimestampAsDate();
-				if (date2.after(prev)) {
+				if (date2.after(prev) && date2.compareTo(date) < 1) {
 					temp2 = ac;
 					prev = date2;
 				}

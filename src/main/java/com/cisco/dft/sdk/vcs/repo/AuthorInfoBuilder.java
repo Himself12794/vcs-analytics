@@ -8,6 +8,7 @@ import java.util.List;
 import com.cisco.dft.sdk.vcs.util.DateLimitedDataContainer;
 import com.cisco.dft.sdk.vcs.util.SortMethod;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Range;
 
 /**
  * Utility object for organizing printed author output and looking
@@ -112,8 +113,8 @@ public class AuthorInfoBuilder {
 	 * @return 
 	 * @return
 	 */
-	public AuthorInfoBuilder limitToDateRange(Date start, Date end, boolean inclusive) {
-		authorInfo.limitToDateRange(start, end, inclusive);
+	public AuthorInfoBuilder limitToDateRange(Range<Date> dateRange) {
+		authorInfo.limitToDateRange(dateRange);
 		return this;
 	}
 	

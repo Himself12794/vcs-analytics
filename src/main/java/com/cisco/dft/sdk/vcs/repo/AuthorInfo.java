@@ -9,6 +9,7 @@ import java.util.List;
 import com.cisco.dft.sdk.vcs.util.CommitNotFoundException;
 import com.cisco.dft.sdk.vcs.util.DateLimitedDataContainer.RecursiveDateLimitedDataContainer;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Range;
 
 /**
  * Wrapper class used for author data pulled from the repository.
@@ -37,21 +38,15 @@ public class AuthorInfo extends RecursiveDateLimitedDataContainer<AuthorCommit> 
 	}
 
 	@Override
-	public void limitToDateRange(DateRange dateRange) {
-		limitToDateRange(dateRange.getStart(), dateRange.getEnd(), dateRange.isInclusive());
-	}
-
-	@Override
-	public void limitToDateRange(Date start, Date end, boolean inclusive) {
+	public void limitToDateRange(Range<Date> dateRange) {
 		includeAll();
-		super.limitToDateRange(start, end, inclusive);
+		super.limitToDateRange(dateRange);
 
 		for (AuthorCommit ac : limitedData) {
 			limitedAdditions += ac.getAdditions();
 			limitedDeletions += ac.getDeletions();
 			limitedTotalChange += ac.getTotalChange();
 		}
-		
 	}
 
 	@Override
