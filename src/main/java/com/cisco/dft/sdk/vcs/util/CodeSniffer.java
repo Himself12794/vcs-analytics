@@ -1,8 +1,17 @@
 package com.cisco.dft.sdk.vcs.util;
 
+import static com.cisco.dft.sdk.vcs.util.Util.getCLOCDataAsYaml;
+
 import java.io.File;
 import java.util.Map;
+import java.util.Map.Entry;
 
+import org.yaml.snakeyaml.Yaml;
+
+import com.cisco.dft.sdk.vcs.util.CLOCData.Header;
+import com.cisco.dft.sdk.vcs.util.CLOCData.LanguageStats;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.google.common.collect.Maps;
 
 /**
@@ -29,7 +38,8 @@ public final class CodeSniffer {
 	 *
 	 */
 	public static enum Language {
-
+		
+		JSP(LangType.PRIMARY),
 		JAVA(LangType.PRIMARY),
 		/** C# */
 		C_SHARP(LangType.PRIMARY),
@@ -95,6 +105,7 @@ public final class CodeSniffer {
 		a.put("hpp", Language.C_CPP);
 		a.put("hxx", Language.C_CPP);
 		a.put("js", Language.JAVASCRIPT);
+		a.put("jsp", Language.JSP);
 		a.put("py", Language.PYTHON);
 		a.put("pyw", Language.PYTHON);
 		a.put("lua", Language.LUA);
@@ -139,4 +150,44 @@ public final class CodeSniffer {
 	public static Language detectLanguage(File file) {
 		return detectLanguage(file.getName());
 	}
+	
+	@SuppressWarnings("unchecked")
+	public static CLOCData getCLOCStatistics(File file) {
+		
+		Map<String, LanguageStats> langStats = Maps.newHashMap();
+		
+		Header header = new Header();
+		
+		Iterable<Object> yaml = new Yaml().loadAll(getCLOCDataAsYaml(file));
+		
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
+		
+		for (Object obj : yaml) {
+
+			if (obj instanceof Map) {
+				
+				Map<String, Object> map = ((Map<String, Object>) obj);
+				
+				for (Entry<String, Object> entry : map.entrySet()) {
+					
+					String key = entry.getKey();
+					
+					if ("header".equals(key)) {
+						header = mapper.convertValue(entry.getValue(), Header.class);
+					} else if ("SUM".equals(key)) {
+					} else  {
+						LanguageStats langStat = mapper.convertValue(entry.getValue(), LanguageStats.class);
+						langStat.setLanguage(key);
+						langStats.put(key, langStat);
+					}
+					
+				}
+			}
+			
+		}
+		
+		return new CLOCData(header, langStats);
+	}
+	
 }

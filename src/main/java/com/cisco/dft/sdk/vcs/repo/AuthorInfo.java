@@ -74,7 +74,7 @@ public class AuthorInfo extends RecursiveDateLimitedDataContainer<AuthorCommit> 
 			@Override
 			public int compare(AuthorCommit p1, AuthorCommit p2) {
 
-				return Long.compare(p2.getTimestamp(), p1.getTimestamp());
+				return p2.getTimestamp().compareTo(p1.getTimestamp());
 			}
 
 		};

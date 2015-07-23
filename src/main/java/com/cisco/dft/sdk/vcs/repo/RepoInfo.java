@@ -12,11 +12,15 @@ import com.google.common.collect.Maps;
 
 public class RepoInfo {
 	
-	private final String name; 
+	private String name; 
 	
 	private Git theRepo;
 
 	private final Map<String, BranchInfo> branches = Maps.newHashMap();
+	
+	RepoInfo() {
+		this("Unknown");
+	}
 	
 	RepoInfo(String name) {
 		this.name = name;
@@ -88,6 +92,10 @@ public class RepoInfo {
 	 */
 	public String getName() {
 		return name;
+	}
+	
+	void setName(String name) {
+		this.name = name;
 	}
 	
 	/**

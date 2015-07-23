@@ -18,8 +18,8 @@ import com.cisco.dft.sdk.vcs.repo.AuthorCommit;
 import com.cisco.dft.sdk.vcs.repo.AuthorInfo;
 import com.cisco.dft.sdk.vcs.repo.AuthorInfoBuilder;
 import com.cisco.dft.sdk.vcs.repo.BranchInfo;
-import com.cisco.dft.sdk.vcs.repo.GitRepo;
 import com.cisco.dft.sdk.vcs.repo.HistoryViewer;
+import com.cisco.dft.sdk.vcs.repo.GitRepo;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
 import com.cisco.dft.sdk.vcs.util.SortMethod;
@@ -134,7 +134,7 @@ public class RepoUtilsTest {
 		
 		assertTrue(ac.getAdditions() == 19);
 		assertTrue(ac.getDeletions() == 9);
-		assertTrue(ac.getTimestamp() >= commits.get(0).getTimestamp());
+		assertTrue(ac.getTimestamp().compareTo(commits.get(0).getTimestamp()) >= 0);
 		assertTrue(ac.getMessage().equals("Merge pull request #29 from RichardBronosky/master"));
 		assertTrue(ac.isMergeCommit());
 		assertTrue(ac.getChangedFiles() == 1);

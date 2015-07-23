@@ -24,6 +24,7 @@ import org.eclipse.jgit.treewalk.EmptyTreeIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.cisco.dft.sdk.vcs.repo.GitRepo;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
 import com.cisco.dft.sdk.vcs.util.SortMethod;
@@ -145,7 +146,7 @@ public class BranchInfo extends HistoryViewer {
 			
 			for (AuthorCommit ac : acs) {
 				
-				Date date2 = ac.getTimestampAsDate();
+				Date date2 = ac.getTimestamp();
 				if (date2.after(prev) && date2.compareTo(date) < 1) {
 					temp2 = ac;
 					prev = date2;

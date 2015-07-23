@@ -15,7 +15,7 @@ public class AuthorCommit implements DateLimitedData {
 
 	private final String id;
 
-	private final long timestamp;
+	private final Date timestamp;
 
 	private final int changedFiles;
 
@@ -30,10 +30,10 @@ public class AuthorCommit implements DateLimitedData {
 	private final String message;
 	
 	public AuthorCommit() {
-		this("", 0L, 0, 0, 0, false, "");
+		this("", new Date(0L), 0, 0, 0, false, "");
 	}
 
-	public AuthorCommit(final String id, final long timestamp,
+	public AuthorCommit(final String id, final Date timestamp,
 			final int changedFiles, final int additions, final int deletions,
 			final boolean isMergeCommit, final String message) {
 
@@ -62,12 +62,8 @@ public class AuthorCommit implements DateLimitedData {
 	 * 
 	 * @return
 	 */
-	public long getTimestamp() {
+	public Date getTimestamp() {
 		return timestamp;
-	}
-	
-	public Date getTimestampAsDate() {
-		return new Date(timestamp * 1000);
 	}
 
 	public int getChangedFiles() {
@@ -110,8 +106,7 @@ public class AuthorCommit implements DateLimitedData {
 
 	@Override
 	public boolean isInDateRange(Range<Date> dateRange) {
-		Date time = new Date(getTimestamp() * 1000);
-		return dateRange.contains(time);
+		return dateRange.contains(timestamp);
 	}
 
 }

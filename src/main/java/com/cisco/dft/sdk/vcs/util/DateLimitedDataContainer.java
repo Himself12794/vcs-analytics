@@ -24,7 +24,6 @@ public class DateLimitedDataContainer<T extends DateLimitedData> {
 
 	protected List<T> limitedData = Lists.newArrayList();
 
-	//protected DateRange dateRange = new DateRange();
 	protected Range<Date> dateRange = Range.all();
 
 	public DateLimitedDataContainer() {
@@ -43,9 +42,9 @@ public class DateLimitedDataContainer<T extends DateLimitedData> {
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public DateLimitedDataContainer<T> includeAll() {
-		for (DateLimitedData dld : data) {
-			if (dld instanceof DateLimitedDataContainer) {
-				((DateLimitedDataContainer) dld).limitToDateRange(Range.all());
+		for (T t : data) {
+			if (t instanceof DateLimitedDataContainer) {
+				((DateLimitedDataContainer) t).limitToDateRange(Range.all());
 			}
 		}
 		limitedData = Lists.newArrayList();
@@ -79,18 +78,21 @@ public class DateLimitedDataContainer<T extends DateLimitedData> {
 	 * @param dateRange
 	 *            the date range to use
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({"rawtypes", "unchecked"})
 	public void limitToDateRange(Range<Date> dateRange) {
 
 		includeAll();
 		this.dateRange = dateRange;
 		
-		for (DateLimitedData dld : data) {
-			if (dld.isInDateRange(dateRange)) {
-				if (dld instanceof DateLimitedDataContainer) {
-					((DateLimitedDataContainer) dld).limitToDateRange(dateRange);
+		for (T t : data) {
+			
+			if (t.isInDateRange(dateRange)) {
+				
+				if (t instanceof DateLimitedDataContainer) {
+					((DateLimitedDataContainer) t).limitToDateRange(dateRange);
 				}
-				limitedData.add((T) dld);
+				
+				limitedData.add(t);
 			}
 		}
 	}

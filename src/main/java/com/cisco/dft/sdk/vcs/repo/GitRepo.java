@@ -3,6 +3,7 @@ package com.cisco.dft.sdk.vcs.repo;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -41,18 +42,18 @@ import com.google.common.collect.Lists;
  * @author phwhitin
  *
  */
-public final class GitRepo {
+public final class GitRepo extends Repo {
 
 	/**
 	 * Default directory relative to the system temp folder to store the
 	 * repository locally so metrics can be pulled from it.
 	 */
-	private static final String DEFAULT_TEMP_CLONE_DIRECTORY = "git_analytics/";
+	private static final String DEFAULT_TEMP_CLONE_DIRECTORY = "git-analytics/";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(GitRepo.class
 			.getSimpleName());
 
-	private final RepoInfo repoInfo;
+	private final RepoInfo repoInfo = new RepoInfo();
 
 	private final File theDirectory;
 
@@ -124,7 +125,7 @@ public final class GitRepo {
 
 		String scrubbedUrl = urlScrubber(url);
 		
-		repoInfo = new RepoInfo(guessName(scrubbedUrl));
+		repoInfo.setName(guessName(scrubbedUrl));
 
 		this.theDirectory = getDirectory(scrubbedUrl, directory);
 
@@ -186,10 +187,12 @@ public final class GitRepo {
 		try {
 
 			for (Ref ref : theRepo.lsRemote().call()) {
+				
 				if (!ref.getName().equals(Constants.HEAD)
 						&& ref.getName().contains(Constants.R_HEADS)) {
 					branches.add(ref.getName());
 				}
+				
 			}
 
 		} catch (GitAPIException e) {
@@ -241,7 +244,7 @@ public final class GitRepo {
 	 *            whether or not to update info
 	 */
 	public void sync(String branch, boolean generateStatistics) {
-
+		
 		String branchResolved = BranchInfo.branchNameResolver(branch);
 
 		LOGGER.info(repoInfo.getName() + ": Syncing data for branch "
@@ -252,6 +255,8 @@ public final class GitRepo {
 		DiffFormatter df = new DiffFormatter(new ByteArrayOutputStream());
 
 		try {
+			
+			theRepo.checkout().setName("origin/" + BranchInfo.branchTrimmer(branch)).setCreateBranch(false).call();
 			boolean flag = theRepo.fetch().setCredentialsProvider(cp)
 					.setRemoveDeletedRefs(true).call().getTrackingRefUpdates()
 					.isEmpty();
@@ -282,7 +287,7 @@ public final class GitRepo {
 				+ bi.getBranchName());
 
 		RevWalk walk = new RevWalk(theRepo.getRepository());
-		ObjectId from = theRepo.getRepository().resolve(branch);
+		ObjectId from = theRepo.getRepository().resolve(Constants.HEAD);
 		walk.sort(RevSort.REVERSE);
 
 		if (bi.getMostRecentLoggedCommit() != null) {
@@ -299,7 +304,7 @@ public final class GitRepo {
 		for (RevCommit rc : walk) {
 			String author = rc.getAuthorIdent().getName();
 			AuthorInfo ai = bi.getAuthorInfo(author);
-			boolean isMergeCommit = rc.getParentCount() > 1;
+			final boolean isMergeCommit = rc.getParentCount() > 1;
 
 			int totalAdditions = 0;
 			int totalDeletions = 0;
@@ -331,7 +336,7 @@ public final class GitRepo {
 			ai.incrementAdditions(totalAdditions);
 			ai.incrementDeletions(totalDeletions);
 			ai.incrementTotalChange(totalLineChange);
-			ai.add(new AuthorCommit(rc.name(), (long) rc.getCommitTime(), totalFilesAffected, totalAdditions, totalDeletions, isMergeCommit, rc
+			ai.add(new AuthorCommit(rc.name(), new Date(((long) rc.getCommitTime()) * 1000), totalFilesAffected, totalAdditions, totalDeletions, isMergeCommit, rc
 					.getShortMessage()));
 
 			bi.incrementCommitCount(1);
@@ -384,10 +389,6 @@ public final class GitRepo {
 
 		}
 	}
-	
-	BranchInfo getSnapshotForCommit(String commit, DiffFormatter df) {
-		return null;
-	}
 
 	/**
 	 * Compares two commits.
@@ -436,15 +437,13 @@ public final class GitRepo {
 		List<DiffEntry> entries = df.scan(oldTreeIter, newTreeIter);
 
 		int deletions = 0;
-
 		int additions = 0;
-
 		int changedFiles = 0;
-
 		int totalChange = 0;
 
 		for (DiffEntry entry : entries) {
-			changedFiles += 1;
+			
+			changedFiles++;
 			FileHeader fh = df.toFileHeader(entry);
 
 			for (HunkHeader hunk : fh.getHunks()) {
@@ -472,16 +471,12 @@ public final class GitRepo {
 
 		RevCommit newest = null;
 		try {
-
-			Iterable<RevCommit> revs = theRepo.log()
-					.add(theRepo.getRepository().resolve(branch)).call();
-
-			for (RevCommit rc : revs) {
-
-				newest = rc;
-				break;
-
-			}
+			
+			theRepo.checkout().setName("origin/" + BranchInfo.branchTrimmer(branch)).setCreateBranch(false).call();
+			RevWalk rw = new RevWalk(theRepo.getRepository());
+			newest = rw.parseCommit(theRepo.getRepository().resolve(Constants.HEAD));
+			rw.dispose();
+			rw.close();
 
 		} catch (RevisionSyntaxException | IOException | GitAPIException e) {
 			LOGGER.error("Could not get most recent commit", e);
@@ -518,13 +513,20 @@ public final class GitRepo {
 	private void createRepo(String remote) throws IllegalStateException, GitAPIException {
 
 		theRepo = Git.cloneRepository().setDirectory(theDirectory)
-				.setURI(remote).setBare(true).setNoCheckout(true)
-				.setCredentialsProvider(cp).call();
+				.setURI(remote).setCredentialsProvider(cp).call();
 
 		repoInfo.setRepo(theRepo);
 		
 		sync(true);
 
+	}
+	
+	/**
+	 * Gets the directory where temporary data is stored.
+	 * @return
+	 */
+	public File getDirectory() {
+		return theDirectory;
 	}
 
 	private File getDirectory(String url, File alternate) {
@@ -549,22 +551,6 @@ public final class GitRepo {
 	 */
 	private static String urlScrubber(String url) {
 		return url.startsWith("http://") ? url.replace("http://", "https://") : url;
-	}
-
-	private static String guessName(String url) {
-		String value = "";
-		String[] splitten = { "Repo" };
-
-		if (url.endsWith(".git")) {
-			value = url.replace(".git", "");
-		}
-		if (value.contains("/")) {
-			splitten = value.split("/");
-		} else if (value.contains("\\")) {
-			splitten = value.split("\\\\");
-		}
-
-		return splitten[splitten.length - 1];
 	}
 
 	/**
