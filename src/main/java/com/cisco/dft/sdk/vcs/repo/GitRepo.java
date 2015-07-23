@@ -172,6 +172,8 @@ public final class GitRepo extends Repo {
 			}
 
 		}
+		
+		System.out.println(CodeSniffer.getCLOCStatistics(theDirectory));
 
 	}
 
