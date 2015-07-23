@@ -18,10 +18,11 @@ import com.cisco.dft.sdk.vcs.repo.AuthorCommit;
 import com.cisco.dft.sdk.vcs.repo.AuthorInfo;
 import com.cisco.dft.sdk.vcs.repo.AuthorInfoBuilder;
 import com.cisco.dft.sdk.vcs.repo.BranchInfo;
-import com.cisco.dft.sdk.vcs.repo.HistoryViewer;
 import com.cisco.dft.sdk.vcs.repo.GitRepo;
+import com.cisco.dft.sdk.vcs.repo.HistoryViewer;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
+import com.cisco.dft.sdk.vcs.util.OSType;
 import com.cisco.dft.sdk.vcs.util.SortMethod;
 import com.google.common.collect.Range;
 
@@ -47,6 +48,7 @@ public class RepoUtilsTest {
 		assertTrue(CodeSniffer.detectLanguage("Test.java") == Language.JAVA);
 		assertTrue(CodeSniffer.detectLanguage("Test.none") == Language.OTHER);
 		assertTrue(CodeSniffer.detectLanguage("") == Language.OTHER);
+		LOGGER.debug("OS Type: " + OSType.getOSType().name());
 	
 	}
 	

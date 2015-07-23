@@ -175,8 +175,7 @@ public final class CodeSniffer {
 					
 					if ("header".equals(key)) {
 						header = mapper.convertValue(entry.getValue(), Header.class);
-					} else if ("SUM".equals(key)) {
-					} else  {
+					} else if (!"SUM".equals(key)) {
 						LanguageStats langStat = mapper.convertValue(entry.getValue(), LanguageStats.class);
 						langStat.setLanguage(key);
 						langStats.put(key, langStat);

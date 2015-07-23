@@ -38,7 +38,7 @@ public class AuthorCommit implements DateLimitedData {
 			final boolean isMergeCommit, final String message) {
 
 		this.id = id;
-		this.timestamp = timestamp;
+		this.timestamp = (Date) timestamp.clone();
 		this.changedFiles = changedFiles;
 		this.additions = additions;
 		this.deletions = deletions;
@@ -63,7 +63,7 @@ public class AuthorCommit implements DateLimitedData {
 	 * @return
 	 */
 	public Date getTimestamp() {
-		return timestamp;
+		return (Date) timestamp.clone();
 	}
 
 	public int getChangedFiles() {

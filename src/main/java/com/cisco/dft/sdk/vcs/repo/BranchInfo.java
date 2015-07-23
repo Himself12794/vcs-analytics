@@ -24,7 +24,6 @@ import org.eclipse.jgit.treewalk.EmptyTreeIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.cisco.dft.sdk.vcs.repo.GitRepo;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
 import com.cisco.dft.sdk.vcs.util.SortMethod;

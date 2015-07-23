@@ -20,6 +20,11 @@ public enum OSType {
 	
 	public boolean isUnknown() { return this == UNKNOWN; }
 	
+	@Override
+	public String toString() {
+		return "OS Type: " + this.name();
+	}
+	
 	public static OSType getOSType() {
 		
 		if (OS.indexOf("win") >= 0) { return WIN; }

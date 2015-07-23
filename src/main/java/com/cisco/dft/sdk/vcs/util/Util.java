@@ -2,6 +2,7 @@ package com.cisco.dft.sdk.vcs.util;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
 
 import org.slf4j.Logger;
@@ -9,11 +10,11 @@ import org.slf4j.LoggerFactory;
 
 public final class Util {
 	
-	public static final File CLOC_EXE = new File("src/main/resources/cloc-1.60.exe");
+	public static final File CLOC_EXE = new File("src/main/resources/bin/cloc-1.60.exe");
 
-	public static final File CLOC_TAR = new File("src/main/resources/cloc-1.60.tar");
+	public static final File CLOC_TAR = new File("src/main/resources/bin/cloc-1.60.tar");
 	
-	public static final File CLOC_PL = new File("src/main/resources/cloc-1.60.pl");
+	public static final File CLOC_PL = new File("src/main/resources/bin/cloc-1.60.pl");
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(Util.class);
 	
@@ -48,22 +49,31 @@ public final class Util {
 	
 	public static String executeCommand(String command, String[] parameters) {
 		 
-		StringBuffer output = new StringBuffer();
- 
-		Process p;
+		StringBuilder output = new StringBuilder();
+		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+		
 		try {
-			p = Runtime.getRuntime().exec(getCommand(command, parameters));
+			
+			Process p = Runtime.getRuntime().exec(getCommand(command, parameters));
 			p.waitFor();
-			BufferedReader reader = 
-                            new BufferedReader(new InputStreamReader(p.getInputStream()));
+			reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
  
-                        String line = "";			
-			while ((line = reader.readLine())!= null) {
-				output.append(line + "\n");
+			String line = "";
+			
+			while ((line = reader.readLine()) != null) {
+				output.append(line);
+				output.append("\n");
 			}
  
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOGGER.error("An error occured in running CLOC.", e);
+		} finally {
+			
+			try {
+				reader.close();
+			} catch (IOException e) {
+				LOGGER.error("An error occured in running CLOC.", e);
+			}
 		}
  
 		return output.toString();
@@ -72,7 +82,7 @@ public final class Util {
 	
 	private static String getCommand(String command, String[] parameters) {
 		
-		StringBuffer output = new StringBuffer(command);
+		StringBuilder output = new StringBuilder(command);
 		output.append(" ");
 		
 		for (String parameter : parameters) {
