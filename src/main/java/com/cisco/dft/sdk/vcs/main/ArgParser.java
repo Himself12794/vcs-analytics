@@ -1,8 +1,8 @@
-package com.cisco.dft.sdk.vcs.app;
+package com.cisco.dft.sdk.vcs.main;
 
 import java.util.Map;
 
-import com.cisco.dft.sdk.vcs.util.Util;
+import com.cisco.dft.sdk.vcs.common.Util;
 import com.google.common.collect.Maps;
 
 public final class ArgParser {

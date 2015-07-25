@@ -1,4 +1,4 @@
-package com.cisco.dft.sdk.vcs.repo;
+package com.cisco.dft.sdk.vcs.core;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -6,8 +6,8 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-import com.cisco.dft.sdk.vcs.util.CommitNotFoundException;
-import com.cisco.dft.sdk.vcs.util.DateLimitedDataContainer.RecursiveDateLimitedDataContainer;
+import com.cisco.dft.sdk.vcs.common.CommitNotFoundException;
+import com.cisco.dft.sdk.vcs.common.DateLimitedDataContainer.RecursiveDateLimitedDataContainer;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 

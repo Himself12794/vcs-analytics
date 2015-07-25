@@ -1,4 +1,4 @@
-package com.cisco.dft.sdk.vcs.app;
+package com.cisco.dft.sdk.vcs.main;
 
 import static org.junit.Assert.assertTrue;
 
@@ -14,17 +14,16 @@ import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Level;
 
-import com.cisco.dft.sdk.vcs.app.ProgramConfig.Action;
-import com.cisco.dft.sdk.vcs.repo.AuthorCommit;
-import com.cisco.dft.sdk.vcs.repo.AuthorInfo;
-import com.cisco.dft.sdk.vcs.repo.AuthorInfoBuilder;
-import com.cisco.dft.sdk.vcs.repo.BranchInfo;
-import com.cisco.dft.sdk.vcs.repo.GitRepo;
-import com.cisco.dft.sdk.vcs.repo.HistoryViewer;
-import com.cisco.dft.sdk.vcs.util.CodeSniffer;
-import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
-import com.cisco.dft.sdk.vcs.util.OSType;
-import com.cisco.dft.sdk.vcs.util.SortMethod;
+import com.cisco.dft.sdk.vcs.common.CodeSniffer;
+import com.cisco.dft.sdk.vcs.common.CodeSniffer.Language;
+import com.cisco.dft.sdk.vcs.common.OSType;
+import com.cisco.dft.sdk.vcs.common.SortMethod;
+import com.cisco.dft.sdk.vcs.core.AuthorCommit;
+import com.cisco.dft.sdk.vcs.core.AuthorInfo;
+import com.cisco.dft.sdk.vcs.core.AuthorInfoBuilder;
+import com.cisco.dft.sdk.vcs.core.BranchInfo;
+import com.cisco.dft.sdk.vcs.core.GitRepo;
+import com.cisco.dft.sdk.vcs.core.HistoryViewer;
 import com.google.common.collect.Range;
 
 public class RepoUtilsTest {
@@ -38,9 +37,7 @@ public class RepoUtilsTest {
 	
 	@Before
 	public void configure() {
-		ProgramConfig config = new ProgramConfig(Action.INIT, null, null, true, true);
-		App.app = new App(config);
-		App.app.init();
+		App.getInstance().init();
 		enableDebugLogging();
 	}
 

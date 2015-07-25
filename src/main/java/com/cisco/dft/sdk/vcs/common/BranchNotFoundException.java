@@ -1,4 +1,4 @@
-package com.cisco.dft.sdk.vcs.util;
+package com.cisco.dft.sdk.vcs.common;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
 

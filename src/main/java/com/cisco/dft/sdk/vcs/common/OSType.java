@@ -1,4 +1,4 @@
-package com.cisco.dft.sdk.vcs.util;
+package com.cisco.dft.sdk.vcs.common;
 
 /**
  * Borrowed from Mekong.com. Detects OS type.
@@ -27,12 +27,28 @@ public enum OSType {
 	
 	public static OSType getOSType() {
 		
-		if (OS.indexOf("win") >= 0) { return WIN; }
-		else if (OS.indexOf("mac") >= 0) { return MAC; }
-		else if (OS.indexOf("nix") >= 0 || OS.indexOf("nux") >= 0 || OS.indexOf("aix") > 0 ) { return UNIX; }
-		else if (OS.indexOf("sunos") >= 0) { return SOLARIS; }
+		if (win()) { return WIN; }
+		else if (mac()) { return MAC; }
+		else if (unix()) { return UNIX; }
+		else if (solaris()) { return SOLARIS; }
 		else { return UNKNOWN; }
 		
+	} 
+	
+	private static boolean win() {
+		return OS.indexOf("win") >= 0;
+	}
+	
+	private static boolean mac() {
+		return OS.indexOf("mac") >= 0;
+	}
+	
+	private static boolean unix() {
+		return OS.indexOf("nix") >= 0 || OS.indexOf("nux") >= 0 || OS.indexOf("aix") > 0; 
+	}
+	
+	private static boolean solaris() {
+		return OS.indexOf("sunos") >= 0;
 	}
 
 }

@@ -1,4 +1,4 @@
-package com.cisco.dft.sdk.vcs.util;
+package com.cisco.dft.sdk.vcs.common;
 
 public enum SortMethod {
 	

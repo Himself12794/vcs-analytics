@@ -1,4 +1,4 @@
-package com.cisco.dft.sdk.vcs.repo;
+package com.cisco.dft.sdk.vcs.core;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -32,7 +32,7 @@ import org.eclipse.jgit.treewalk.EmptyTreeIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.cisco.dft.sdk.vcs.util.BranchNotFoundException;
+import com.cisco.dft.sdk.vcs.common.BranchNotFoundException;
 import com.google.common.collect.Lists;
 
 /**
@@ -138,19 +138,7 @@ public final class GitRepo extends Repo {
 		if (theDirectory.exists()) {
 
 			try {
-
-				theRepo = Git.open(theDirectory);
-				repoInfo.setRepo(theRepo);
-				
-				LOGGER.info("Found repo in Temp.");
-				
-				if (generateStatistics) {
-					
-					if (branch == null) { sync(true); }
-					else { sync(branch, true); }
-					
-				}
-
+				initExistingRepo(branch, generateStatistics);
 			} catch (IOException e) {
 
 				LOGGER.warn(
@@ -170,11 +158,7 @@ public final class GitRepo extends Repo {
 				} catch (Exception e1) {
 					throw new TransportException("Could not connect to remote repository.", e1);
 				}
-			} catch (GitAPIException e) {
-				throw new GitAPIException("An error occured in synchronizing services", e){
-					private static final long serialVersionUID = 4705488828124689722L;
-				};
-			}
+			} 
 
 		} else {
 
@@ -214,6 +198,26 @@ public final class GitRepo extends Repo {
 
 		return branches;
 
+	}
+	
+	private void initExistingRepo(String branch, boolean value) throws GitAPIException, IOException {
+
+		theRepo = Git.open(theDirectory);
+		repoInfo.setRepo(theRepo);
+		
+		LOGGER.info("Found repo in Temp.");
+		
+		if (value) {
+			validateBranchSync(branch);
+		}
+		
+	}
+	
+	private void validateBranchSync(String branch) throws GitAPIException {
+		
+		if (branch == null) { sync(true); }
+		else { sync(branch, true); }
+		
 	}
 
 	/**
@@ -265,43 +269,39 @@ public final class GitRepo extends Repo {
 	 */
 	public void sync(String branch, boolean generateStatistics) throws GitAPIException {
 		
-		synchronized (this) {
-		
-			String branchResolved = BranchInfo.branchNameResolver(branch);
-	
-			if (!getBranches().contains(branchResolved)) { 
-				throw new BranchNotFoundException("Branch " + branch + " does not exist."); 
-			}
-	
-			LOGGER.info(repoInfo.getName() + ": Syncing data for branch "
-					+ BranchInfo.branchTrimmer(branch));
-	
-			DiffFormatter df = new DiffFormatter(new ByteArrayOutputStream());
-	
-			try {
-				
-				theRepo.checkout().setName("origin/" + BranchInfo.branchTrimmer(branch)).setCreateBranch(false).call();
-				boolean flag = theRepo.fetch().setCredentialsProvider(cp)
-						.setRemoveDeletedRefs(true).call().getTrackingRefUpdates()
-						.isEmpty();
-	
-				if (!flag || generateStatistics) {
-	
-					updateAuthorInfo(branchResolved, df);
-					updateRepoInfo(branchResolved, df);
-					repoInfo.resolveBranchInfo(getBranches());
-	
-				}
-	
-			} catch (Exception e) {
-				LOGGER.info(
-						"There was an error in connection to remote, could not update info",
-						e);
-			}
-	
-			df.close();
+		String branchResolved = BranchInfo.branchNameResolver(branch);
+
+		if (!getBranches().contains(branchResolved)) { 
+			throw new BranchNotFoundException("Branch " + branch + " does not exist."); 
 		}
 
+		LOGGER.info(repoInfo.getName() + ": Syncing data for branch "
+				+ BranchInfo.branchTrimmer(branch));
+
+		DiffFormatter df = new DiffFormatter(new ByteArrayOutputStream());
+
+		try {
+			
+			theRepo.checkout().setName("origin/" + BranchInfo.branchTrimmer(branch)).setCreateBranch(false).call();
+			boolean flag = theRepo.fetch().setCredentialsProvider(cp)
+					.setRemoveDeletedRefs(true).call().getTrackingRefUpdates()
+					.isEmpty();
+
+			if (!flag || generateStatistics) {
+
+				updateAuthorInfo(branchResolved, df);
+				updateRepoInfo(branchResolved, df);
+				repoInfo.resolveBranchInfo(getBranches());
+
+			}
+
+		} catch (Exception e) {
+			LOGGER.info(
+					"There was an error in connection to remote, could not update info",
+					e);
+		}
+
+		df.close();
 	}
 
 	private void updateAuthorInfo(String branch, DiffFormatter df) throws GitAPIException, IOException {
@@ -519,10 +519,9 @@ public final class GitRepo extends Repo {
 		
 		LOGGER.info("Clone successful.");
 		
-		if (sync) { 
+		if (sync) {
 			
-			if (branch == null) { sync(true); }
-			else { sync(branch, true); }
+			validateBranchSync(branch);
 			
 		}
 

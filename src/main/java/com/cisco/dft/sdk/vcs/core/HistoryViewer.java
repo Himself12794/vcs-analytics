@@ -1,4 +1,4 @@
-package com.cisco.dft.sdk.vcs.repo;
+package com.cisco.dft.sdk.vcs.core;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -6,21 +6,17 @@ import java.util.Map;
 
 import org.eclipse.jgit.api.Git;
 
-import com.cisco.dft.sdk.vcs.repo.CLOCData.LangStats;
-import com.cisco.dft.sdk.vcs.util.CodeSniffer;
-import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
+import com.cisco.dft.sdk.vcs.common.CodeSniffer;
+import com.cisco.dft.sdk.vcs.common.CodeSniffer.Language;
+import com.cisco.dft.sdk.vcs.core.CLOCData.LangStats;
 import com.google.common.collect.Maps;
 
 public class HistoryViewer {
 
-	protected int fileCount;
-
-	protected int lineCount;
-
 	protected final Git theRepo;
 
 	private final String history;
-	
+
 	protected boolean usesCLOCStats = false;
 
 	protected Date theDate;
@@ -35,21 +31,14 @@ public class HistoryViewer {
 		this("Unknown", theRepo, ac, date);
 	}
 
-	HistoryViewer(final String branch, Git theRepo, String ac, Date date) {
-		this(0, 0, branch, theRepo, ac, date);
-	}
-
-	protected HistoryViewer(int fileCount, int lineCount, final String branch,
+	protected HistoryViewer(final String branch,
 			Git theRepo, String ac, Date date) {
-		this(fileCount, lineCount, branch, theRepo, ac, date, new HashMap<Language, Integer>(), new CLOCData());
+		this(branch, theRepo, ac, date, new HashMap<Language, Integer>(), new CLOCData());
 	}
 
-	protected HistoryViewer(int fileCount, int lineCount, final String branch,
-			Git theRepo, String ac, Date date,
-			final Map<Language, Integer> languageCount, CLOCData data) {
+	protected HistoryViewer(final String branch, Git theRepo, String ac,
+			Date date, final Map<Language, Integer> languageCount, CLOCData data) {
 
-		this.fileCount = fileCount;
-		this.lineCount = lineCount;
 		this.branch = branch;
 		this.history = ac;
 		this.theDate = date;
@@ -123,13 +112,14 @@ public class HistoryViewer {
 	 * Use {@link HistoryViewer#getLangStatistics()} instead, this information
 	 * is not near as precise as the old stat gathering.
 	 * 
+	 * @deprecated
 	 * @return the map of language counts for use with iteration
 	 */
 	@Deprecated
 	public Map<Language, Integer> getLangCountMap() {
 		return Maps.newHashMap(languageCount);
 	}
-	
+
 	/**
 	 * Gets the statistics for all languages.
 	 * 
@@ -206,7 +196,7 @@ public class HistoryViewer {
 	public String getBranchName() {
 		return BranchInfo.branchTrimmer(branch);
 	}
-	
+
 	public boolean usesCLOCStats() {
 		return usesCLOCStats;
 	}
@@ -266,9 +256,13 @@ public class HistoryViewer {
 	}
 
 	private String getOutput(LangStats stats) {
-		return "\t  " + stats.getLanguage().name() + ": \n\t\tcount: "
-				+ stats.getnFiles() + "\n\t\tpercentage: "
-				+ String.format("%.2f", getLangPercent(stats.getLanguage()) * 100) + "%";
+		return "\t  "
+				+ stats.getLanguage().name()
+				+ ": \n\t\tcount: "
+				+ stats.getnFiles()
+				+ "\n\t\tpercentage: "
+				+ String.format("%.2f",
+						getLangPercent(stats.getLanguage()) * 100) + "%";
 	}
 
 }

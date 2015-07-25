@@ -1,4 +1,4 @@
-package com.cisco.dft.sdk.vcs.util;
+package com.cisco.dft.sdk.vcs.common;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 
 public final class Util {
 
-	public static final Logger LOGGER = LoggerFactory.getLogger(Util.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(Util.class);
 
 	private Util() {}
 
@@ -27,15 +27,24 @@ public final class Util {
 		try {
 			p.waitFor();
 		} catch (InterruptedException e) {
+			// No action needed
 		}
 
 		BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
 
 		String line = "";
-
-		while ((line = reader.readLine()) != null) {
-			output.append(line);
-			output.append("\n");
+		
+		try {
+			
+			while ((line = reader.readLine()) != null) {
+				output.append(line);
+				output.append("\n");
+			}
+			
+		} catch (Exception e) {
+			LOGGER.error("An error occured in command execution", e);
+		} finally {
+			reader.close();
 		}
 
 		return output.toString();

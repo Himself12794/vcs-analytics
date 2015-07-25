@@ -1,12 +1,12 @@
-package com.cisco.dft.sdk.vcs.repo;
+package com.cisco.dft.sdk.vcs.core;
 
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-import com.cisco.dft.sdk.vcs.util.DateLimitedDataContainer;
-import com.cisco.dft.sdk.vcs.util.SortMethod;
+import com.cisco.dft.sdk.vcs.common.DateLimitedDataContainer;
+import com.cisco.dft.sdk.vcs.common.SortMethod;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 

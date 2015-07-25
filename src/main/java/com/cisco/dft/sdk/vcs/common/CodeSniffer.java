@@ -1,4 +1,4 @@
-package com.cisco.dft.sdk.vcs.util;
+package com.cisco.dft.sdk.vcs.common;
 
 import java.io.File;
 import java.io.IOException;
@@ -7,10 +7,10 @@ import java.util.Map.Entry;
 
 import org.yaml.snakeyaml.Yaml;
 
-import com.cisco.dft.sdk.vcs.app.Cloc;
-import com.cisco.dft.sdk.vcs.repo.CLOCData;
-import com.cisco.dft.sdk.vcs.repo.CLOCData.Header;
-import com.cisco.dft.sdk.vcs.repo.CLOCData.LangStats;
+import com.cisco.dft.sdk.vcs.core.CLOCData;
+import com.cisco.dft.sdk.vcs.core.CLOCData.Header;
+import com.cisco.dft.sdk.vcs.core.CLOCData.LangStats;
+import com.cisco.dft.sdk.vcs.main.Cloc;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;

@@ -1,4 +1,4 @@
-package com.cisco.dft.sdk.vcs.repo;
+package com.cisco.dft.sdk.vcs.core;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -29,16 +29,15 @@ import org.eclipse.jgit.treewalk.EmptyTreeIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.cisco.dft.sdk.vcs.app.App;
-import com.cisco.dft.sdk.vcs.app.Cloc;
-import com.cisco.dft.sdk.vcs.repo.CLOCData.Header;
-import com.cisco.dft.sdk.vcs.repo.CLOCData.LangStats;
-import com.cisco.dft.sdk.vcs.util.CodeSniffer;
-import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
-import com.cisco.dft.sdk.vcs.util.SortMethod;
-import com.cisco.dft.sdk.vcs.util.Util;
+import com.cisco.dft.sdk.vcs.common.CodeSniffer;
+import com.cisco.dft.sdk.vcs.common.CodeSniffer.Language;
+import com.cisco.dft.sdk.vcs.common.SortMethod;
+import com.cisco.dft.sdk.vcs.common.Util;
+import com.cisco.dft.sdk.vcs.core.CLOCData.Header;
+import com.cisco.dft.sdk.vcs.core.CLOCData.LangStats;
+import com.cisco.dft.sdk.vcs.main.App;
+import com.cisco.dft.sdk.vcs.main.Cloc;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 
 /**
@@ -62,27 +61,20 @@ public class BranchInfo extends HistoryViewer {
 	BranchInfo(Git theRepo) {
 		this("Unknown", theRepo, "", new Date());
 	}
-	
+
 	BranchInfo(String branch, Git theRepo) {
 		this(branch, theRepo, "", new Date());
 	}
 
-	BranchInfo(final String branch, Git theRepo, String id, Date date) {
-		this(0, 0, branch, theRepo, id, date);
+	private BranchInfo(final String branch, Git theRepo, String id, Date date) {
+		this(branch, theRepo, id, date, new HashMap<Language, Integer>(), new HashMap<String, AuthorInfo>(), new CLOCData());
 	}
 
-	private BranchInfo(int fileCount, int lineCount, final String branch,
-			Git theRepo, String id, Date date) {
-		this(fileCount, lineCount, branch, theRepo, "", date, new HashMap<Language, Integer>(), new HashMap<String, AuthorInfo>(), new CLOCData());
-	}
-
-	private BranchInfo(int fileCount, int lineCount, final String branch,
-			Git theRepo, String id, Date date, final Map<Language, Integer> languageCount,
+	private BranchInfo(final String branch, Git theRepo, String id, Date date,
+			final Map<Language, Integer> languageCount,
 			final Map<String, AuthorInfo> authorInfo, CLOCData data) {
-		super(fileCount, lineCount, branch, theRepo, id, date, languageCount, data);
+		super(branch, theRepo, id, date, languageCount, data);
 		this.authorInfo = authorInfo;
-		Map<Language, LangStats> langStats = Maps.newHashMap();
-		data = new CLOCData(new Header(), langStats);
 
 	}
 
@@ -91,7 +83,7 @@ public class BranchInfo extends HistoryViewer {
 		for (Language lang : languageCount.keySet()) {
 			languageCount.put(lang, 0);
 		}
-		
+
 		this.theDate = new Date();
 
 		setFileCount(0);
@@ -226,52 +218,58 @@ public class BranchInfo extends HistoryViewer {
 	private HistoryViewer lookupHistoryFor(String commitId, DiffFormatter df) throws IOException, GitAPIException {
 
 		RevWalk rw = new RevWalk(theRepo.getRepository());
-		RevCommit current = rw.parseCommit(theRepo.getRepository().resolve(Constants.HEAD));
-		RevCommit rc = rw.parseCommit(theRepo.getRepository().resolve(commitId));
+		RevCommit current = rw.parseCommit(theRepo.getRepository().resolve(
+				Constants.HEAD));
+		RevCommit rc = rw
+				.parseCommit(theRepo.getRepository().resolve(commitId));
 
 		rw.close();
-		
+
 		theRepo.checkout().setCreateBranch(false).setName(commitId).call();
-		
-		Date date = new Date(rc.getCommitTime() * 1000);
-		
+
+		Date date = new Date(rc.getCommitTime() * 1000L);
+
 		BranchInfo hv = new BranchInfo(branch, theRepo, rc.getId().name(), date);
-		
+
 		hv.getHistory(rc, df);
-		
+
 		theRepo.checkout().setCreateBranch(false).setName(current.name());
 		HistoryViewer history = new HistoryViewer(branch, theRepo, commitId, date);
 		history.usesCLOCStats = hv.usesCLOCStats;
-		history.data.getLanguageStatsMutable().putAll(hv.data.getLanguageStatsMutable());
+		history.data.getLanguageStatsMutable().putAll(
+				hv.data.getLanguageStatsMutable());
 		history.data.getHeader().imprint(hv.data.getHeader());
-		
-		
+
 		return history;
 
 	}
-	
+
 	void getHistory(RevCommit rc, DiffFormatter df) throws IncorrectObjectTypeException, IOException {
 
 		this.resetInfo();
-		
-		if (Cloc.canGetCLOCStats() && App.app.getConfig().shouldUseCloc()) {
-			
+
+		if (Cloc.canGetCLOCStats() && App.getConfiguration().shouldUseCloc()) {
+
 			try {
-				CLOCData theData = CodeSniffer.getCLOCStatistics(theRepo.getRepository().getWorkTree());
+				CLOCData theData = CodeSniffer.getCLOCStatistics(theRepo
+						.getRepository().getWorkTree());
 				this.getData().imprint(theData);
 				usesCLOCStats = true;
 				return;
-				
+
 			} catch (IOException e) {
 				usesCLOCStats = false;
-				LOGGER.error("Could not use CLOC to gather statistics, defaulting to built-in cheap analysis", e);
+				LOGGER.error(
+						"Could not use CLOC to gather statistics, defaulting to built-in cheap analysis",
+						e);
 			}
-			
+
 		} else {
-			LOGGER.warn("Program does not have execute permissions, defaulting to built-in stat analysis.");
+			LOGGER.warn("CLOC disabled, using built-in stat analysis.");
 		}
-		
-		Map<Language, LangStats> langStats = this.getData().getLanguageStatsMutable();
+
+		Map<Language, LangStats> langStats = this.getData()
+				.getLanguageStatsMutable();
 
 		ObjectReader reader = theRepo.getRepository().newObjectReader();
 
@@ -284,31 +282,33 @@ public class BranchInfo extends HistoryViewer {
 
 		df.setRepository(theRepo.getRepository());
 		List<DiffEntry> entries = df.scan(oldTreeIter, newTreeIter);
-		
+
 		Header header = this.getData().getHeader();
-		
+
 		for (DiffEntry entry : entries) {
 
 			Language lang = CodeSniffer.detectLanguage(entry.getNewPath());
-			
-			LangStats langStat = Util.putIfAbsent(langStats, lang, new LangStats(lang));
+
+			LangStats langStat = Util.putIfAbsent(langStats, lang,
+					new LangStats(lang));
 
 			incrementLanguage(lang, 1);
 
 			incrementFileCount(1);
-			
+
 			langStat.setnFiles(langStat.getnFiles() + 1);
 
 			for (HunkHeader hunk : df.toFileHeader(entry).getHunks()) {
-				
+
 				header.setnLines(header.getnLines() + hunk.getNewLineCount());
-				langStat.setCodeLines(langStat.getCodeLines() + hunk.getNewLineCount());
+				langStat.setCodeLines(langStat.getCodeLines()
+						+ hunk.getNewLineCount());
 				this.incrementLineCount(hunk.getNewLineCount());
 
 			}
 
 		}
-		
+
 	}
 
 	CLOCData getData() {

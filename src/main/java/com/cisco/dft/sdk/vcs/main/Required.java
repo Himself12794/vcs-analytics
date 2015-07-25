@@ -1,4 +1,4 @@
-package com.cisco.dft.sdk.vcs.app;
+package com.cisco.dft.sdk.vcs.main;
 
 import static java.lang.annotation.ElementType.FIELD;
 
@@ -7,13 +7,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Indicates a default value for the parameter.
+ * Indicates an option that is required.
  * 
  * @author phwhitin
+ *
  *
  */
 @Target(FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Default {
-	String value();
+public @interface Required {
+
 }

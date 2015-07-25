@@ -1,4 +1,4 @@
-package com.cisco.dft.sdk.vcs.repo;
+package com.cisco.dft.sdk.vcs.core;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

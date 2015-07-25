@@ -1,8 +1,8 @@
-package com.cisco.dft.sdk.vcs.repo;
+package com.cisco.dft.sdk.vcs.core;
 
 import java.util.Date;
 
-import com.cisco.dft.sdk.vcs.util.DateLimitedData;
+import com.cisco.dft.sdk.vcs.common.DateLimitedData;
 import com.google.common.collect.Range;
 
 /**

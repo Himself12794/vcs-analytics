@@ -1,13 +1,13 @@
-package com.cisco.dft.sdk.vcs.repo;
+package com.cisco.dft.sdk.vcs.core;
 
-import static com.cisco.dft.sdk.vcs.util.Util.redirectLogError;
+import static com.cisco.dft.sdk.vcs.common.Util.redirectLogError;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
+import com.cisco.dft.sdk.vcs.common.CodeSniffer.Language;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class CLOCData {
@@ -56,22 +56,7 @@ public class CLOCData {
 	}
 
 	public String toString() {
-		Class<?> clazz = this.getClass();
-		StringBuilder value = new StringBuilder(clazz.getSimpleName());
-		value.append("[");
-		
-		for (Field field : clazz.getDeclaredFields()) {
-			if (Modifier.isStatic(field.getModifiers())) { continue; }
-			try {
-				value.append(field.getName() + "=" + field.get(this) + ", ");
-			} catch (Exception e) {
-				redirectLogError("An unexpected error occured in value mapping",e);
-			}
-		}
-		
-		value.append("]");
-		
-		return value.toString();		
+		return CLOCData.toString(this);			
 	}
 
 	public static class Header {
@@ -81,8 +66,8 @@ public class CLOCData {
 		private double elapsedSeconds;
 		private int nFiles;
 		private int nLines;
-		private String filesPerSecond;
-		private String linesPerSecond;
+		private float filesPerSecond;
+		private float linesPerSecond;
 	
 		public void setClocUrl(String clocUrl) {
 			this.clocUrl = clocUrl;
@@ -104,11 +89,11 @@ public class CLOCData {
 			this.nLines = nLines;
 		}
 	
-		public void setFilesPerSecond(String filesPerSecond) {
+		public void setFilesPerSecond(float filesPerSecond) {
 			this.filesPerSecond = filesPerSecond;
 		}
 	
-		public void setLinesPerSecond(String linesPerSecond) {
+		public void setLinesPerSecond(float linesPerSecond) {
 			this.linesPerSecond = linesPerSecond;
 		}
 	
@@ -141,13 +126,14 @@ public class CLOCData {
 		}
 		
 		private void reset() {
-			this.clocUrl = "";
+			/*this.clocUrl = "";
 			this.clocVersion = "";
 			this.elapsedSeconds = 0.0D;
 			this.filesPerSecond = "0.0";
 			this.linesPerSecond = "0.0";
 			this.nFiles = 0;
-			this.nLines = 0;
+			this.nLines = 0;*/
+			imprint(new Header());
 			
 		}
 		
@@ -169,22 +155,7 @@ public class CLOCData {
 		}
 
 		public String toString() {
-			Class<?> clazz = this.getClass();
-			StringBuilder value = new StringBuilder(clazz.getSimpleName());
-			value.append("[");
-			
-			for (Field field : clazz.getDeclaredFields()) {
-				if (Modifier.isStatic(field.getModifiers())) { continue; }
-				try {
-					value.append(field.getName() + "=" + field.get(this) + ", ");
-				} catch (Exception e) {
-					redirectLogError("An unexpected error occured in value mapping",e);
-				}
-			}
-			
-			value.append("]");
-			
-			return value.toString();		
+			return CLOCData.toString(this);			
 		}
 		
 	}
@@ -262,23 +233,30 @@ public class CLOCData {
 		}
 
 		public String toString() {
-			Class<?> clazz = this.getClass();
-			StringBuilder value = new StringBuilder(clazz.getSimpleName());
-			value.append("[");
-			
-			for (Field field : clazz.getDeclaredFields()) {
-				if (Modifier.isStatic(field.getModifiers())) { continue; }
-				try {
-					value.append(field.getName() + "=" + field.get(this) + ", ");
-				} catch (Exception e) {
-					redirectLogError("An unexpected error occured in value mapping",e);
-				}
-			}
-			
-			value.append("]");
-			
-			return value.toString();		
+			return CLOCData.toString(this);		
 		}
+		
+	}
+	
+	private static <T> String toString(T t) {
+
+		Class<?> clazz = t.getClass();
+		
+		StringBuilder value = new StringBuilder(clazz.getSimpleName());
+		value.append("[");
+		
+		for (Field field : clazz.getDeclaredFields()) {
+			if (Modifier.isStatic(field.getModifiers())) { continue; }
+			try {
+				value.append(field.getName() + "=" + field.get(t) + ", ");
+			} catch (Exception e) {
+				redirectLogError("An unexpected error occured in value mapping",e);
+			}
+		}
+		
+		value.append("]");
+		
+		return value.toString();	
 		
 	}
 }

@@ -1,4 +1,4 @@
-package com.cisco.dft.sdk.vcs.app;
+package com.cisco.dft.sdk.vcs.main;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,8 +9,8 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.cisco.dft.sdk.vcs.util.OSType;
-import com.cisco.dft.sdk.vcs.util.Util;
+import com.cisco.dft.sdk.vcs.common.OSType;
+import com.cisco.dft.sdk.vcs.common.Util;
 
 public final class Cloc {
 
@@ -34,10 +34,8 @@ public final class Cloc {
 	/**
 	 * Initializes CLOC use. This must be called first, or CLOC will not be able
 	 * to be used, regardless of access permissions.
-	 * 
-	 * @return initialization success
 	 */
-	public static boolean init() {
+	public static void init() {
 
 		try {
 			
@@ -56,12 +54,12 @@ public final class Cloc {
 				Files.copy(link, file.getAbsoluteFile().toPath());
 			}
 			
-			return init = true;
+			init = true;
 		} catch (IOException e) {
 			
 			LOGGER.error("CLOC initialization failed.", e);
 			LOGGER.info("Defaulting to built-in analysis.");
-			return init = false;
+			init = false;
 		}
 
 	}
@@ -77,8 +75,6 @@ public final class Cloc {
 				return new File(file, CLOC_TAR);
 			case UNIX:
 				return new File(file, CLOC_TAR);
-			case WIN:
-				return new File(file, CLOC_EXE);
 			default:
 				return new File(file, CLOC_EXE);
 
@@ -95,13 +91,10 @@ public final class Cloc {
 
 		if (!canGetCLOCStats()) { return false; }
 		try {
-			try {
-				Util.executeCommand("perl", "-v");
-				return true;
-			} catch (IOException e) {
-				throw new RuntimeException();
-			}
-		} catch (RuntimeException e) {
+			Util.executeCommand("perl", "-v");
+			return true;
+		} catch (IOException e) {
+			LOGGER.error("Perl installation could not be detected", e);
 			return false;
 		}
 	}

@@ -1,8 +1,8 @@
-package com.cisco.dft.sdk.vcs.app;
+package com.cisco.dft.sdk.vcs.main;
 
 import java.util.Map;
 
-import com.cisco.dft.sdk.vcs.util.Util;
+import com.cisco.dft.sdk.vcs.common.Util;
 
 public class ProgramConfig {
 	
@@ -57,8 +57,7 @@ public class ProgramConfig {
 		boolean useCloc = !args2.containsKey("builtin-analysis");
 		String url = Util.getOrDefault(args2, "url", null);
 		Action action = Action.valueOf(Util.getOrDefault(args2, "action", "HELP"));
-		ProgramConfig config = new ProgramConfig(action, url, branch, generateStats, useCloc);
-		return config;
+		return new ProgramConfig(action, url, branch, generateStats, useCloc);
 	}
 	
 	@Override

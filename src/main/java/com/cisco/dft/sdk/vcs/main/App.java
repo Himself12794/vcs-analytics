@@ -1,21 +1,38 @@
-package com.cisco.dft.sdk.vcs.app;
+package com.cisco.dft.sdk.vcs.main;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.cisco.dft.sdk.vcs.repo.GitRepo;
+import com.cisco.dft.sdk.vcs.core.GitRepo;
+import com.cisco.dft.sdk.vcs.main.ProgramConfig.Action;
 
+/**
+ * The application class. 
+ * 
+ * @author phwhitin
+ *
+ */
 public final class App {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger("Application");
 	
-	public static App app;
+	private static final App APPLICATION = new App();
 
-	private final ProgramConfig config;
+	private ProgramConfig config;
+	
+	App() {
+		this(new ProgramConfig(Action.INIT, null, null, true, true));
+	}
 	
 	App(ProgramConfig config) {
+		setConfig(config);
+	}
+	
+	App setConfig(ProgramConfig config) {
+		LOGGER.info("Setting configuration as " + config);
 		this.config = config;
+		return this;
 	}
 	
 	public ProgramConfig getConfig() {
@@ -78,14 +95,22 @@ public final class App {
 		
 	}
 
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) throws GitAPIException {
 
-		app = new App(ProgramConfig.parseArgMap(ArgParser.getArgMap(args)));
-		app.execute();
+		APPLICATION.setConfig(ProgramConfig.parseArgMap(ArgParser.getArgMap(args)));
+		APPLICATION.execute();
 		
 		// TODO cloc analysis - full testing
 		// TODO clean output
 
+	}
+	
+	public static App getInstance() {
+		return APPLICATION;
+	}
+	
+	public static ProgramConfig getConfiguration() {
+		return APPLICATION.config;
 	}
 
 }
