@@ -1,15 +1,17 @@
 package com.cisco.dft.sdk.vcs.util;
 
-import static com.cisco.dft.sdk.vcs.util.Util.getCLOCDataAsYaml;
-
 import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.yaml.snakeyaml.Yaml;
 
-import com.cisco.dft.sdk.vcs.util.CLOCData.Header;
-import com.cisco.dft.sdk.vcs.util.CLOCData.LanguageStats;
+import com.cisco.dft.sdk.vcs.app.Cloc;
+import com.cisco.dft.sdk.vcs.repo.CLOCData;
+import com.cisco.dft.sdk.vcs.repo.CLOCData.Header;
+import com.cisco.dft.sdk.vcs.repo.CLOCData.LangStats;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.google.common.collect.Maps;
@@ -30,8 +32,10 @@ public final class CodeSniffer {
 	}
 
 	/**
-	 * Representation of many common programming languages. There are two
-	 * different types of languages as classified by this: Primary and
+	 * Representation of many common programming languages. 
+	 * Made with reference to <a href="http://cloc.sourceforge.net">CLOC Sourceforge</a>
+	 * 
+	 * There are two different types of languages as classified by this: Primary and
 	 * Secondary. Refer to {@link LangType}
 	 * 
 	 * @author phwhitin
@@ -39,16 +43,28 @@ public final class CodeSniffer {
 	 */
 	public static enum Language {
 		
-		JSP(LangType.PRIMARY),
-		JAVA(LangType.PRIMARY),
-		/** C# */
-		C_SHARP(LangType.PRIMARY),
-		/** C/C++ */
-		C_CPP(LangType.PRIMARY), JAVASCRIPT(LangType.PRIMARY), PYTHON(LangType.PRIMARY), LUA(LangType.PRIMARY), HTML(LangType.PRIMARY), PHP(LangType.PRIMARY), XML(LangType.SECONDARY), CSS(LangType.PRIMARY), YAML(LangType.SECONDARY), BATCH(LangType.PRIMARY),
-		/** Undefined languages */
-		OTHER(LangType.SECONDARY);
+		C, CPP, CSS, ABAP, ACTIONSCRIPT, ADA, ADSO_IDSM, AMPLE, ANT,
+		APEX_TRIGGER, ARDUINO_SKETCH, ASP, ASPdotNET, ASSEMBLY, AUTOHOTKEY, AWK, 
+		/**BASH*/BOURNE_AGAIN_SHELL, /**SH*/BOURNE_AGAIN, C_SHELL, CSHARP, C_CPP_HEADER, CCS, CLOJURE, CLOJURESCRIPT,
+		CMAKE, COBOL, COFFEESCRIPT, COLDFUSION, COLDFUSION_CFSSCRIPT, CUDA, CYTHON, D_DTRACE, DAL, DART, DIFF, DITA,
+		DOS_BATCH, DTD, ECPP, ELIXER, ERB, ERLANG, EXPECT, FSHARP, FOCUS, FORTRAN_77, FORTRAN_90, FORTRAN_95, GO, GRAILS,
+		GROOVY, HAML, HANDLEBARS, HARBOUR, HASKELL, HLSL, HTML, IDL, IDL_QT_PROJECT_PROLOG, INSTALLSHIELD, JAVA, JAVASCRIPT,
+		JAVASERVER_FACES, JCL, JSON, JSP, KERMIT, KORN_SHELL, KOTLIN, LESS, LEX, LISP, LISP_JULIA, LISP_OPENCL, LIVELINK_OSCRIPT,
+		LUA, M4, MAKE, MATLAB, MAVEN, MODULA3, MSBUILD_SCRIPT, MUMPS, MUSTACHE, MXML, NANT_SCRIPT, NASTRAN_DMAP, OBJECTIVE_C,
+		OBJECTIVE_CPP, OCAML, ORACLE_FORMS, ORACLE_REPORTS, PASCAL, PASCAL_PUPPET, PATRAN_COMMAND_LANGUAGE, PERL, PERL_PROLOG,
+		PHP, PHP_PASCAL, PIG_LATIN, PL_I, POWERSHELL, PROLOG, PROTOCOL_BUFFERS, PURESCRIPT, PYTHON, QML, R, RACKET, RAZOR, 
+		REXX, ROBOTFRAMEWORK, RUBY, RUBY_HTML, RUST, SAS, SASS, SCALA, SED, SKILL, SKILLPP, SMARTY, SOFTBRIDGE_BASIC, 
+		SQL, SQL_DATA, SQL_STORED_PROCEDURE, STANDARD_ML, SWIFT, TCL_TK, TEAMCENTER_MET, MTH, TITANIUM_STYLE_SHEET, 
+		TYPESCRIPT, UNITY_PREFAB, VALA, VALA_HEADER, VELOCITY_TEMPLATE_LANGUAGE, VERILOG_SYSTEMVERILOG, VHDL, VIM_SCRIPT,
+		VISUAL_BASIC, VISUAL_FOX_PRO, VISUALFORCE_COMPONENT, VISUALFORCE_PAGE, WINDOWS_MESSAGE_FILE, WINDOWS_MODULE_DEFINITION, 
+		WINDOWS_RESOURCE_FILE, WIX_INCLUDE, WIX_SOURCE, WIX_STRING_LOCALIZATION, XAML, XBASE, XBASE_HEADER, XML(LangType.SECONDARY), 
+		XQUERY, XSD, XSLT, YACC, YAML(LangType.SECONDARY), /** Undefined languages */OTHER(LangType.SECONDARY);
 
 		private LangType type;
+		
+		Language() {
+			this.type = LangType.PRIMARY;
+		}
 
 		Language(LangType type) {
 			this.type = type;
@@ -64,6 +80,23 @@ public final class CodeSniffer {
 
 		public boolean isSecondary() {
 			return type == LangType.SECONDARY;
+		}
+		
+		@JsonCreator
+		public static Language getType(String name) {
+			String value = name;
+			value = value.toUpperCase().replaceAll("[ /-]", "_")
+					.toUpperCase().replace("+", "P")
+					.replace("#", "SHARP")
+					.replace(".", "dot");
+			
+			try {
+				return Language.valueOf(value);
+			} catch (Exception e) {
+				Util.redirectLogError("Error occured in mapping", e);
+				return Language.OTHER;
+			}
+			
 		}
 
 	}
@@ -96,14 +129,14 @@ public final class CodeSniffer {
 		Map<String, Language> a = FILE_ASSOCIATIONS;
 
 		a.put("java", Language.JAVA);
-		a.put("cs", Language.C_SHARP);
-		a.put("c", Language.C_CPP);
-		a.put("cc", Language.C_CPP);
-		a.put("cpp", Language.C_CPP);
-		a.put("cxx", Language.C_CPP);
-		a.put("h", Language.C_CPP);
-		a.put("hpp", Language.C_CPP);
-		a.put("hxx", Language.C_CPP);
+		a.put("cs", Language.CSHARP);
+		a.put("c", Language.C);
+		a.put("cc", Language.CPP);
+		a.put("cpp", Language.CPP);
+		a.put("cxx", Language.CPP);
+		a.put("h", Language.C);
+		a.put("hpp", Language.CPP);
+		a.put("hxx", Language.CPP);
 		a.put("js", Language.JAVASCRIPT);
 		a.put("jsp", Language.JSP);
 		a.put("py", Language.PYTHON);
@@ -118,9 +151,6 @@ public final class CodeSniffer {
 		a.put("phtml", Language.PHP);
 		a.put("xml", Language.XML);
 		a.put("css", Language.CSS);
-		a.put("bat", Language.BATCH);
-		a.put("cmd", Language.BATCH);
-		a.put("nt", Language.BATCH);
 		a.put("yml", Language.YAML);
 
 	}
@@ -152,13 +182,13 @@ public final class CodeSniffer {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static CLOCData getCLOCStatistics(File file) {
+	public static CLOCData getCLOCStatistics(File file) throws IOException {
 		
-		Map<String, LanguageStats> langStats = Maps.newHashMap();
+		Map<Language, LangStats> langStats = Maps.newHashMap();
 		
 		Header header = new Header();
 		
-		Iterable<Object> yaml = new Yaml().loadAll(getCLOCDataAsYaml(file));
+		Iterable<Object> yaml = new Yaml().loadAll(Cloc.getCLOCDataAsYaml(file));
 		
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
@@ -176,9 +206,10 @@ public final class CodeSniffer {
 					if ("header".equals(key)) {
 						header = mapper.convertValue(entry.getValue(), Header.class);
 					} else if (!"SUM".equals(key)) {
-						LanguageStats langStat = mapper.convertValue(entry.getValue(), LanguageStats.class);
-						langStat.setLanguage(key);
-						langStats.put(key, langStat);
+						LangStats langStat = mapper.convertValue(entry.getValue(), LangStats.class);
+						Language lang = Language.getType(key);
+						langStat.setLanguage(lang);
+						langStats.put(lang, langStat);
 					}
 					
 				}

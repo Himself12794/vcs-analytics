@@ -1,19 +1,25 @@
-package com.cisco.dft.sdk.vcs.util;
+package com.cisco.dft.sdk.vcs.repo;
 
 import static com.cisco.dft.sdk.vcs.util.Util.redirectLogError;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.HashMap;
 import java.util.Map;
 
+import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class CLOCData {
 	
 	private final Header header;
-	private final Map<String, LanguageStats> languageStats;
+	private final Map<Language, LangStats> languageStats;
 	
-	public CLOCData(Header header, Map<String, LanguageStats> languageStats) {
+	public CLOCData() {
+		this(new Header(), new HashMap<Language, LangStats>());
+	}
+	
+	public CLOCData(Header header, Map<Language, LangStats> languageStats) {
 		this.header = header;
 		this.languageStats = languageStats;
 	}
@@ -22,8 +28,31 @@ public class CLOCData {
 		return header;
 	}
 	
-	public Map<String, LanguageStats> getLanguageStats() {
+	Map<Language, LangStats> getLanguageStatsMutable() {
 		return languageStats;
+	}
+	
+	public LangStats[] getLanguageStats() {
+		return languageStats.values().toArray(new LangStats[languageStats.values().size()]);
+	}
+
+	void reset() {
+		header.reset();
+		languageStats.clear();
+	}
+	
+	/**
+	 * Copies attributes from {@code data} to this instance.
+	 * 
+	 * @param data
+	 * @return
+	 */
+	CLOCData imprint(CLOCData data) {
+		this.header.imprint(data.header);
+		this.languageStats.clear();
+		this.languageStats.putAll(data.languageStats);
+		
+		return this;
 	}
 
 	public String toString() {
@@ -110,6 +139,34 @@ public class CLOCData {
 		public double getLinesPerSecond() {
 			return Double.valueOf(linesPerSecond);
 		}
+		
+		private void reset() {
+			this.clocUrl = "";
+			this.clocVersion = "";
+			this.elapsedSeconds = 0.0D;
+			this.filesPerSecond = "0.0";
+			this.linesPerSecond = "0.0";
+			this.nFiles = 0;
+			this.nLines = 0;
+			
+		}
+		
+		/**
+		 * Applys all attributes of header to this instance.
+		 * 
+		 * @param header
+		 * @return
+		 */
+		Header imprint(Header header) {
+			this.clocUrl = header.clocUrl;
+			this.clocVersion = header.clocVersion;
+			this.elapsedSeconds = header.elapsedSeconds;
+			this.filesPerSecond = header.filesPerSecond;
+			this.linesPerSecond = header.linesPerSecond;
+			this.nFiles = header.nFiles;
+			this.nLines = header.nLines;
+			return this;
+		}
 
 		public String toString() {
 			Class<?> clazz = this.getClass();
@@ -132,9 +189,9 @@ public class CLOCData {
 		
 	}
 
-	public static class LanguageStats {
+	public static class LangStats {
 	
-		private String language;
+		private Language language;
 		@JsonProperty("nFiles")
 		private int nFiles;
 		@JsonProperty("blank")
@@ -143,8 +200,16 @@ public class CLOCData {
 		private int commentLines;
 		@JsonProperty("code")
 		private int codeLines;
+		
+		public LangStats() {
+			this(Language.OTHER);
+		}
+		
+		public LangStats(Language lang) {
+			language = lang;
+		}
 	
-		public String getLanguage() {
+		public Language getLanguage() {
 			return language;
 		}
 	
@@ -164,7 +229,7 @@ public class CLOCData {
 			return codeLines;
 		}
 		
-		public void setLanguage(String language) {
+		public void setLanguage(Language language) {
 			this.language = language;
 		}
 
@@ -182,6 +247,18 @@ public class CLOCData {
 
 		public void setCodeLines(int codeLines) {
 			this.codeLines = codeLines;
+		}
+		
+		public LangStats copy() {
+			LangStats langStats = new LangStats();
+			
+			langStats.blankLines = this.blankLines;
+			langStats.codeLines = this.codeLines;
+			langStats.commentLines = this.commentLines;
+			langStats.language = this.language;
+			langStats.nFiles = this.nFiles;
+			
+			return langStats;
 		}
 
 		public String toString() {

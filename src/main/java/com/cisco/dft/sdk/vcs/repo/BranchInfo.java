@@ -6,12 +6,17 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.CheckoutConflictException;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.InvalidRefNameException;
+import org.eclipse.jgit.api.errors.RefAlreadyExistsException;
+import org.eclipse.jgit.api.errors.RefNotFoundException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.errors.CorruptObjectException;
+import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
@@ -24,15 +29,21 @@ import org.eclipse.jgit.treewalk.EmptyTreeIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.cisco.dft.sdk.vcs.app.App;
+import com.cisco.dft.sdk.vcs.app.Cloc;
+import com.cisco.dft.sdk.vcs.repo.CLOCData.Header;
+import com.cisco.dft.sdk.vcs.repo.CLOCData.LangStats;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
 import com.cisco.dft.sdk.vcs.util.SortMethod;
+import com.cisco.dft.sdk.vcs.util.Util;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 
 /**
- * Class used to hold information about a specific branch in a repository. Also a history viewer class
- * whose date is that of the most recent commit.
+ * Class used to hold information about a specific branch in a repository. Also
+ * a history viewer class whose date is that of the most recent commit.
  * 
  * @author phwhitin
  *
@@ -49,23 +60,29 @@ public class BranchInfo extends HistoryViewer {
 	private final Map<String, AuthorInfo> authorInfo;
 
 	BranchInfo(Git theRepo) {
-		this("Unknown", theRepo);
+		this("Unknown", theRepo, "", new Date());
+	}
+	
+	BranchInfo(String branch, Git theRepo) {
+		this(branch, theRepo, "", new Date());
 	}
 
-	BranchInfo(final String branch, Git theRepo) {
-		this(0, 0, branch, theRepo);
+	BranchInfo(final String branch, Git theRepo, String id, Date date) {
+		this(0, 0, branch, theRepo, id, date);
 	}
 
 	private BranchInfo(int fileCount, int lineCount, final String branch,
-			Git theRepo) {
-		this(fileCount, lineCount, branch, theRepo, new HashMap<Language, Integer>(), new HashMap<String, AuthorInfo>());
+			Git theRepo, String id, Date date) {
+		this(fileCount, lineCount, branch, theRepo, "", date, new HashMap<Language, Integer>(), new HashMap<String, AuthorInfo>(), new CLOCData());
 	}
 
 	private BranchInfo(int fileCount, int lineCount, final String branch,
-			Git theRepo, final Map<Language, Integer> languageCount,
-			final Map<String, AuthorInfo> authorInfo) {
-		super(fileCount, lineCount, branch, theRepo, "", new Date(), languageCount);
+			Git theRepo, String id, Date date, final Map<Language, Integer> languageCount,
+			final Map<String, AuthorInfo> authorInfo, CLOCData data) {
+		super(fileCount, lineCount, branch, theRepo, id, date, languageCount, data);
 		this.authorInfo = authorInfo;
+		Map<Language, LangStats> langStats = Maps.newHashMap();
+		data = new CLOCData(new Header(), langStats);
 
 	}
 
@@ -74,9 +91,13 @@ public class BranchInfo extends HistoryViewer {
 		for (Language lang : languageCount.keySet()) {
 			languageCount.put(lang, 0);
 		}
+		
+		this.theDate = new Date();
 
 		setFileCount(0);
 		setLineCount(0);
+
+		data.reset();
 
 	}
 
@@ -125,40 +146,40 @@ public class BranchInfo extends HistoryViewer {
 	 * Generates a snapshot of the repository at the certain date. If no history
 	 * is found before this date, the object returned is empty.
 	 * <p>
-	 * Note that the Date object counts time down to the millisecond, so make sure
-	 * you add an appreciable margin if your date is more general.
+	 * Note that the Date object counts time down to the millisecond, so make
+	 * sure you add an appreciable margin if your date is more general.
 	 * 
 	 * @param date
 	 * @return the history object, never null
 	 */
 	public HistoryViewer getHistoryForDate(Date date) {
-		
+
 		Date prev = new Date(0L);
-		
+
 		AuthorCommit temp2 = new AuthorCommit();
-		
+
 		for (AuthorInfo ai : authorInfo.values()) {
-			
+
 			ai.limitToDateRange(Range.closed(prev, date));
-			
+
 			List<AuthorCommit> acs = ai.getCommits();
-			
+
 			for (AuthorCommit ac : acs) {
-				
+
 				Date date2 = ac.getTimestamp();
 				if (date2.after(prev) && date2.compareTo(date) < 1) {
 					temp2 = ac;
 					prev = date2;
 				}
-				
+
 			}
-			
+
 		}
-		
+
 		HistoryViewer hv = getHistoryForCommit(temp2.getId());
 		hv.setDate(date);
 		return hv;
-		
+
 	}
 
 	/**
@@ -196,16 +217,61 @@ public class BranchInfo extends HistoryViewer {
 	 * @throws IOException
 	 * @throws MissingObjectException
 	 * @throws CorruptObjectException
+	 * @throws GitAPIException
+	 * @throws CheckoutConflictException
+	 * @throws InvalidRefNameException
+	 * @throws RefNotFoundException
+	 * @throws RefAlreadyExistsException
 	 */
-	private HistoryViewer lookupHistoryFor(String commitId, DiffFormatter df) throws CorruptObjectException, MissingObjectException, IOException {
-		
+	private HistoryViewer lookupHistoryFor(String commitId, DiffFormatter df) throws IOException, GitAPIException {
+
 		RevWalk rw = new RevWalk(theRepo.getRepository());
-		RevCommit rc = rw
-				.parseCommit(theRepo.getRepository().resolve(commitId));
+		RevCommit current = rw.parseCommit(theRepo.getRepository().resolve(Constants.HEAD));
+		RevCommit rc = rw.parseCommit(theRepo.getRepository().resolve(commitId));
 
 		rw.close();
 		
-		HistoryViewer hv = new HistoryViewer(branch, theRepo, rc.getId().name(), new Date(((long)rc.getCommitTime()) * 1000));
+		theRepo.checkout().setCreateBranch(false).setName(commitId).call();
+		
+		Date date = new Date(rc.getCommitTime() * 1000);
+		
+		BranchInfo hv = new BranchInfo(branch, theRepo, rc.getId().name(), date);
+		
+		hv.getHistory(rc, df);
+		
+		theRepo.checkout().setCreateBranch(false).setName(current.name());
+		HistoryViewer history = new HistoryViewer(branch, theRepo, commitId, date);
+		history.usesCLOCStats = hv.usesCLOCStats;
+		history.data.getLanguageStatsMutable().putAll(hv.data.getLanguageStatsMutable());
+		history.data.getHeader().imprint(hv.data.getHeader());
+		
+		
+		return history;
+
+	}
+	
+	void getHistory(RevCommit rc, DiffFormatter df) throws IncorrectObjectTypeException, IOException {
+
+		this.resetInfo();
+		
+		if (Cloc.canGetCLOCStats() && App.app.getConfig().shouldUseCloc()) {
+			
+			try {
+				CLOCData theData = CodeSniffer.getCLOCStatistics(theRepo.getRepository().getWorkTree());
+				this.getData().imprint(theData);
+				usesCLOCStats = true;
+				return;
+				
+			} catch (IOException e) {
+				usesCLOCStats = false;
+				LOGGER.error("Could not use CLOC to gather statistics, defaulting to built-in cheap analysis", e);
+			}
+			
+		} else {
+			LOGGER.warn("Program does not have execute permissions, defaulting to built-in stat analysis.");
+		}
+		
+		Map<Language, LangStats> langStats = this.getData().getLanguageStatsMutable();
 
 		ObjectReader reader = theRepo.getRepository().newObjectReader();
 
@@ -218,25 +284,35 @@ public class BranchInfo extends HistoryViewer {
 
 		df.setRepository(theRepo.getRepository());
 		List<DiffEntry> entries = df.scan(oldTreeIter, newTreeIter);
-
+		
+		Header header = this.getData().getHeader();
+		
 		for (DiffEntry entry : entries) {
 
 			Language lang = CodeSniffer.detectLanguage(entry.getNewPath());
+			
+			LangStats langStat = Util.putIfAbsent(langStats, lang, new LangStats(lang));
 
-			hv.incrementLanguage(lang, 1);
+			incrementLanguage(lang, 1);
 
-			hv.incrementFileCount(1);
+			incrementFileCount(1);
+			
+			langStat.setnFiles(langStat.getnFiles() + 1);
 
 			for (HunkHeader hunk : df.toFileHeader(entry).getHunks()) {
-
-				hv.incrementLineCount(hunk.getNewLineCount());
+				
+				header.setnLines(header.getnLines() + hunk.getNewLineCount());
+				langStat.setCodeLines(langStat.getCodeLines() + hunk.getNewLineCount());
+				this.incrementLineCount(hunk.getNewLineCount());
 
 			}
 
 		}
+		
+	}
 
-		return hv;
-
+	CLOCData getData() {
+		return data;
 	}
 
 	void setMostRecentCommit(String string) {
@@ -250,63 +326,7 @@ public class BranchInfo extends HistoryViewer {
 	@Override
 	public String toString() {
 
-		StringBuilder value = new StringBuilder("Branch: ");
-		value.append(getBranchName());
-		value.append("\nFile Count: ");
-		value.append(fileCount);
-		value.append("\nTotal Commits: ");
-		value.append(getCommitCount());
-		value.append("\nLine Count: ");
-		value.append(lineCount);
-		value.append("\nLanguage Stats:\n\n");
-
-		final int primaryCount = this.getPrimaryLangCount();
-		StringBuilder primary = new StringBuilder("\tPrimary Language Stats:\n");
-
-		primary.append("\tCount: ");
-		primary.append(primaryCount);
-		primary.append("\n");
-
-		final int secondaryCount = this.getSecondaryLangCount();
-		StringBuilder secondary = new StringBuilder("\tSecondary Language Stats:\n");
-
-		secondary.append("\tCount: ");
-		secondary.append(secondaryCount);
-		secondary.append("\n");
-
-		for (Entry<Language, Integer> entry : this.languageCount.entrySet()) {
-
-			if (entry.getKey().isPrimary()) {
-
-				primary.append("\t  "
-						+ entry.getKey().name()
-						+ ": \n\t\tcount: "
-						+ entry.getValue()
-						+ "\n\t\tpercentage: "
-						+ String.format("%.1f",
-								(entry.getValue().floatValue() * 100)
-										/ primaryCount) + "%");
-				primary.append("\n");
-
-			} else {
-
-				secondary.append("\t  "
-						+ entry.getKey().name()
-						+ ": \n\t\tcount: "
-						+ entry.getValue()
-						+ "\n\t\tpercentage: "
-						+ String.format("%.1f",
-								(entry.getValue().floatValue() * 100)
-										/ secondaryCount) + "%");
-				secondary.append("\n");
-
-			}
-
-		}
-
-		value.append(primary.toString());
-		value.append("\n");
-		value.append(secondary.toString());
+		StringBuilder value = new StringBuilder(super.toString());
 
 		value.append("\n");
 		value.append(getAuthorStatistics().sort(SortMethod.COMMITS).toString());
@@ -342,9 +362,9 @@ public class BranchInfo extends HistoryViewer {
 	 */
 	static String branchNameResolver(String branch) {
 
-		String value = branch;
-		if (!branch.contains(Constants.R_HEADS)) {
-			value = branchAdder(branch);
+		String value = branch == null ? "" : branch;
+		if (!value.contains(Constants.R_HEADS)) {
+			value = branchAdder(value);
 		}
 
 		return value;

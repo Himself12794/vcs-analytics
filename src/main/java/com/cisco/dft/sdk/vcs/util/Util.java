@@ -1,98 +1,89 @@
 package com.cisco.dft.sdk.vcs.util;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class Util {
-	
-	public static final File CLOC_EXE = new File("src/main/resources/bin/cloc-1.60.exe");
 
-	public static final File CLOC_TAR = new File("src/main/resources/bin/cloc-1.60.tar");
-	
-	public static final File CLOC_PL = new File("src/main/resources/bin/cloc-1.60.pl");
-	
-	private static final Logger LOGGER = LoggerFactory.getLogger(Util.class);
-	
-	private Util(){}
-	
+	public static final Logger LOGGER = LoggerFactory.getLogger(Util.class);
+
+	private Util() {}
+
 	public static void redirectLogError(String msg, Throwable t) {
 		LOGGER.error(msg, t);
 	}
-	
-	private static String getCommandForOS() {
-		
-		switch (OSType.getOSType()) {
-			case MAC:
-				return CLOC_PL.getPath();
-			case SOLARIS:
-				return CLOC_TAR.getPath();
-			case UNIX:
-				return CLOC_TAR.getPath();
-			case WIN:
-				return CLOC_EXE.getPath();
-			default:
-				return CLOC_EXE.getPath();
-			
-		}
-		
-	}
-	
-	public static String getCLOCDataAsYaml(File file) {
 
-		return executeCommand(getCommandForOS(), new String[]{"--yaml", file.getAbsolutePath()});
-	}
-	
-	public static String executeCommand(String command, String[] parameters) {
-		 
+	public static String executeCommand(String command, String...parameters) throws IOException {
+
 		StringBuilder output = new StringBuilder();
-		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-		
+
+		Process p = Runtime.getRuntime().exec(getCommand(command, parameters));
+
 		try {
-			
-			Process p = Runtime.getRuntime().exec(getCommand(command, parameters));
 			p.waitFor();
-			reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
- 
-			String line = "";
-			
-			while ((line = reader.readLine()) != null) {
-				output.append(line);
-				output.append("\n");
-			}
- 
-		} catch (Exception e) {
-			LOGGER.error("An error occured in running CLOC.", e);
-		} finally {
-			
-			try {
-				reader.close();
-			} catch (IOException e) {
-				LOGGER.error("An error occured in running CLOC.", e);
-			}
+		} catch (InterruptedException e) {
 		}
- 
+
+		BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+
+		String line = "";
+
+		while ((line = reader.readLine()) != null) {
+			output.append(line);
+			output.append("\n");
+		}
+
 		return output.toString();
- 
+
 	}
-	
+
 	private static String getCommand(String command, String[] parameters) {
-		
+
 		StringBuilder output = new StringBuilder(command);
 		output.append(" ");
-		
+
 		for (String parameter : parameters) {
-			
+
 			output.append(parameter);
 			output.append(" ");
-			
 		}
-		
+
 		return output.toString();
+
+	}
+
+	/**
+	 * If the value exists for the key, it places it in the map, otherwise it
+	 * places the given value.
+	 * 
+	 * @param map
+	 * @param key
+	 * @param value
+	 * @return the current value, or the given value if non-existent
+	 */
+	public static <V, K> V putIfAbsent(Map<K, V> map, K key, V value) {
+
+		if (map.containsKey(key)) {
+			return map.get(key);
+		} else {
+			map.put(key, value);
+			return value;
+		}
+
+	}
+	
+	public static <K, V> V getOrDefault(Map<K, V> map, K key, V defaultV) {
+		
+		if (map.containsKey(key)) {
+			return map.get(key);
+		} else {
+			return defaultV;
+		}
 		
 	}
 

@@ -3,10 +3,10 @@ package com.cisco.dft.sdk.vcs.repo;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.eclipse.jgit.api.Git;
 
+import com.cisco.dft.sdk.vcs.repo.CLOCData.LangStats;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
 import com.google.common.collect.Maps;
@@ -20,10 +20,14 @@ public class HistoryViewer {
 	protected final Git theRepo;
 
 	private final String history;
+	
+	protected boolean usesCLOCStats = false;
 
-	private Date theDate;
+	protected Date theDate;
 
 	protected final String branch;
+
+	protected final CLOCData data;
 
 	protected final Map<Language, Integer> languageCount;
 
@@ -37,12 +41,12 @@ public class HistoryViewer {
 
 	protected HistoryViewer(int fileCount, int lineCount, final String branch,
 			Git theRepo, String ac, Date date) {
-		this(fileCount, lineCount, branch, theRepo, ac, date, new HashMap<Language, Integer>());
+		this(fileCount, lineCount, branch, theRepo, ac, date, new HashMap<Language, Integer>(), new CLOCData());
 	}
 
 	protected HistoryViewer(int fileCount, int lineCount, final String branch,
 			Git theRepo, String ac, Date date,
-			final Map<Language, Integer> languageCount) {
+			final Map<Language, Integer> languageCount, CLOCData data) {
 
 		this.fileCount = fileCount;
 		this.lineCount = lineCount;
@@ -51,6 +55,7 @@ public class HistoryViewer {
 		this.theDate = date;
 		this.languageCount = languageCount;
 		this.theRepo = theRepo;
+		this.data = data;
 
 	}
 
@@ -59,27 +64,27 @@ public class HistoryViewer {
 	}
 
 	public int getFileCount() {
-		return fileCount;
+		return data.getHeader().getnFiles();
 	}
 
 	protected void setFileCount(int fileCount) {
-		this.fileCount = fileCount;
+		data.getHeader().setnFiles(fileCount);
 	}
 
 	public int getLineCount() {
-		return lineCount;
+		return data.getHeader().getnLines();
 	}
 
 	protected void setLineCount(int lineCount) {
-		this.lineCount = lineCount;
+		data.getHeader().setnLines(lineCount);
 	}
 
 	void incrementFileCount(int x) {
-		fileCount += x;
+		setFileCount(getFileCount() + x);
 	}
 
 	void incrementLineCount(int x) {
-		lineCount += x;
+		setLineCount(getLineCount() + x);
 	}
 
 	/**
@@ -115,10 +120,31 @@ public class HistoryViewer {
 	}
 
 	/**
+	 * Use {@link HistoryViewer#getLangStatistics()} instead, this information
+	 * is not near as precise as the old stat gathering.
+	 * 
 	 * @return the map of language counts for use with iteration
 	 */
+	@Deprecated
 	public Map<Language, Integer> getLangCountMap() {
 		return Maps.newHashMap(languageCount);
+	}
+	
+	/**
+	 * Gets the statistics for all languages.
+	 * 
+	 * @return
+	 */
+	public LangStats[] getLangStatistics() {
+		LangStats[] oldOne = data.getLanguageStats();
+		LangStats[] newOne = new LangStats[oldOne.length];
+
+		for (int i = 0; i < newOne.length; i++) {
+			newOne[i] = oldOne[i].copy();
+		}
+
+		return newOne;
+
 	}
 
 	/**
@@ -131,9 +157,9 @@ public class HistoryViewer {
 	 */
 	public int getPrimaryLangCount() {
 		int count = 0;
-		for (Entry<Language, Integer> langEntry : languageCount.entrySet()) {
-			if (langEntry.getKey().isPrimary()) {
-				count += langEntry.getValue();
+		for (LangStats langEntry : data.getLanguageStats()) {
+			if (langEntry.getLanguage().isPrimary()) {
+				count += langEntry.getnFiles();
 			}
 		}
 		return count;
@@ -149,24 +175,17 @@ public class HistoryViewer {
 	 */
 	public int getSecondaryLangCount() {
 		int count = 0;
-		for (Entry<Language, Integer> langEntry : languageCount.entrySet()) {
-			if (langEntry.getKey().isSecondary()) {
-				count += langEntry.getValue();
+		for (LangStats langEntry : data.getLanguageStats()) {
+			if (langEntry.getLanguage().isSecondary()) {
+				count += langEntry.getnFiles();
 			}
 		}
 		return count;
 	}
 
-	/**
-	 * Get the percentage of the repo that is made up of this language.
-	 * 
-	 * @param lang
-	 *            lanugage to look for
-	 * @return percentage
-	 */
 	public float getLangPercent(Language lang) {
-		return languageCount.containsKey(lang) ? languageCount.get(lang)
-				.floatValue() / fileCount : 0.0F;
+		return (float) getLangStats(lang).getnFiles()
+				/ (float) data.getHeader().getnFiles();
 	}
 
 	/**
@@ -175,8 +194,10 @@ public class HistoryViewer {
 	 * @param lang
 	 * @return count
 	 */
-	public int getLangCount(Language lang) {
-		return languageCount.containsKey(lang) ? languageCount.get(lang) : 0;
+	public LangStats getLangStats(Language lang) {
+		return data.getLanguageStatsMutable().containsKey(lang) ? data
+				.getLanguageStatsMutable().get(lang).copy()
+				: new LangStats(lang);
 	}
 
 	/**
@@ -185,20 +206,26 @@ public class HistoryViewer {
 	public String getBranchName() {
 		return BranchInfo.branchTrimmer(branch);
 	}
+	
+	public boolean usesCLOCStats() {
+		return usesCLOCStats;
+	}
 
 	@Override
 	public String toString() {
 
 		StringBuilder value = new StringBuilder("Branch: ");
 		value.append(getBranchName());
+		value.append("\nUses CLOC stats: ");
+		value.append(usesCLOCStats);
 		value.append("\nSnapshot for date: ");
 		value.append(theDate.toString());
 		value.append("\nHistory up to commit: ");
 		value.append(history);
 		value.append("\nFile Count: ");
-		value.append(fileCount);
+		value.append(getFileCount());
 		value.append("\nLine Count: ");
-		value.append(lineCount);
+		value.append(getLineCount());
 		value.append("\nLanguage Stats:\n\n");
 
 		final int primaryCount = this.getPrimaryLangCount();
@@ -215,30 +242,16 @@ public class HistoryViewer {
 		secondary.append(secondaryCount);
 		secondary.append("\n");
 
-		for (Entry<Language, Integer> entry : this.languageCount.entrySet()) {
+		for (LangStats stats : this.data.getLanguageStats()) {
 
-			if (entry.getKey().isPrimary()) {
+			if (stats.getLanguage().isPrimary()) {
 
-				primary.append("\t  "
-						+ entry.getKey().name()
-						+ ": \n\t\tcount: "
-						+ entry.getValue()
-						+ "\n\t\tpercentage: "
-						+ String.format("%.1f",
-								(entry.getValue().floatValue() * 100)
-										/ primaryCount) + "%");
+				primary.append(getOutput(stats));
 				primary.append("\n");
 
 			} else {
 
-				secondary.append("\t  "
-						+ entry.getKey().name()
-						+ ": \n\t\tcount: "
-						+ entry.getValue()
-						+ "\n\t\tpercentage: "
-						+ String.format("%.1f",
-								(entry.getValue().floatValue() * 100)
-										/ secondaryCount) + "%");
+				secondary.append(getOutput(stats));
 				secondary.append("\n");
 
 			}
@@ -250,6 +263,12 @@ public class HistoryViewer {
 		value.append(secondary.toString());
 
 		return value.toString();
+	}
+
+	private String getOutput(LangStats stats) {
+		return "\t  " + stats.getLanguage().name() + ": \n\t\tcount: "
+				+ stats.getnFiles() + "\n\t\tpercentage: "
+				+ String.format("%.2f", getLangPercent(stats.getLanguage()) * 100) + "%";
 	}
 
 }
