@@ -1,37 +1,86 @@
 package com.cisco.dft.sdk.vcs.main;
 
+import java.util.Date;
 import java.util.Map;
 
 import com.cisco.dft.sdk.vcs.common.Util;
 
 public class ProgramConfig {
 	
-	private final Action action;
+	static final ProgramConfig INIT = ProgramConfig.parseArgMap("init");
 	
-	@Required
+	static final ProgramConfig HELP = ProgramConfig.parseArgMap("help");
+	
+	static final ProgramConfig DEBUG = ProgramConfig.parseArgMap("analyze", "-d","--url=https://github.com/Himself12794/powersAPI.git", "--branch=master");
+	
+	private final Action action;
+
 	private final String url;
 	
-	@Default("master")
 	private final String branch;
+	
+	private final String username;
+	
+	private final String password;
 	
 	private final boolean shouldGenerateStats;
 	
 	private final boolean useCloc;
 	
-	ProgramConfig(Action action, String url, String branch, boolean value, boolean value2) {
+	private boolean debug;
+	
+	private Date start;
+	
+	private Date end;
+	
+	ProgramConfig(Action action, String url, String branch, String username, String password, boolean generateStats, boolean useCloc) {
 		this.action = action;
 		this.url = url;
 		this.branch = branch;
-		this.shouldGenerateStats = value;
-		this.useCloc = value2;
+		this.username = username;
+		this.password = password;
+		this.shouldGenerateStats = generateStats;
+		this.useCloc = useCloc;
 	}
 	
+	public boolean isDebugEnabled() {
+		return debug;
+	}
+	
+	void setDebugEnabled(boolean value) {
+		debug = value;
+	}
+	
+	public Date getStart() {
+		return start;
+	}
+
+	void setStart(Date start) {
+		this.start = start;
+	}
+
+	public Date getEnd() {
+		return end;
+	}
+
+	void setEnd(Date end) {
+		this.end = end;
+	}
+
 	public String getUrl() {
 		return url;
 	}
 	
 	public String getBranch() {
 		return branch;
+	}
+	
+	String getUsername() {
+		return username;
+	}
+	
+	String getPassword() {
+		return password;
 	}
 	
 	public Action getAction() {
@@ -50,14 +99,39 @@ public class ProgramConfig {
 		return this.useCloc;
 	}
 	
-	public static ProgramConfig parseArgMap(Map<String, String> args2) {
+	public static ProgramConfig parseArgMap(String...args) {
+		Map<String, String> map = ArgParser.getArgMap(args);
 		
-		String branch = Util.getOrDefault(args2, "branch", null);
-		boolean generateStats = !args2.containsKey("nostats");
-		boolean useCloc = !args2.containsKey("builtin-analysis");
-		String url = Util.getOrDefault(args2, "url", null);
-		Action action = Action.valueOf(Util.getOrDefault(args2, "action", "HELP"));
-		return new ProgramConfig(action, url, branch, generateStats, useCloc);
+		final Action action = Action.valueOf((String) Util.getOrDefault(map, "action", "HELP"));
+		final String url = (String) Util.getOrDefault(map, "url", null);
+		final String branch = (String) Util.getOrDefault(map, "branch", null);
+		final String username = (String) Util.getOrDefault(map, "username", "");
+		final String password = (String) Util.getOrDefault(map, "password", "");
+		final boolean generateStats = !(Boolean.parseBoolean((String) Util.getOrDefault(map, "nostats", Boolean.FALSE.toString())));
+		final boolean useCloc = !(Boolean.parseBoolean((String) Util.getOrDefault(map, "builtin-analysis", Boolean.FALSE.toString())));
+		final boolean debug = Boolean.parseBoolean((String) Util.getOrDefault(map, "d", Boolean.FALSE.toString()));
+		Date start = null;
+		
+		try { 
+			start = new Date(Long.valueOf(Util.getOrDefault(map, "start", null)));
+		} catch (NumberFormatException e) {
+			// Don't need to do anything
+		}
+		
+		Date end = null;
+		
+		try { 
+			end = new Date(Long.valueOf(Util.getOrDefault(map, "end", null)));
+		} catch (NumberFormatException e) {
+			// Don't need to do anything
+		}
+		
+		ProgramConfig config = new ProgramConfig(action, url, branch, username, password, generateStats, useCloc);
+		config.setEnd(end);
+		config.setStart(start);
+		config.setDebugEnabled(debug);
+		
+		return config;
 	}
 	
 	@Override
@@ -66,22 +140,31 @@ public class ProgramConfig {
 						+ ",Url=" + url
 						+ ",Branch=" + branch
 						+ ",GenerateStats=" + shouldGenerateStats
-						+ ",UseCloc=" + useCloc;
+						+ ",UseCloc=" + useCloc
+						+ ",Start=" + (start == null ? "first-commit" : start)
+						+ ",End=" + (end == null ? "last-commit" : end)
+						+ ",Debug=" + debug;
 		return value;
 	}
 	
 	public static String getUsage() {
-		String value = 
-				"Commands:"
+		String value =
+				"This application runs an analysis on remote repositories and prints the results.\n"
+			  +	"\nCommands:"
 			  + "\n  analyze - Gives statistics for a Git repository"
 			  + "\n      --url=<url> (required)"
-			  + "\n      --branch=<branch> (defaults to master)"
-			  + "\n      --nostatistics (just clones the repo)"
-			  + "\n      --builtin-analysis (Uses builtin process, no CLOC required)"
+			  + "\n      --branch=<branch> (Omit to run on all branches)"
+			  + "\n      --nostatistics (Indicates to just clone the repo)"
+			  + "\n      --builtin-analysis (Indicates to use builtin stat analysis)"
+			  + "\n      --username=<username> (Used for access to private repos)"
+			  + "\n      --password=<password> (Used for access to private repos)"
+			  + "\n      --start=<epoch-time> (Epoch time, in millis, to limit start date)"
+			  + "\n      --end=<epoch-time> (Epoch time, in millis, to limit end date)"
 			  + "\n"
 			  + "\n  help - Shows help"
 			  + "\n"
-			  + "\n  init - Extracts CLOC resources";
+			  + "\n  init - Extracts CLOC resources"
+			  + "\n  -d   - Enable debug logging";
 		return value;
 	}
 

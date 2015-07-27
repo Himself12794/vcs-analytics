@@ -5,40 +5,83 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.qos.logback.classic.Level;
-
 import com.cisco.dft.sdk.vcs.common.CodeSniffer;
 import com.cisco.dft.sdk.vcs.common.CodeSniffer.Language;
 import com.cisco.dft.sdk.vcs.common.OSType;
 import com.cisco.dft.sdk.vcs.common.SortMethod;
+import com.cisco.dft.sdk.vcs.common.Util;
 import com.cisco.dft.sdk.vcs.core.AuthorCommit;
 import com.cisco.dft.sdk.vcs.core.AuthorInfo;
 import com.cisco.dft.sdk.vcs.core.AuthorInfoBuilder;
 import com.cisco.dft.sdk.vcs.core.BranchInfo;
+import com.cisco.dft.sdk.vcs.core.ClocData;
+import com.cisco.dft.sdk.vcs.core.ClocData.Header;
+import com.cisco.dft.sdk.vcs.core.ClocData.LangStats;
 import com.cisco.dft.sdk.vcs.core.GitRepo;
 import com.cisco.dft.sdk.vcs.core.HistoryViewer;
+import com.cisco.dft.sdk.vcs.core.Repo;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 
 public class RepoUtilsTest {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger("UnitTesting");
 	
-	private void enableDebugLogging() {
-		ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
-	    root.setLevel(Level.DEBUG);
-	}
-	
 	@Before
 	public void configure() {
-		App.getInstance().init();
-		enableDebugLogging();
+		Util.enableDebugLogging();
+		Application.getInstance().init();
+	}
+	
+	@Test
+	public void testUtility() {
+		
+		final String test1 = "test1";
+		final String test2 = "test2";
+		final String test3 = "my-project";
+		
+		Map<String, Boolean> map = Maps.newHashMap();
+		
+		map.put(test1, true);
+		
+		assertTrue(Util.getOrDefault(map, test1, false));
+		assertTrue(Util.getOrDefault(map, test2, true));
+		assertTrue(Util.putIfAbsent(map, test1, false));
+		assertTrue(Util.putIfAbsent(map, test2, true));
+		
+		Map<Language, LangStats> map2 = Maps.newHashMap();
+		
+		ClocData data = new ClocData(new Header(), map2);
+		
+		LOGGER.debug(data.toString());
+		
+		test3.equals(Repo.guessName("http://my-project.git"));
+		test3.equals(Repo.guessName("http://my-project"));
+		
+		
+	}
+	
+	@Test
+	public void testApp() throws GitAPIException {
+		
+		LOGGER.debug("Testing help feature");
+		Application.setConfiguration(ProgramConfig.HELP).execute();
+		
+		LOGGER.debug("Testing init feature. (will log errors if system does not allow execute permissions)");
+		Application.setConfiguration(ProgramConfig.INIT).execute();
+		
+		LOGGER.debug("Testing analyze.");
+		Application.setConfiguration(ProgramConfig.DEBUG);
+		
 	}
 
 	@Test
@@ -69,7 +112,7 @@ public class RepoUtilsTest {
 	@Test 
 	public void testRepoStatGathering() throws Exception {
 		
-		GitRepo reo = new GitRepo("https://github.com/Himself12794/powersAPI.git");
+		GitRepo reo = new GitRepo("https://github.com/Himself12794/powersAPI.git", "master", true);
 		
 		BranchInfo branch = reo.getRepoStatistics().getBranchInfoFor("master");
 		

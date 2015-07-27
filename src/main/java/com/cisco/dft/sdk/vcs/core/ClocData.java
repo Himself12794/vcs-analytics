@@ -10,16 +10,16 @@ import java.util.Map;
 import com.cisco.dft.sdk.vcs.common.CodeSniffer.Language;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class CLOCData {
+public class ClocData {
 	
 	private final Header header;
 	private final Map<Language, LangStats> languageStats;
 	
-	public CLOCData() {
+	public ClocData() {
 		this(new Header(), new HashMap<Language, LangStats>());
 	}
 	
-	public CLOCData(Header header, Map<Language, LangStats> languageStats) {
+	public ClocData(Header header, Map<Language, LangStats> languageStats) {
 		this.header = header;
 		this.languageStats = languageStats;
 	}
@@ -47,7 +47,7 @@ public class CLOCData {
 	 * @param data
 	 * @return
 	 */
-	CLOCData imprint(CLOCData data) {
+	ClocData imprint(ClocData data) {
 		this.header.imprint(data.header);
 		this.languageStats.clear();
 		this.languageStats.putAll(data.languageStats);
@@ -56,7 +56,7 @@ public class CLOCData {
 	}
 
 	public String toString() {
-		return CLOCData.toString(this);			
+		return ClocData.toString(this);			
 	}
 
 	public static class Header {
@@ -126,13 +126,6 @@ public class CLOCData {
 		}
 		
 		private void reset() {
-			/*this.clocUrl = "";
-			this.clocVersion = "";
-			this.elapsedSeconds = 0.0D;
-			this.filesPerSecond = "0.0";
-			this.linesPerSecond = "0.0";
-			this.nFiles = 0;
-			this.nLines = 0;*/
 			imprint(new Header());
 			
 		}
@@ -155,7 +148,7 @@ public class CLOCData {
 		}
 
 		public String toString() {
-			return CLOCData.toString(this);			
+			return ClocData.toString(this);			
 		}
 		
 	}
@@ -231,9 +224,10 @@ public class CLOCData {
 			
 			return langStats;
 		}
-
+		
+		@Override
 		public String toString() {
-			return CLOCData.toString(this);		
+			return ClocData.toString(this);		
 		}
 		
 	}
@@ -248,7 +242,9 @@ public class CLOCData {
 		for (Field field : clazz.getDeclaredFields()) {
 			if (Modifier.isStatic(field.getModifiers())) { continue; }
 			try {
+				field.setAccessible(true);
 				value.append(field.getName() + "=" + field.get(t) + ", ");
+				field.setAccessible(false);
 			} catch (Exception e) {
 				redirectLogError("An unexpected error occured in value mapping",e);
 			}

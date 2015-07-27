@@ -80,8 +80,8 @@ public final class GitRepo extends Repo {
 		this(url, true);
 	}
 	
-	public GitRepo(String url, String branch, boolean generateStats) throws GitAPIException {
-		this(url, null, branch, generateStats, null);
+	public GitRepo(String url, String branch) throws GitAPIException {
+		this(url, branch, true);
 	}
 
 	/**
@@ -94,13 +94,21 @@ public final class GitRepo extends Repo {
 	 * 
 	 * @param url
 	 *            the url to grab the data from
-	 * @param autoSync
+	 * @param generateStats
 	 *            whether repositories with local data should automatically sync
 	 *            data
 	 * @throws GitAPIException 
 	 */
-	public GitRepo(String url, boolean autoSync) throws GitAPIException {
-		this(url, null, null, autoSync, null);
+	public GitRepo(String url, boolean generateStats) throws GitAPIException {
+		this(url, null, null, generateStats, null);
+	}
+	
+	public GitRepo(String url, String branch, boolean generateStats) throws GitAPIException {
+		this(url, null, branch, generateStats, null);
+	}
+	
+	public GitRepo(String url, String branch, boolean generateStats, UsernamePasswordCredentialsProvider cp) throws GitAPIException {
+		this(url, cp, branch, generateStats, null);
 	}
 
 	public GitRepo(String url, UsernamePasswordCredentialsProvider cp) throws GitAPIException {
@@ -215,8 +223,8 @@ public final class GitRepo extends Repo {
 	
 	private void validateBranchSync(String branch) throws GitAPIException {
 		
-		if (branch == null) { sync(true); }
-		else { sync(branch, true); }
+		if (branch == null) { sync(true, true); }
+		else { sync(branch, true, true); }
 		
 	}
 
@@ -226,7 +234,7 @@ public final class GitRepo extends Repo {
 	 * @return
 	 */
 	public void sync() {
-		sync(true);
+		sync(true, true);
 	}
 
 	/**
@@ -236,7 +244,7 @@ public final class GitRepo extends Repo {
 	 * @throws GitAPIException 
 	 */
 	public void sync(String branch) throws GitAPIException {
-		sync(branch, true);
+		sync(branch, true, true);
 	}
 
 	/**
@@ -246,11 +254,11 @@ public final class GitRepo extends Repo {
 	 *            whether or not statistics should be generated or updated
 	 * @throws GitAPIException 
 	 */
-	public void sync(boolean generateStatistics) {
+	public void sync(boolean generateStatistics, boolean useCloc) {
 
 		for (String branch : getBranches()) {
 			try {
-				sync(branch, generateStatistics);
+				sync(branch, generateStatistics, useCloc);
 			} catch (GitAPIException e) {
 				LOGGER.error("An error occured in synchronizing data", e);
 			}
@@ -267,7 +275,12 @@ public final class GitRepo extends Repo {
 	 *            whether or not to update info
 	 * @throws GitAPIException 
 	 */
-	public void sync(String branch, boolean generateStatistics) throws GitAPIException {
+	public void sync(String branch, boolean generateStatistics, boolean useCloc) throws GitAPIException {
+		
+		if (branch == null) { 
+			sync(generateStatistics, useCloc);
+			return;
+		}
 		
 		String branchResolved = BranchInfo.branchNameResolver(branch);
 
@@ -290,7 +303,7 @@ public final class GitRepo extends Repo {
 			if (!flag || generateStatistics) {
 
 				updateAuthorInfo(branchResolved, df);
-				updateRepoInfo(branchResolved, df);
+				updateRepoInfo(branchResolved, df, useCloc);
 				repoInfo.resolveBranchInfo(getBranches());
 
 			}
@@ -378,8 +391,8 @@ public final class GitRepo extends Repo {
 
 	}
 
-	private void updateRepoInfo(String branch, DiffFormatter df) throws IOException {
-		repoInfo.getBranchInfo(branch).getHistory(getNewestCommit(branch), df);
+	private void updateRepoInfo(String branch, DiffFormatter df, boolean useCloc) throws IOException {
+		repoInfo.getBranchInfo(branch).getHistory(getNewestCommit(branch), df, useCloc);
 	}
 
 	/**
@@ -507,11 +520,7 @@ public final class GitRepo extends Repo {
 		LOGGER.info("Cloning repo from remote url.");
 		
 		CloneCommand command = Git.cloneRepository().setDirectory(theDirectory)
-				.setURI(remote).setCredentialsProvider(cp);
-		
-		if (branch != null) {
-			command.setBranch(branch);
-		}
+				.setBranch(branch).setURI(remote).setCredentialsProvider(cp);
 		
 		theRepo = command.call();
 

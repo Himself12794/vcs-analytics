@@ -14,28 +14,25 @@ public abstract class Repo {
 
 	/**
 	 * Returns a list of the branches in this repository.
+	 * This is vital so users know which branches exist,
+	 * so information for specific branches can be accessed.
 	 * 
 	 * @return
 	 */
 	public abstract List<String> getBranches();
 
 	/**
-	 * Gets the general information about this repository:
-	 * <ol>
-	 * <li>Lines of code</li>
-	 * <li>Number of files</li>
-	 * <li>Language statistics</li>
-	 * </ol>
-	 * Note: Merge requests do not seem to show any additions or deletions.
+	 * Gets all generated data for this repository.
+	 * Make sure {@link Repo#sync()} is called to ensure
+	 * this information is up to date.
 	 * 
-	 * @return a copy of the statistics object. changing this will not effect
-	 *         statistics as a whole.
+	 * @return a copy of the statistics object
 	 */
 	public RepoInfo getRepoStatistics() {
 		return repoInfo;
 	}
 
-	protected static String guessName(String url) {
+	public static String guessName(String url) {
 		String value = url;
 		String[] splitten = { "Unkown" };
 

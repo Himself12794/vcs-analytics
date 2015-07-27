@@ -33,9 +33,8 @@ import com.cisco.dft.sdk.vcs.common.CodeSniffer;
 import com.cisco.dft.sdk.vcs.common.CodeSniffer.Language;
 import com.cisco.dft.sdk.vcs.common.SortMethod;
 import com.cisco.dft.sdk.vcs.common.Util;
-import com.cisco.dft.sdk.vcs.core.CLOCData.Header;
-import com.cisco.dft.sdk.vcs.core.CLOCData.LangStats;
-import com.cisco.dft.sdk.vcs.main.App;
+import com.cisco.dft.sdk.vcs.core.ClocData.Header;
+import com.cisco.dft.sdk.vcs.core.ClocData.LangStats;
 import com.cisco.dft.sdk.vcs.main.Cloc;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
@@ -67,12 +66,12 @@ public class BranchInfo extends HistoryViewer {
 	}
 
 	private BranchInfo(final String branch, Git theRepo, String id, Date date) {
-		this(branch, theRepo, id, date, new HashMap<Language, Integer>(), new HashMap<String, AuthorInfo>(), new CLOCData());
+		this(branch, theRepo, id, date, new HashMap<Language, Integer>(), new HashMap<String, AuthorInfo>(), new ClocData());
 	}
 
 	private BranchInfo(final String branch, Git theRepo, String id, Date date,
 			final Map<Language, Integer> languageCount,
-			final Map<String, AuthorInfo> authorInfo, CLOCData data) {
+			final Map<String, AuthorInfo> authorInfo, ClocData data) {
 		super(branch, theRepo, id, date, languageCount, data);
 		this.authorInfo = authorInfo;
 
@@ -135,7 +134,7 @@ public class BranchInfo extends HistoryViewer {
 	}
 
 	/**
-	 * Generates a snapshot of the repository at the certain date. If no history
+	 * Generates a snapshot of the repository at the certain date using cloc. If no history
 	 * is found before this date, the object returned is empty.
 	 * <p>
 	 * Note that the Date object counts time down to the millisecond, so make
@@ -145,6 +144,25 @@ public class BranchInfo extends HistoryViewer {
 	 * @return the history object, never null
 	 */
 	public HistoryViewer getHistoryForDate(Date date) {
+		return getHistoryForDate(date, true);
+	}
+
+	/**
+	 * Generates a snapshot of the repository at the certain date. If no history
+	 * is found before this date, the object returned is empty.
+	 * <p>
+	 * Note that the Date object counts time down to the millisecond, so make
+	 * sure you add an appreciable margin if your date is more general.
+	 * <p>
+	 * Indicating the that the history information should use cloc does not necessary mean
+	 * it will succeed, only that it will try. If cloc is not enabled, this will fail
+	 * regardless.
+	 * 
+	 * @param date
+	 * @param useCloc if the statistics should be generated using cloc 
+	 * @return the history object, never null
+	 */
+	public HistoryViewer getHistoryForDate(Date date, boolean useCloc) {
 
 		Date prev = new Date(0L);
 
@@ -168,7 +186,7 @@ public class BranchInfo extends HistoryViewer {
 
 		}
 
-		HistoryViewer hv = getHistoryForCommit(temp2.getId());
+		HistoryViewer hv = getHistoryForCommit(temp2.getId(), useCloc);
 		hv.setDate(date);
 		return hv;
 
@@ -180,14 +198,14 @@ public class BranchInfo extends HistoryViewer {
 	 * @param commitId
 	 * @return
 	 */
-	public HistoryViewer getHistoryForCommit(String commitId) {
+	public HistoryViewer getHistoryForCommit(String commitId, boolean useCloc) {
 
 		HistoryViewer hv = new HistoryViewer(branch, theRepo, commitId, new Date());
 		DiffFormatter df = new DiffFormatter(new ByteArrayOutputStream());
 
 		try {
 
-			hv = lookupHistoryFor(commitId, df);
+			hv = lookupHistoryFor(commitId, df, useCloc);
 
 		} catch (Exception e) {
 			LOGGER.error("Could not find history for commit id " + commitId, e);
@@ -215,7 +233,7 @@ public class BranchInfo extends HistoryViewer {
 	 * @throws RefNotFoundException
 	 * @throws RefAlreadyExistsException
 	 */
-	private HistoryViewer lookupHistoryFor(String commitId, DiffFormatter df) throws IOException, GitAPIException {
+	private HistoryViewer lookupHistoryFor(String commitId, DiffFormatter df, boolean useCloc) throws IOException, GitAPIException {
 
 		RevWalk rw = new RevWalk(theRepo.getRepository());
 		RevCommit current = rw.parseCommit(theRepo.getRepository().resolve(
@@ -231,7 +249,7 @@ public class BranchInfo extends HistoryViewer {
 
 		BranchInfo hv = new BranchInfo(branch, theRepo, rc.getId().name(), date);
 
-		hv.getHistory(rc, df);
+		hv.getHistory(rc, df, useCloc);
 
 		theRepo.checkout().setCreateBranch(false).setName(current.name());
 		HistoryViewer history = new HistoryViewer(branch, theRepo, commitId, date);
@@ -244,14 +262,16 @@ public class BranchInfo extends HistoryViewer {
 
 	}
 
-	void getHistory(RevCommit rc, DiffFormatter df) throws IncorrectObjectTypeException, IOException {
+	void getHistory(RevCommit rc, DiffFormatter df, boolean useCloc) throws IncorrectObjectTypeException, IOException {
 
 		this.resetInfo();
 
-		if (Cloc.canGetCLOCStats() && App.getConfiguration().shouldUseCloc()) {
+		if (Cloc.canGetCLOCStats() && useCloc) {
+			
+			LOGGER.debug("Will use cloc to analyze");
 
 			try {
-				CLOCData theData = CodeSniffer.getCLOCStatistics(theRepo
+				ClocData theData = Cloc.getClocStatistics(theRepo
 						.getRepository().getWorkTree());
 				this.getData().imprint(theData);
 				usesCLOCStats = true;
@@ -311,7 +331,7 @@ public class BranchInfo extends HistoryViewer {
 
 	}
 
-	CLOCData getData() {
+	ClocData getData() {
 		return data;
 	}
 

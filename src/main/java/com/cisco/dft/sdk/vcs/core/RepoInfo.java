@@ -43,6 +43,12 @@ public class RepoInfo {
 		
 	}
 	
+	/**
+	 * If branch info by the given name does not exist, creates and returns it.
+	 * 
+	 * @param branch
+	 * @return
+	 */
 	BranchInfo getBranchInfo(String branch) {
 		
 		BranchInfo bi;
@@ -105,6 +111,10 @@ public class RepoInfo {
 	 */
 	public String[] getBranches() {
 		return branches.keySet().toArray(new String[branches.keySet().size()]);
+	}
+	
+	public BranchInfo[] getBranchInfos() {
+		return branches.values().toArray(new BranchInfo[branches.values().size()]);
 	}
 	
 	void setRepo(Git theRepo) {

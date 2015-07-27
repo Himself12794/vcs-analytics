@@ -136,6 +136,11 @@ public class AuthorInfoBuilder {
 		StringBuilder value = new StringBuilder("Branch: ");
 		value.append(getBranchName());
 		value.append("\n");
+		value.append("Date range: ");
+		value.append((authorInfo.getDateRange().hasLowerBound() ? authorInfo.getDateRange().lowerEndpoint() : "first-commit"));
+		value.append(" - ");
+		value.append((authorInfo.getDateRange().hasUpperBound() ? authorInfo.getDateRange().upperEndpoint() : "most-recent-commit"));
+		value.append("\n");
 		
 		for (AuthorInfo ai : authorInfo.getData()) { value.append(ai.toString()); }
 		

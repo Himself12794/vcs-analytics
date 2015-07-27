@@ -27,9 +27,11 @@ public final class ArgParser {
 					if (value.length > 1) {
 						Util.putIfAbsent(values, value[0].toLowerCase(), value[1]);
 					} else if (value.length > 0) {
-						Util.putIfAbsent(values, value[0].toLowerCase(), "true");
+						Util.putIfAbsent(values, value[0].toLowerCase(), Boolean.TRUE.toString());
 					}
-				} 
+				} else if ("-".equals(args[i].substring(0, 1))) {
+					Util.putIfAbsent(values, args[i].replaceFirst("-", ""), Boolean.TRUE.toString());
+				}
 				
 			}
 			

@@ -8,7 +8,7 @@ import org.eclipse.jgit.api.Git;
 
 import com.cisco.dft.sdk.vcs.common.CodeSniffer;
 import com.cisco.dft.sdk.vcs.common.CodeSniffer.Language;
-import com.cisco.dft.sdk.vcs.core.CLOCData.LangStats;
+import com.cisco.dft.sdk.vcs.core.ClocData.LangStats;
 import com.google.common.collect.Maps;
 
 public class HistoryViewer {
@@ -23,7 +23,7 @@ public class HistoryViewer {
 
 	protected final String branch;
 
-	protected final CLOCData data;
+	protected final ClocData data;
 
 	protected final Map<Language, Integer> languageCount;
 
@@ -33,11 +33,11 @@ public class HistoryViewer {
 
 	protected HistoryViewer(final String branch,
 			Git theRepo, String ac, Date date) {
-		this(branch, theRepo, ac, date, new HashMap<Language, Integer>(), new CLOCData());
+		this(branch, theRepo, ac, date, new HashMap<Language, Integer>(), new ClocData());
 	}
 
 	protected HistoryViewer(final String branch, Git theRepo, String ac,
-			Date date, final Map<Language, Integer> languageCount, CLOCData data) {
+			Date date, final Map<Language, Integer> languageCount, ClocData data) {
 
 		this.branch = branch;
 		this.history = ac;

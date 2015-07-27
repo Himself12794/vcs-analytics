@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 
@@ -19,6 +22,9 @@ import com.google.common.collect.Range;
  * @param <T>
  */
 public class DateLimitedDataContainer<T extends DateLimitedData> {
+
+	@SuppressWarnings("unused")
+	private static final Logger LOGGER = LoggerFactory.getLogger("DateLimiter");
 
 	protected final List<T> data;
 
@@ -78,23 +84,24 @@ public class DateLimitedDataContainer<T extends DateLimitedData> {
 	 * @param dateRange
 	 *            the date range to use
 	 */
-	@SuppressWarnings({"rawtypes", "unchecked"})
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void limitToDateRange(Range<Date> dateRange) {
 
 		includeAll();
 		this.dateRange = dateRange;
-		
+
 		for (T t : data) {
-			
+
 			if (t.isInDateRange(dateRange)) {
-				
+
 				if (t instanceof DateLimitedDataContainer) {
 					((DateLimitedDataContainer) t).limitToDateRange(dateRange);
 				}
-				
+
 				limitedData.add(t);
 			}
 		}
+
 	}
 
 	/**
@@ -127,9 +134,9 @@ public class DateLimitedDataContainer<T extends DateLimitedData> {
 
 		return theCopy;
 	}
-	
+
 	/**
-	 * The current date range used for this repo. 
+	 * The current date range used for this repo.
 	 * 
 	 * @return
 	 */

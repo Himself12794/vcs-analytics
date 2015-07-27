@@ -1,19 +1,9 @@
 package com.cisco.dft.sdk.vcs.common;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Map;
-import java.util.Map.Entry;
 
-import org.yaml.snakeyaml.Yaml;
-
-import com.cisco.dft.sdk.vcs.core.CLOCData;
-import com.cisco.dft.sdk.vcs.core.CLOCData.Header;
-import com.cisco.dft.sdk.vcs.core.CLOCData.LangStats;
-import com.cisco.dft.sdk.vcs.main.Cloc;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.google.common.collect.Maps;
 
 /**
@@ -179,45 +169,6 @@ public final class CodeSniffer {
 
 	public static Language detectLanguage(File file) {
 		return detectLanguage(file.getName());
-	}
-	
-	@SuppressWarnings("unchecked")
-	public static CLOCData getCLOCStatistics(File file) throws IOException {
-		
-		Map<Language, LangStats> langStats = Maps.newHashMap();
-		
-		Header header = new Header();
-		
-		Iterable<Object> yaml = new Yaml().loadAll(Cloc.getCLOCDataAsYaml(file));
-		
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
-		
-		for (Object obj : yaml) {
-
-			if (obj instanceof Map) {
-				
-				Map<String, Object> map = ((Map<String, Object>) obj);
-				
-				for (Entry<String, Object> entry : map.entrySet()) {
-					
-					String key = entry.getKey();
-					
-					if ("header".equals(key)) {
-						header = mapper.convertValue(entry.getValue(), Header.class);
-					} else if (!"SUM".equals(key)) {
-						LangStats langStat = mapper.convertValue(entry.getValue(), LangStats.class);
-						Language lang = Language.getType(key);
-						langStat.setLanguage(lang);
-						langStats.put(lang, langStat);
-					}
-					
-				}
-			}
-			
-		}
-		
-		return new CLOCData(header, langStats);
 	}
 	
 }
