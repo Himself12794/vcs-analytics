@@ -94,9 +94,13 @@ public final class Util {
 	}
 	
 	public static <K, V> V getOrDefault(Map<K, V> map, K key, V defaultV) {
+		return getOrDefault(map, key, defaultV, false);
+	}
+	
+	public static <K, V> V getOrDefault(Map<K, V> map, K key, V defaultV, boolean nullCheck) {
 		
 		if (map.containsKey(key)) {
-			return map.get(key);
+			return nullCheck && map.get(key) == null ? defaultV : map.get(key);
 		} else {
 			return defaultV;
 		}

@@ -73,14 +73,15 @@ public class RepoUtilsTest {
 	@Test
 	public void testApp() throws GitAPIException {
 		
-		LOGGER.debug("Testing help feature");
-		Application.setConfiguration(ProgramConfig.HELP).execute();
-		
 		LOGGER.debug("Testing init feature. (will log errors if system does not allow execute permissions)");
 		Application.setConfiguration(ProgramConfig.INIT).execute();
 		
 		LOGGER.debug("Testing analyze.");
 		Application.setConfiguration(ProgramConfig.DEBUG).execute();
+		
+		LOGGER.debug("Testing help feature");
+		Application.setConfiguration(ProgramConfig.HELP).execute();
+		
 		
 	}
 
