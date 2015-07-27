@@ -34,7 +34,7 @@ public final class Application {
 
 	private ProgramConfig config;
 
-	Application() {
+	private Application() {
 		setConfig(new ProgramConfig(Action.HELP, null, null, "", "", true, true));
 	}
 
@@ -66,17 +66,14 @@ public final class Application {
 		LOGGER.debug("Executing with params: " + config.toString());
 
 		switch (config.getAction()) {
-			case ANALYZE:
-				analyze();
+			case ANALYZE: analyze();
+				break;
+			case INIT: init();
+				break;
+			case DEBUG: debug();
 				break;
 			case HELP:
-				help();
-				break;
-			case INIT:
-				init();
-				break;
-			default:
-				help();
+			default: help();
 				break;
 
 		}
@@ -96,6 +93,16 @@ public final class Application {
 	 */
 	public void help() {
 		out.println(ProgramConfig.getUsage());
+	}
+	
+	/**
+	 * Runs with some debug data.
+	 * 
+	 * @throws GitAPIException
+	 */
+	public void debug() throws GitAPIException {
+		setConfig(ProgramConfig.DEBUG);
+		analyze();
 	}
 
 	public void analyze() throws GitAPIException {
@@ -180,13 +187,13 @@ public final class Application {
 	}
 
 	public static void main(String[] args) throws GitAPIException {
+		
 		ProgramConfig config = ProgramConfig.parseArgMap(args);
 		if (config.isDebugEnabled()) {
 			Util.enableDebugLogging();
 		}
 
-		APPLICATION.setConfig(config);
-		APPLICATION.execute();
+		APPLICATION.setConfig(config).execute();
 
 		// TODO time range
 		// TODO cloc analysis - full testing

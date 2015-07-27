@@ -52,7 +52,7 @@ public class ProgramConfig {
 	}
 	
 	public Date getStart() {
-		return start;
+		return (Date) start.clone();
 	}
 
 	void setStart(Date start) {
@@ -60,7 +60,7 @@ public class ProgramConfig {
 	}
 
 	public Date getEnd() {
-		return end;
+		return (Date) end.clone();
 	}
 
 	void setEnd(Date end) {
@@ -88,7 +88,7 @@ public class ProgramConfig {
 	}
 	
 	public enum Action {
-		ANALYZE, HELP, INIT
+		ANALYZE, HELP, INIT, DEBUG
 	}
 	
 	public boolean shouldGenerateStats() {

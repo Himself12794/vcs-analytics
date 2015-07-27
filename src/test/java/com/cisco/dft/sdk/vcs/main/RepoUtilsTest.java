@@ -80,7 +80,7 @@ public class RepoUtilsTest {
 		Application.setConfiguration(ProgramConfig.INIT).execute();
 		
 		LOGGER.debug("Testing analyze.");
-		Application.setConfiguration(ProgramConfig.DEBUG);
+		Application.setConfiguration(ProgramConfig.DEBUG).execute();
 		
 	}
 
