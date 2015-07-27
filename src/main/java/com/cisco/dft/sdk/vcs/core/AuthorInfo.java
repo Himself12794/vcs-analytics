@@ -21,9 +21,9 @@ public class AuthorInfo extends RecursiveDateLimitedDataContainer<AuthorCommit> 
 
 	private final String name;
 
-	private int additions, deletions, totalChange;
+	private int additions, deletions;
 
-	private int limitedAdditions, limitedDeletions, limitedTotalChange;
+	private int limitedAdditions, limitedDeletions;
 
 	AuthorInfo(final String name) {
 		this(name, 0, 0, new ArrayList<AuthorCommit>());
@@ -45,7 +45,6 @@ public class AuthorInfo extends RecursiveDateLimitedDataContainer<AuthorCommit> 
 		for (AuthorCommit ac : limitedData) {
 			limitedAdditions += ac.getAdditions();
 			limitedDeletions += ac.getDeletions();
-			limitedTotalChange += ac.getTotalChange();
 		}
 	}
 
@@ -54,7 +53,6 @@ public class AuthorInfo extends RecursiveDateLimitedDataContainer<AuthorCommit> 
 		super.includeAll();
 		limitedAdditions = 0;
 		limitedDeletions = 0;
-		limitedTotalChange = 0;
 
 		return this;
 	}
@@ -107,14 +105,6 @@ public class AuthorInfo extends RecursiveDateLimitedDataContainer<AuthorCommit> 
 	void incrementDeletions(int x) {
 		deletions += x;
 	}
-
-	public int getTotalChange() {
-		return isLimited() ? limitedTotalChange : totalChange;
-	}
-
-	void incrementTotalChange(int x) {
-		totalChange += x;
-	}
 	
 	public AuthorCommit getCommitById(String id) {
 		
@@ -140,7 +130,6 @@ public class AuthorInfo extends RecursiveDateLimitedDataContainer<AuthorCommit> 
 		value.append("Commits: " + getCommitCount() + ", ");
 		value.append("Additions: " + getAdditions() + ", ");
 		value.append("Deletions: " + getDeletions() + ", ");
-		value.append("Total line contribution: " + getTotalChange() + "\n");
 
 		for (AuthorCommit ac : getCommits()) {
 			value.append(" - " + ac.toString() + "\n\n");

@@ -1,18 +1,25 @@
 package com.cisco.dft.sdk.vcs.main;
 
 import java.util.Date;
-import java.util.Map;
-
-import com.cisco.dft.sdk.vcs.common.Util;
 
 public class ProgramConfig {
 
-	static final ProgramConfig INIT = ProgramConfig.parseArgMap("init");
+	public static enum Action {
+		ANALYZE, HELP, INIT, DEBUG
+	}
 
-	static final ProgramConfig HELP = ProgramConfig.parseArgMap("help");
+	static final ProgramConfig INIT = ProgramConfig.parseArgs("init");
 
-	static final ProgramConfig DEBUG = ProgramConfig.parseArgMap("analyze",
-			"-d", "--url=https://github.com/Himself12794/powersAPI.git",
+	static final ProgramConfig HELP = ProgramConfig.parseArgs("help");
+	
+	/**A debug test configuration*/
+	static final ProgramConfig DEBUG = ProgramConfig.parseArgs("analyze",
+			"-d", "https://github.com/Himself12794/powersAPI.git",
+			"--branch=master");
+	
+	/**Just like {@link ProgramConfig.DEBUG}, but with debug logging off for unit tests*/
+	static final ProgramConfig TEST = ProgramConfig.parseArgs("analyze",
+			"https://github.com/Himself12794/powersAPI.git",
 			"--branch=master");
 	
 	static final ProgramConfig DEFAULT = HELP;
@@ -92,10 +99,6 @@ public class ProgramConfig {
 		return action;
 	}
 
-	public enum Action {
-		ANALYZE, HELP, INIT, DEBUG
-	}
-
 	public boolean shouldGenerateStats() {
 		return this.shouldGenerateStats;
 	}
@@ -103,77 +106,42 @@ public class ProgramConfig {
 	public boolean shouldUseCloc() {
 		return this.useCloc;
 	}
-
-	public static ProgramConfig parseArgMap(String... args) {
-		Map<String, String> map = ArgParser.getArgMap(args);
-
-		Action action = null;
-		String actionStr = (String) Util.getOrDefault(map, "action", "HELP",
-				true);
-
-		for (Action act : Action.values()) {
-			if (act.name().equals(actionStr)) {
-				action = act;
-				break;
-			}
-		}
+	
+	public static ProgramConfig parseArgs(ArgParser parser) {
+		
+		final Action action = parser.getActionAsEnum(Action.class);
 
 		if (action == null) {
-			System.err.println("Command " + actionStr + " not recognized");
-			System.exit(1);
+			throw new IllegalArgumentException("Command " + parser.getAction() + " not recognized");
 		}
 
-		final String url = (String) Util.getOrDefault(map, "url", null);
-		final String branch = (String) Util.getOrDefault(map, "branch", null);
-		final String username = (String) Util.getOrDefault(map, "username", "");
-		final String password = (String) Util.getOrDefault(map, "password", "");
-		final boolean generateStats = !(Boolean.parseBoolean((String) Util
-				.getOrDefault(map, "nostats", Boolean.FALSE.toString())));
-		final boolean useCloc = !(Boolean
-				.parseBoolean((String) Util.getOrDefault(map,
-						"builtin-analysis", Boolean.FALSE.toString())));
-		final boolean debug = Boolean.parseBoolean((String) Util.getOrDefault(
-				map, "d", Boolean.FALSE.toString()));
-		Date start = null;
+		final String url = parser.getActionParameter();
+		final String branch = parser.getString("branch");
+		final String username = parser.getString("username", "");
+		final String password = parser.getString("password", "");
+		final boolean generateStats = !parser.getBoolean("nostats");
+		final boolean useCloc = !parser.getBoolean("builtin-analysis");
+		final boolean debug = parser.getBoolean("d");
+		final Date start = parser.getLong("start") == null ? null : new Date(parser.getLong("start"));
+		final Date end = parser.getLong("end") == null ? null : new Date(parser.getLong("end"));
 
-		try {
-			start = new Date(Long.valueOf(Util.getOrDefault(map, "start", null)));
-		} catch (NumberFormatException e) {
-			// Don't need to do anything
-		}
-
-		Date end = null;
-
-		try {
-			end = new Date(Long.valueOf(Util.getOrDefault(map, "end", null)));
-		} catch (NumberFormatException e) {
-			// Don't need to do anything
-		}
-
-		ProgramConfig config = new ProgramConfig(action, url, branch, username, password, generateStats, useCloc);
+		final ProgramConfig config = new ProgramConfig(action, url, branch, username, password, generateStats, useCloc);
 		config.setEnd(end);
 		config.setStart(start);
 		config.setDebugEnabled(debug);
 
 		return config;
 	}
-
-	@Override
-	public String toString() {
-		String value = "Action=" + action.name() + ",Url=" + url + ",Branch="
-				+ branch + ",GenerateStats=" + shouldGenerateStats
-				+ ",UseCloc=" + useCloc + ",Start="
-				+ (start == null ? "first-commit" : start) + ",End="
-				+ (end == null ? "last-commit" : end) + ",Debug=" + debug;
-		return value;
+	
+	public static ProgramConfig parseArgs(String... args) {
+		return parseArgs(ArgParser.parse(args));
 	}
 
 	public static String getUsage() {
 		String value = "This application runs an analysis on remote repositories and prints the results.\n"
 				+ "\nCommands:"
-				+ "\n  analyze - Gives statistics for a Git repository"
-				+ "\n      --url=<url> (required)"
-				+ "\n      --branch=<branch> (Omit to run on all branches)"
+				+ "\n  analyze <url> - Gives statistics for a Git repository"
+				+ "\n      --branch=<branch> (Limits statistics to specified branch)"
 				+ "\n      --nostatistics (Indicates to just clone the repo)"
 				+ "\n      --builtin-analysis (Indicates to use builtin stat analysis)"
 				+ "\n      --username=<username> (Used for access to private repos)"
@@ -187,6 +155,16 @@ public class ProgramConfig {
 				+ "\n"
 				+ "\n  debug - runs the program with some debug data"
 				+ "\n  -d   - Enable debug logging" + "\n";
+		return value;
+	}
+
+	@Override
+	public String toString() {
+		final String value = "Action=" + action.name() + ",Url=" + url + ",Branch="
+				+ branch + ",GenerateStats=" + shouldGenerateStats
+				+ ",UseCloc=" + useCloc + ",Start="
+				+ (start == null ? "first-commit" : start) + ",End="
+				+ (end == null ? "last-commit" : end) + ",Debug=" + debug;
 		return value;
 	}
 

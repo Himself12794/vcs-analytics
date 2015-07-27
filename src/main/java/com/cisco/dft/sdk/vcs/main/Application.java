@@ -22,6 +22,8 @@ import com.google.common.collect.Range;
  *
  */
 public final class Application {
+	
+	public static final String VERISION = "v1.0";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger("Application");
 
@@ -61,7 +63,7 @@ public final class Application {
 	 * 
 	 * @throws GitAPIException
 	 */
-	public void execute() throws GitAPIException {
+	void execute() throws GitAPIException {
 
 		LOGGER.debug("Executing with params: " + config.toString());
 
@@ -83,7 +85,7 @@ public final class Application {
 	/**
 	 * Initializes Cloc.
 	 */
-	public void init() {
+	private void init() {
 		Cloc.init();
 	}
 
@@ -100,16 +102,15 @@ public final class Application {
 	 * 
 	 * @throws GitAPIException
 	 */
-	public void debug() throws GitAPIException {
-		setConfig(ProgramConfig.DEBUG);
-		analyze();
+	private void debug() throws GitAPIException {
+		setConfig(ProgramConfig.DEBUG).analyze();
 	}
 
-	public void analyze() throws GitAPIException {
+	private void analyze() throws GitAPIException {
 
 		if (config.getUrl() == null) {
 
-			err.println("No URL specified. Usage: analyze --url=<url>");
+			out.println("Usage: analyze <url>");
 
 		} else {
 
@@ -188,15 +189,22 @@ public final class Application {
 
 	public static void main(String[] args) throws GitAPIException {
 		
-		ProgramConfig config = ProgramConfig.parseArgMap(args);
-		if (config.isDebugEnabled()) {
-			Util.enableDebugLogging();
+		try {
+			ProgramConfig config = ProgramConfig.parseArgs(args);
+			
+			if (config.isDebugEnabled() || config.getAction() == Action.DEBUG) {
+				Util.enableDebugLogging();
+			}
+			
+			APPLICATION.setConfig(config).execute();
+		} catch (Throwable e) {
+			err.println("An error occurred during application execution: " + e.getMessage());
+			LOGGER.debug("Error: ",e);
 		}
 
-		APPLICATION.setConfig(config).execute();
-
-		// TODO time range
 		// TODO cloc analysis - full testing
+		// TODO cloc - make all values printable
+		// TODO option for lang stats only
 		// TODO clean output
 
 	}

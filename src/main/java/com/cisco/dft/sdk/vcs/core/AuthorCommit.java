@@ -23,8 +23,6 @@ public class AuthorCommit implements DateLimitedData {
 
 	private final int deletions;
 
-	private final int totalChange;
-
 	private final boolean isMergeCommit;
 
 	private final String message;
@@ -42,7 +40,6 @@ public class AuthorCommit implements DateLimitedData {
 		this.changedFiles = changedFiles;
 		this.additions = additions;
 		this.deletions = deletions;
-		this.totalChange = additions - deletions;
 		this.isMergeCommit = isMergeCommit;
 		this.message = message;
 
@@ -78,10 +75,6 @@ public class AuthorCommit implements DateLimitedData {
 		return deletions;
 	}
 
-	public int getTotalChange() {
-		return totalChange;
-	}
-
 	public boolean isMergeCommit() {
 		return isMergeCommit;
 	}
@@ -97,7 +90,6 @@ public class AuthorCommit implements DateLimitedData {
 		value += ", Changed Files: " + changedFiles;
 		value += ", Additions: " + additions;
 		value += ", Deletions: " + deletions;
-		value += ", Total Line Change: " + totalChange;
 		value += isMergeCommit ? "\n\tMerge Commit, " : "\n\t";
 		value += "Message: " + message;
 

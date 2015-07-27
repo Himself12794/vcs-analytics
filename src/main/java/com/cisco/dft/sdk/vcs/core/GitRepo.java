@@ -74,12 +74,12 @@ public final class GitRepo extends Repo {
 	 * 
 	 * @param url
 	 *            the url to grab the data from
-	 * @throws GitAPIException 
+	 * @throws GitAPIException
 	 */
 	public GitRepo(String url) throws GitAPIException {
 		this(url, true);
 	}
-	
+
 	public GitRepo(String url, String branch) throws GitAPIException {
 		this(url, branch, true);
 	}
@@ -97,17 +97,18 @@ public final class GitRepo extends Repo {
 	 * @param generateStats
 	 *            whether repositories with local data should automatically sync
 	 *            data
-	 * @throws GitAPIException 
+	 * @throws GitAPIException
 	 */
 	public GitRepo(String url, boolean generateStats) throws GitAPIException {
 		this(url, null, null, generateStats, null);
 	}
-	
+
 	public GitRepo(String url, String branch, boolean generateStats) throws GitAPIException {
 		this(url, null, branch, generateStats, null);
 	}
-	
-	public GitRepo(String url, String branch, boolean generateStats, UsernamePasswordCredentialsProvider cp) throws GitAPIException {
+
+	public GitRepo(String url, String branch, boolean generateStats,
+			UsernamePasswordCredentialsProvider cp) throws GitAPIException {
 		this(url, cp, branch, generateStats, null);
 	}
 
@@ -130,18 +131,20 @@ public final class GitRepo extends Repo {
 	 *            for public repos.
 	 * @param generateStatistics
 	 *            whether statistics should be generated about the repository
-	 * @throws GitAPIException 
+	 * @throws GitAPIException
 	 */
-	public GitRepo(String url, UsernamePasswordCredentialsProvider cp, String branch,
-			boolean generateStatistics, File directory) throws GitAPIException {
-		
+	public GitRepo(String url, UsernamePasswordCredentialsProvider cp,
+			String branch, boolean generateStatistics, File directory) throws GitAPIException {
+
 		String scrubbedUrl = urlScrubber(url);
-		
+
 		repoInfo.setName(guessName(scrubbedUrl));
 
 		this.theDirectory = getDirectory(scrubbedUrl, directory);
 
-		this.cp = cp != null ? cp : new UsernamePasswordCredentialsProvider("username", "password");
+		this.cp = cp != null
+				? cp
+				: new UsernamePasswordCredentialsProvider("username", "password");
 
 		if (theDirectory.exists()) {
 
@@ -149,24 +152,18 @@ public final class GitRepo extends Repo {
 				initExistingRepo(branch, generateStatistics);
 			} catch (IOException e) {
 
-				LOGGER.warn(
-						"Temporary data missing or corrupt, attempting to re-clone.",
-						e);
+				LOGGER.warn("Temporary data missing or corrupt, attempting to re-clone.");
 
-				try {
-					FileUtils.deleteDirectory(theDirectory);
-				} catch (IOException e1) {
-					LOGGER.info(
-							"An error occured trying to refresh the directory",
-							e1);
-				}
+				errorIs(e);
+
+				removeDefunctDirectory(theDirectory);
 
 				try {
 					createRepo(scrubbedUrl, branch, generateStatistics);
 				} catch (Exception e1) {
 					throw new TransportException("Could not connect to remote repository.", e1);
 				}
-			} 
+			}
 
 		} else {
 
@@ -192,40 +189,44 @@ public final class GitRepo extends Repo {
 		try {
 
 			for (Ref ref : theRepo.lsRemote().call()) {
-				
+
 				if (!ref.getName().equals(Constants.HEAD)
 						&& ref.getName().contains(Constants.R_HEADS)) {
 					branches.add(ref.getName());
 				}
-				
+
 			}
 
 		} catch (GitAPIException e) {
-			LOGGER.error("An error occured, could not get branches", e);
+			LOGGER.error("An error occured, could not get branches");
+			LOGGER.debug("Error occured", e);
 		}
 
 		return branches;
 
 	}
-	
+
 	private void initExistingRepo(String branch, boolean value) throws GitAPIException, IOException {
 
 		theRepo = Git.open(theDirectory);
 		repoInfo.setRepo(theRepo);
-		
+
 		LOGGER.info("Found repo in Temp.");
-		
+
 		if (value) {
 			validateBranchSync(branch);
 		}
-		
+
 	}
-	
+
 	private void validateBranchSync(String branch) throws GitAPIException {
-		
-		if (branch == null) { sync(true, true); }
-		else { sync(branch, true, true); }
-		
+
+		if (branch == null) {
+			sync(true, true);
+		} else {
+			sync(branch, true, true);
+		}
+
 	}
 
 	/**
@@ -241,7 +242,7 @@ public final class GitRepo extends Repo {
 	 * Synchronizes only the specific branch.
 	 * 
 	 * @param branch
-	 * @throws GitAPIException 
+	 * @throws GitAPIException
 	 */
 	public void sync(String branch) throws GitAPIException {
 		sync(branch, true, true);
@@ -252,7 +253,7 @@ public final class GitRepo extends Repo {
 	 * 
 	 * @param generateStatistics
 	 *            whether or not statistics should be generated or updated
-	 * @throws GitAPIException 
+	 * @throws GitAPIException
 	 */
 	public void sync(boolean generateStatistics, boolean useCloc) {
 
@@ -273,20 +274,19 @@ public final class GitRepo extends Repo {
 	 *            the branch about which to update info
 	 * @param generateStatistics
 	 *            whether or not to update info
-	 * @throws GitAPIException 
+	 * @throws GitAPIException
 	 */
 	public void sync(String branch, boolean generateStatistics, boolean useCloc) throws GitAPIException {
-		
-		if (branch == null) { 
+
+		if (branch == null) {
 			sync(generateStatistics, useCloc);
 			return;
 		}
-		
+
 		String branchResolved = BranchInfo.branchNameResolver(branch);
 
-		if (!getBranches().contains(branchResolved)) { 
-			throw new BranchNotFoundException("Branch " + branch + " does not exist."); 
-		}
+		if (!getBranches().contains(branchResolved)) { throw new BranchNotFoundException("Branch "
+				+ branch + " does not exist."); }
 
 		LOGGER.info(repoInfo.getName() + ": Syncing data for branch "
 				+ BranchInfo.branchTrimmer(branch));
@@ -294,8 +294,10 @@ public final class GitRepo extends Repo {
 		DiffFormatter df = new DiffFormatter(new ByteArrayOutputStream());
 
 		try {
-			
-			theRepo.checkout().setName("origin/" + BranchInfo.branchTrimmer(branch)).setCreateBranch(false).call();
+
+			theRepo.checkout()
+					.setName("origin/" + BranchInfo.branchTrimmer(branch))
+					.setCreateBranch(false).call();
 			boolean flag = theRepo.fetch().setCredentialsProvider(cp)
 					.setRemoveDeletedRefs(true).call().getTrackingRefUpdates()
 					.isEmpty();
@@ -347,7 +349,6 @@ public final class GitRepo extends Repo {
 			int totalAdditions = 0;
 			int totalDeletions = 0;
 			int totalFilesAffected = 0;
-			int totalLineChange = 0;
 
 			if (rc.getParentCount() == 0) {
 
@@ -355,7 +356,6 @@ public final class GitRepo extends Repo {
 				totalAdditions += results[0];
 				totalDeletions += results[1];
 				totalFilesAffected += results[2];
-				totalLineChange += results[3];
 
 			} else {
 
@@ -365,7 +365,6 @@ public final class GitRepo extends Repo {
 					totalAdditions += results[0];
 					totalDeletions += results[1];
 					totalFilesAffected += results[2];
-					totalLineChange += results[3];
 
 				}
 
@@ -373,8 +372,8 @@ public final class GitRepo extends Repo {
 
 			ai.incrementAdditions(totalAdditions);
 			ai.incrementDeletions(totalDeletions);
-			ai.incrementTotalChange(totalLineChange);
-			ai.add(new AuthorCommit(rc.name(), new Date(((long) rc.getCommitTime()) * 1000), totalFilesAffected, totalAdditions, totalDeletions, isMergeCommit, rc
+			ai.add(new AuthorCommit(rc.name(), new Date(((long) rc
+					.getCommitTime()) * 1000), totalFilesAffected, totalAdditions, totalDeletions, isMergeCommit, rc
 					.getShortMessage()));
 
 			bi.incrementCommitCount(1);
@@ -392,7 +391,8 @@ public final class GitRepo extends Repo {
 	}
 
 	private void updateRepoInfo(String branch, DiffFormatter df, boolean useCloc) throws IOException {
-		repoInfo.getBranchInfo(branch).getHistory(getNewestCommit(branch), df, useCloc);
+		repoInfo.getBranchInfo(branch).getHistory(getNewestCommit(branch), df,
+				useCloc);
 	}
 
 	/**
@@ -444,10 +444,9 @@ public final class GitRepo extends Repo {
 		int deletions = 0;
 		int additions = 0;
 		int changedFiles = 0;
-		int totalChange = 0;
 
 		for (DiffEntry entry : entries) {
-			
+
 			changedFiles++;
 			FileHeader fh = df.toFileHeader(entry);
 
@@ -463,23 +462,24 @@ public final class GitRepo extends Repo {
 					deletions += deletionLines;
 					additions += additionLines;
 
-					totalChange += (additionLines - deletionLines);
-
 				}
 			}
 		}
 
-		return new int[] { additions, deletions, changedFiles, totalChange };
+		return new int[] { additions, deletions, changedFiles };
 	}
 
 	private RevCommit getNewestCommit(String branch) {
 
 		RevCommit newest = null;
 		try {
-			
-			theRepo.checkout().setName("origin/" + BranchInfo.branchTrimmer(branch)).setCreateBranch(false).call();
+
+			theRepo.checkout()
+					.setName("origin/" + BranchInfo.branchTrimmer(branch))
+					.setCreateBranch(false).call();
 			RevWalk rw = new RevWalk(theRepo.getRepository());
-			newest = rw.parseCommit(theRepo.getRepository().resolve(Constants.HEAD));
+			newest = rw.parseCommit(theRepo.getRepository().resolve(
+					Constants.HEAD));
 			rw.dispose();
 			rw.close();
 
@@ -516,28 +516,29 @@ public final class GitRepo extends Repo {
 	 * @throws IllegalStateException
 	 */
 	private void createRepo(String remote, String branch, boolean sync) throws IllegalStateException, GitAPIException {
-		
+
 		LOGGER.info("Cloning repo from remote url.");
-		
+
 		CloneCommand command = Git.cloneRepository().setDirectory(theDirectory)
 				.setBranch(branch).setURI(remote).setCredentialsProvider(cp);
-		
+
 		theRepo = command.call();
 
 		repoInfo.setRepo(theRepo);
-		
+
 		LOGGER.info("Clone successful.");
-		
+
 		if (sync) {
-			
+
 			validateBranchSync(branch);
-			
+
 		}
 
 	}
-	
+
 	/**
 	 * Gets the directory where temporary data is stored.
+	 * 
 	 * @return
 	 */
 	public File getDirectory() {
@@ -565,7 +566,23 @@ public final class GitRepo extends Repo {
 	 * @return the url with https
 	 */
 	private static String urlScrubber(String url) {
-		return url.startsWith("http://") ? url.replace("http://", "https://") : url;
+		return url.startsWith("http://") ? url.replace("http://", "https://")
+				: url;
+	}
+
+	private void removeDefunctDirectory(File dir) {
+
+		try {
+			FileUtils.deleteDirectory(dir);
+		} catch (IOException e1) {
+			LOGGER.warn("An error occured trying to refresh the directory");
+			errorIs(e1);
+		}
+
+	}
+
+	public void errorIs(Throwable t) {
+		LOGGER.debug("Error is: ", t);
 	}
 
 	/**

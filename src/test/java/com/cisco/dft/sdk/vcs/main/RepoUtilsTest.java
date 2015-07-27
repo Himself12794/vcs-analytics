@@ -9,7 +9,6 @@ import java.util.Map;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
-import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,12 +34,6 @@ import com.google.common.collect.Range;
 public class RepoUtilsTest {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger("UnitTesting");
-	
-	@Before
-	public void configure() {
-		Util.enableDebugLogging();
-		Application.getInstance().init();
-	}
 	
 	@Test
 	public void testUtility() {
@@ -77,7 +70,7 @@ public class RepoUtilsTest {
 		Application.setConfiguration(ProgramConfig.INIT).execute();
 		
 		LOGGER.debug("Testing analyze.");
-		Application.setConfiguration(ProgramConfig.DEBUG).execute();
+		Application.setConfiguration(ProgramConfig.TEST).execute();
 		
 		LOGGER.debug("Testing help feature");
 		Application.setConfiguration(ProgramConfig.HELP).execute();
@@ -186,7 +179,6 @@ public class RepoUtilsTest {
 		assertTrue(ac.getMessage().equals("Merge pull request #29 from RichardBronosky/master"));
 		assertTrue(ac.isMergeCommit());
 		assertTrue(ac.getChangedFiles() == 1);
-		assertTrue(ac.getTotalChange() == 10);
 		assertTrue(aib.lookupUser("Unknown").getDeletions() == 0);
 		
 		LOGGER.info("Testing date range limiting.");

@@ -37,7 +37,7 @@ public final class Cloc {
 	public static final File SRC_DIR = new File(Util.class.getClassLoader()
 			.getResource(CLOC_DIR).getPath());
 
-	public static final File BIN_DIR = new File(CLOC_DIR);
+	public static final File BIN_DIR = new File(FileUtils.getTempDirectory(), "git-analytics/" + CLOC_DIR);
 
 	public static final String CLOC_EXE = "cloc-1.60.exe";
 
@@ -95,7 +95,12 @@ public final class Cloc {
 		}
 
 	}
-
+	
+	/**
+	 * Run with true to get classpath location, false for tmp directory
+	 * @param src
+	 * @return
+	 */
 	private static File getFileForOS(boolean src) {
 
 		File file = src ? SRC_DIR : BIN_DIR;

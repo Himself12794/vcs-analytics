@@ -17,6 +17,7 @@ public final class Util {
 	private Util() {}
 	
 	public static void enableDebugLogging() {
+		LOGGER.info("Enabling debug logging");
 		ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
 	    root.setLevel(Level.DEBUG);
 	}
@@ -105,6 +106,11 @@ public final class Util {
 			return defaultV;
 		}
 		
+	}
+	
+	public static <T> T ifNullDefault(T t1, T t2) {
+		if (t1 == null) { return t2; }
+		else { return t1; } 
 	}
 
 }
