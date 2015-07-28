@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.cisco.dft.sdk.vcs.common.BranchNotFoundException;
+import com.cisco.dft.sdk.vcs.common.Util;
 import com.google.common.collect.Lists;
 
 /**
@@ -519,7 +520,7 @@ public final class GitRepo extends Repo {
 		LOGGER.info("Cloning repo from remote url.");
 
 		CloneCommand command = Git.cloneRepository().setDirectory(theDirectory)
-				.setBranch(branch).setURI(remote).setCredentialsProvider(cp);
+				.setBranch(Util.ifNullDefault(branch, Constants.HEAD)).setURI(remote).setCredentialsProvider(cp);
 
 		theRepo = command.call();
 

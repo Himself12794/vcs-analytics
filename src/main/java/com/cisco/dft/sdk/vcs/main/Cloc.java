@@ -51,7 +51,6 @@ public final class Cloc {
 		
 		if (isClocInstalled()) {
 			
-			perlInstalled = true;
 			clocInstalled = true;
 			init = true;
 			
@@ -131,7 +130,7 @@ public final class Cloc {
 			return true;
 		} catch (IOException e) {
 			LOGGER.debug("An error occured in perl detection", e);
-			LOGGER.info("Perl installation could not be detected");
+			LOGGER.info("Perl not detected");
 			return false;
 		}
 	}
@@ -139,11 +138,11 @@ public final class Cloc {
 	public static boolean isClocInstalled() {
 		
 		try {
-			LOGGER.info( "cloc detected, version is: " + Util.executeCommand("cloc", "-version") );
+			LOGGER.info( "Cloc detected, version is: " + Util.executeCommand("cloc", "-version") );
 			return true;
 		} catch (IOException e) {
-			LOGGER.debug("cloc not detected", e);
-			LOGGER.info( "cloc not detected" );
+			LOGGER.debug("Cloc not detected", e);
+			LOGGER.info( "Cloc not detected" );
 			return false;
 		}
 		
@@ -163,6 +162,7 @@ public final class Cloc {
 		if (!canGetCLOCStats()) { throw new IOException("Cannot run cloc"); }
 
 		if (clocInstalled) {
+			LOGGER.debug("Cloc already exists, using that instead. Running on directory " + file.getAbsolutePath());
 			return Util.executeCommand("cloc", "--yaml", file.getAbsolutePath());
 		} else if (perlInstalled) {
 			return Util.executeCommand("perl", CLOC_PL, "--yaml", "--skip-win-hidden");
