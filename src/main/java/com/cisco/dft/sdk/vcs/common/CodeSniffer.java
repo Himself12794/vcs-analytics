@@ -48,16 +48,12 @@ public final class CodeSniffer {
 		TYPESCRIPT, UNITY_PREFAB, VALA, VALA_HEADER, VELOCITY_TEMPLATE_LANGUAGE, VERILOG_SYSTEMVERILOG, VHDL, VIM_SCRIPT,
 		VISUAL_BASIC, VISUAL_FOX_PRO, VISUALFORCE_COMPONENT, VISUALFORCE_PAGE, WINDOWS_MESSAGE_FILE, WINDOWS_MODULE_DEFINITION, 
 		WINDOWS_RESOURCE_FILE, WIX_INCLUDE, WIX_SOURCE, WIX_STRING_LOCALIZATION, XAML, XBASE, XBASE_HEADER, XML, 
-		XQUERY, XSD, XSLT, YACC, YAML, /** Undefined languages */OTHER;
+		XQUERY, XSD, XSLT, YACC, YAML, UNDEFINED;
 
 		private LangType type;
 		
 		Language() {
 			this.type = LangType.PRIMARY;
-		}
-
-		Language(LangType type) {
-			this.type = type;
 		}
 
 		public LangType getType() {
@@ -72,11 +68,27 @@ public final class CodeSniffer {
 			return type == LangType.SECONDARY;
 		}
 		
+		public boolean isUndefined() {
+			return this == UNDEFINED;
+		}
+		
+		@Override
+		public String toString() {
+		
+			String value = name().replace('_', ' ').replace("SHARP", "#").replace("dot", ".");
+			
+			if (this != PASCAL_PUPPET) {
+				value = value.replace("PP", "++");
+			}
+			
+			return value;
+		}
+		
 		@JsonCreator
 		public static Language getType(String name) {
 			String value = name;
 			value = value.toUpperCase().replaceAll("[ /-]", "_")
-					.toUpperCase().replace("+", "P")
+					.toUpperCase().replace('+', 'P')
 					.replace("#", "SHARP")
 					.replace(".", "dot");
 			
@@ -84,7 +96,7 @@ public final class CodeSniffer {
 				return Language.valueOf(value);
 			} catch (Exception e) {
 				Util.redirectLogError("Error occured in mapping", e);
-				return Language.OTHER;
+				return Language.UNDEFINED;
 			}
 			
 		}
@@ -159,11 +171,11 @@ public final class CodeSniffer {
 
 			Language lang = FILE_ASSOCIATIONS.get(filed[filed.length - 1]);
 
-			return lang != null ? lang : Language.OTHER;
+			return lang != null ? lang : Language.UNDEFINED;
 
 		}
 
-		return Language.OTHER;
+		return Language.UNDEFINED;
 
 	}
 

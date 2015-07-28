@@ -11,17 +11,18 @@ public class ProgramConfig {
 	static final ProgramConfig INIT = ProgramConfig.parseArgs("init");
 
 	static final ProgramConfig HELP = ProgramConfig.parseArgs("help");
-	
-	/**A debug test configuration*/
-	static final ProgramConfig DEBUG = ProgramConfig.parseArgs("analyze",
-			"-d", "https://github.com/Himself12794/powersAPI.git",
-			"--branch=master");
-	
-	/**Just like {@link ProgramConfig.DEBUG}, but with debug logging off for unit tests*/
+
+	/** A debug test configuration */
+	static final ProgramConfig DEBUG = ProgramConfig.parseArgs("analyze", "-d",
+			"https://github.com/Himself12794/powersAPI.git", "--branch=master", "--nocommits");
+
+	/**
+	 * Just like {@link ProgramConfig.DEBUG}, but with debug logging off for
+	 * unit tests
+	 */
 	static final ProgramConfig TEST = ProgramConfig.parseArgs("analyze",
-			"https://github.com/Himself12794/powersAPI.git",
-			"--branch=master");
-	
+			"https://github.com/Himself12794/powersAPI.git", "--branch=master");
+
 	static final ProgramConfig DEFAULT = HELP;
 
 	private final Action action;
@@ -40,6 +41,10 @@ public class ProgramConfig {
 
 	private boolean debug;
 
+	private boolean showVersion;
+	
+	private boolean noCommits;
+
 	private Date start;
 
 	private Date end;
@@ -54,29 +59,25 @@ public class ProgramConfig {
 		this.shouldGenerateStats = generateStats;
 		this.useCloc = useCloc;
 	}
+	
+	public boolean shouldShowCommits() {
+		return !noCommits;
+	}
+
+	public boolean shouldShowVersion() {
+		return showVersion;
+	}
 
 	public boolean isDebugEnabled() {
 		return debug;
-	}
-
-	void setDebugEnabled(boolean value) {
-		debug = value;
 	}
 
 	public Date getStart() {
 		return start != null ? (Date) start.clone() : null;
 	}
 
-	void setStart(Date start) {
-		this.start = start;
-	}
-
 	public Date getEnd() {
 		return end != null ? (Date) end.clone() : null;
-	}
-
-	void setEnd(Date end) {
-		this.end = end;
 	}
 
 	public String getUrl() {
@@ -106,14 +107,13 @@ public class ProgramConfig {
 	public boolean shouldUseCloc() {
 		return this.useCloc;
 	}
-	
+
 	public static ProgramConfig parseArgs(ArgParser parser) {
-		
+
 		final Action action = parser.getActionAsEnum(Action.class);
 
-		if (action == null) {
-			throw new IllegalArgumentException("Command " + parser.getAction() + " not recognized");
-		}
+		if (action == null) { throw new IllegalArgumentException("Command "
+				+ parser.getAction() + " not recognized"); }
 
 		final String url = parser.getActionParameter();
 		final String branch = parser.getString("branch");
@@ -121,18 +121,22 @@ public class ProgramConfig {
 		final String password = parser.getString("password", "");
 		final boolean generateStats = !parser.getBoolean("nostats");
 		final boolean useCloc = !parser.getBoolean("builtin-analysis");
+		final boolean version = parser.getBoolean("v");
 		final boolean debug = parser.getBoolean("d");
-		final Date start = parser.getLong("start") == null ? null : new Date(parser.getLong("start"));
-		final Date end = parser.getLong("end") == null ? null : new Date(parser.getLong("end"));
+		final boolean noCommits = parser.getBoolean("nocommits");
+		final Date start = parser.getLongAsType("start", Date.class);
+		final Date end = parser.getLongAsType("end", Date.class);
 
 		final ProgramConfig config = new ProgramConfig(action, url, branch, username, password, generateStats, useCloc);
-		config.setEnd(end);
-		config.setStart(start);
-		config.setDebugEnabled(debug);
+		config.end = end;
+		config.start = start;
+		config.debug = debug;
+		config.showVersion = version;
+		config.noCommits = noCommits;
 
 		return config;
 	}
-	
+
 	public static ProgramConfig parseArgs(String... args) {
 		return parseArgs(ArgParser.parse(args));
 	}
@@ -148,20 +152,22 @@ public class ProgramConfig {
 				+ "\n      --password=<password> (Used for access to private repos)"
 				+ "\n      --start=<epoch-time> (Epoch time, in millis, to limit start date)"
 				+ "\n      --end=<epoch-time> (Epoch time, in millis, to limit end date)"
+				+ "\n      --nocommits (Indicates that only language information should be shown)"
 				+ "\n"
-				+ "\n  help - Shows help"
+				+ "\n  help  - Shows help"
 				+ "\n"
-				+ "\n  init - Extracts CLOC resources"
+				+ "\n  init  - Extracts CLOC resources"
 				+ "\n"
 				+ "\n  debug - runs the program with some debug data"
-				+ "\n  -d   - Enable debug logging" + "\n";
+				+ "\n  -d    - Enable debug logging"
+				+ "\n  -v    - Shows version\n";
 		return value;
 	}
 
 	@Override
 	public String toString() {
-		final String value = "Action=" + action.name() + ",Url=" + url + ",Branch="
-				+ branch + ",GenerateStats=" + shouldGenerateStats
+		final String value = "Action=" + action.name() + ",Url=" + url
+				+ ",Branch=" + branch + ",GenerateStats=" + shouldGenerateStats
 				+ ",UseCloc=" + useCloc + ",Start="
 				+ (start == null ? "first-commit" : start) + ",End="
 				+ (end == null ? "last-commit" : end) + ",Debug=" + debug;

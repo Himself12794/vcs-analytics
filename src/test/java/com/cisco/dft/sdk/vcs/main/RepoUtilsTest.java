@@ -82,10 +82,10 @@ public class RepoUtilsTest {
 	public void testCodeSniffer() throws Exception {
 		
 		assertTrue(CodeSniffer.detectLanguage(new File("Test.java")) == Language.JAVA);
-		assertTrue(CodeSniffer.detectLanguage(new File("Test")) == Language.OTHER);
+		assertTrue(CodeSniffer.detectLanguage(new File("Test")) == Language.UNDEFINED);
 		assertTrue(CodeSniffer.detectLanguage("Test.java") == Language.JAVA);
-		assertTrue(CodeSniffer.detectLanguage("Test.none") == Language.OTHER);
-		assertTrue(CodeSniffer.detectLanguage("") == Language.OTHER);
+		assertTrue(CodeSniffer.detectLanguage("Test.none") == Language.UNDEFINED);
+		assertTrue(CodeSniffer.detectLanguage("") == Language.UNDEFINED);
 		LOGGER.debug("OS Type: " + OSType.getOSType().name());
 	
 	}

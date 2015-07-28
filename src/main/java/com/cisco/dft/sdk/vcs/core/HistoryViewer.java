@@ -8,6 +8,7 @@ import org.eclipse.jgit.api.Git;
 
 import com.cisco.dft.sdk.vcs.common.CodeSniffer;
 import com.cisco.dft.sdk.vcs.common.CodeSniffer.Language;
+import com.cisco.dft.sdk.vcs.common.Util;
 import com.cisco.dft.sdk.vcs.core.ClocData.LangStats;
 import com.google.common.collect.Maps;
 
@@ -31,8 +32,8 @@ public class HistoryViewer {
 		this("Unknown", theRepo, ac, date);
 	}
 
-	protected HistoryViewer(final String branch,
-			Git theRepo, String ac, Date date) {
+	protected HistoryViewer(final String branch, Git theRepo, String ac,
+			Date date) {
 		this(branch, theRepo, ac, date, new HashMap<Language, Integer>(), new ClocData());
 	}
 
@@ -74,6 +75,30 @@ public class HistoryViewer {
 
 	void incrementLineCount(int x) {
 		setLineCount(getLineCount() + x);
+	}
+
+	public int getTotalCodeLines() {
+		int count = 0;
+		for (LangStats ls : getLangStatistics()) {
+			count += ls.getCodeLines();
+		}
+		return count;
+	}
+
+	public int getTotalCommentLines() {
+		int count = 0;
+		for (LangStats ls : getLangStatistics()) {
+			count += ls.getCommentLines();
+		}
+		return count;
+	}
+
+	public int getTotalBlankLines() {
+		int count = 0;
+		for (LangStats ls : getLangStatistics()) {
+			count += ls.getBlankLines();
+		}
+		return count;
 	}
 
 	/**
@@ -218,51 +243,31 @@ public class HistoryViewer {
 		value.append(getLineCount());
 		value.append("\nLanguage Stats:\n\n");
 
-		final int primaryCount = this.getPrimaryLangCount();
-		StringBuilder primary = new StringBuilder("\tPrimary Language Stats:\n");
+		value.append("\t");
+		value.append(LangStats.getHeader());
 
-		primary.append("\tCount: ");
-		primary.append(primaryCount);
-		primary.append("\n");
+		for (LangStats stats : data.getLanguageStats()) {
 
-		final int secondaryCount = this.getSecondaryLangCount();
-		StringBuilder secondary = new StringBuilder("\tSecondary Language Stats:\n");
-
-		secondary.append("\tCount: ");
-		secondary.append(secondaryCount);
-		secondary.append("\n");
-
-		for (LangStats stats : this.data.getLanguageStats()) {
-
-			if (stats.getLanguage().isPrimary()) {
-
-				primary.append(getOutput(stats));
-				primary.append("\n");
-
-			} else {
-
-				secondary.append(getOutput(stats));
-				secondary.append("\n");
-
-			}
+			value.append("\t");
+			value.append(stats.toString(false));
 
 		}
-
-		value.append(primary.toString());
+		
+		value.append("\t");
+		value.append(Util.printNTimes('-', 100));
 		value.append("\n");
-		value.append(secondary.toString());
+
+		final String footer = Util.valueWithSpaces("SUM")
+				+ Util.valueWithSpaces(getFileCount())
+				+ Util.valueWithSpaces(getTotalCodeLines())
+				+ Util.valueWithSpaces(getTotalCommentLines())
+				+ Util.valueWithSpaces(getTotalBlankLines());
+		
+		value.append("\t");
+		value.append(footer);
+		value.append("\n");
 
 		return value.toString();
-	}
-
-	private String getOutput(LangStats stats) {
-		return "\t  "
-				+ stats.getLanguage().name()
-				+ ": \n\t\tcount: "
-				+ stats.getnFiles()
-				+ "\n\t\tpercentage: "
-				+ String.format("%.2f",
-						getLangPercent(stats.getLanguage()) * 100) + "%";
 	}
 
 }

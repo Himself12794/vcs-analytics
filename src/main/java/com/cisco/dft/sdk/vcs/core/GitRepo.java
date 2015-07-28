@@ -153,8 +153,7 @@ public final class GitRepo extends Repo {
 			} catch (IOException e) {
 
 				LOGGER.warn("Temporary data missing or corrupt, attempting to re-clone.");
-
-				errorIs(e);
+				LOGGER.debug("Could not reload existing repository", e);
 
 				removeDefunctDirectory(theDirectory);
 
@@ -576,13 +575,9 @@ public final class GitRepo extends Repo {
 			FileUtils.deleteDirectory(dir);
 		} catch (IOException e1) {
 			LOGGER.warn("An error occured trying to refresh the directory");
-			errorIs(e1);
+			LOGGER.debug("Error is", e1);
 		}
 
-	}
-
-	public void errorIs(Throwable t) {
-		LOGGER.debug("Error is: ", t);
 	}
 
 	/**

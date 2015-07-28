@@ -108,9 +108,64 @@ public final class Util {
 		
 	}
 	
-	public static <T> T ifNullDefault(T t1, T t2) {
-		if (t1 == null) { return t2; }
-		else { return t1; } 
+	/**
+	 * If {@code arg0} is null, returns {@code arg0}, otherwise
+	 * returns {@code arg0}.
+	 * 
+	 * @param arg0
+	 * @param arg1
+	 * @return
+	 */
+	public static <T> T ifNullDefault(T arg0, T arg1) {
+		if (arg0 == null) { return arg1; }
+		else { return arg0; } 
+	}
+	
+	private static final int DEFAULT_ALLOWED_NAME_SIZE = 20;
+	
+	/**
+	 * {@link Util#valueWithSpaces(Object, int)} with size set to 20.
+	 * 
+	 * @param x
+	 * @return
+	 */
+	public static String valueWithSpaces(final Object x) {
+		return valueWithFiller(x, DEFAULT_ALLOWED_NAME_SIZE, ' ');
+	}
+	
+	/**
+	 * Gets the string form of the obj, ensuring it is no longer than the given size,
+	 * and if it is less, fills the rest of with spaces.
+	 * 
+	 * @param obj
+	 * @param size
+	 * @return
+	 */
+	public static String valueWithFiller(final Object obj, final int size, final char filler) {
+		
+		final String temp = String.valueOf(obj);
+		final int length = temp.length();
+		final String name = length > size ? temp.substring(0, size) : temp;
+		
+		final StringBuilder value = new StringBuilder();
+		
+		value.append(name);
+		
+		if (length < size) {
+			
+			for (int i = 0; i < size - length; i++) {
+				
+				value.append(filler);
+				
+			}
+			
+		}
+		
+		return value.toString();
+	}
+	
+	public static String printNTimes(final char value, final int n) {
+		return valueWithFiller("", n, value);
 	}
 
 }

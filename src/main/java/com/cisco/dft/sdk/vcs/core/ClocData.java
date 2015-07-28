@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.cisco.dft.sdk.vcs.common.CodeSniffer.Language;
+import com.cisco.dft.sdk.vcs.common.Util;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ClocData {
@@ -166,7 +167,7 @@ public class ClocData {
 		private int codeLines;
 		
 		public LangStats() {
-			this(Language.OTHER);
+			this(Language.UNDEFINED);
 		}
 		
 		public LangStats(Language lang) {
@@ -225,9 +226,49 @@ public class ClocData {
 			return langStats;
 		}
 		
+		public String toString(boolean includeHeader) {
+			
+			final StringBuilder value = new StringBuilder();
+			
+			if (includeHeader) {
+				value.append(getHeader());
+			}
+			
+			value.append(Util.valueWithSpaces(language.toString()));			
+			value.append(Util.valueWithSpaces(nFiles));
+			value.append(Util.valueWithSpaces(codeLines));
+			value.append(Util.valueWithSpaces(commentLines));
+			value.append(Util.valueWithSpaces(blankLines));
+			
+			value.append("\n");
+			
+			return value.toString();		
+			
+		}
+		
+		/**
+		 * The header for the data columns.
+		 * 
+		 * @return
+		 */
+		public static String getHeader() {
+			
+			final StringBuilder value = new StringBuilder(Util.valueWithSpaces("Language"));
+			
+			value.append(Util.valueWithSpaces("Files"));
+			value.append(Util.valueWithSpaces("Code Lines"));
+			value.append(Util.valueWithSpaces("Comment Lines"));
+			value.append(Util.valueWithSpaces("Blank Lines"));
+			
+			value.append("\n");
+			
+			return value.toString();		
+			
+		}
+		
 		@Override
 		public String toString() {
-			return ClocData.toString(this);		
+			return toString(true);
 		}
 		
 	}

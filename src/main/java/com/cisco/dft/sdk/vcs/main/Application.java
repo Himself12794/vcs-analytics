@@ -12,7 +12,6 @@ import com.cisco.dft.sdk.vcs.common.Util;
 import com.cisco.dft.sdk.vcs.core.AuthorInfoBuilder;
 import com.cisco.dft.sdk.vcs.core.BranchInfo;
 import com.cisco.dft.sdk.vcs.core.GitRepo;
-import com.cisco.dft.sdk.vcs.main.ProgramConfig.Action;
 import com.google.common.collect.Range;
 
 /**
@@ -22,7 +21,7 @@ import com.google.common.collect.Range;
  *
  */
 public final class Application {
-	
+
 	public static final String VERISION = "v1.0";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger("Application");
@@ -37,7 +36,7 @@ public final class Application {
 	private ProgramConfig config;
 
 	private Application() {
-		setConfig(new ProgramConfig(Action.HELP, null, null, "", "", true, true));
+		setConfig(ProgramConfig.HELP);
 	}
 
 	/**
@@ -47,7 +46,7 @@ public final class Application {
 	 * @return
 	 */
 	private Application setConfig(ProgramConfig config) {
-		LOGGER.debug("Setting configuration as " + config);
+		LOGGER.trace("Setting configuration as " + config);
 		if (config != null) {
 			this.config = config;
 		}
@@ -67,15 +66,24 @@ public final class Application {
 
 		LOGGER.debug("Executing with params: " + config.toString());
 
+		if (config.shouldShowVersion()) {
+			out.println(VERISION);
+		}
+		;
+
 		switch (config.getAction()) {
-			case ANALYZE: analyze();
+			case ANALYZE:
+				analyze();
 				break;
-			case INIT: init();
+			case INIT:
+				init();
 				break;
-			case DEBUG: debug();
+			case DEBUG:
+				debug();
 				break;
 			case HELP:
-			default: help();
+			default:
+				help();
 				break;
 
 		}
@@ -96,9 +104,9 @@ public final class Application {
 	public void help() {
 		out.println(ProgramConfig.getUsage());
 	}
-	
+
 	/**
-	 * Runs with some debug data.
+	 * Runs with some debug data and preset options and parameters.
 	 * 
 	 * @throws GitAPIException
 	 */
@@ -120,7 +128,8 @@ public final class Application {
 					.getUsername(), config.getPassword());
 
 			GitRepo repo = new GitRepo(config.getUrl(), config.getBranch(), false, cp);
-			repo.sync(config.getBranch(), config.shouldGenerateStats(), config.shouldUseCloc());
+			repo.sync(config.getBranch(), config.shouldGenerateStats(),
+					config.shouldUseCloc());
 
 			if (!(config.getStart() == null && config.getEnd() == null)) {
 
@@ -132,7 +141,7 @@ public final class Application {
 				}
 
 			} else {
-				out.println(repo);
+				out.println(repo.getRepoStatistics().toString(config.shouldShowCommits()));
 			}
 
 			repo.close();
@@ -188,18 +197,18 @@ public final class Application {
 	}
 
 	public static void main(String[] args) throws GitAPIException {
-		
+
 		try {
+			
 			ProgramConfig config = ProgramConfig.parseArgs(args);
 			
-			if (config.isDebugEnabled() || config.getAction() == Action.DEBUG) {
-				Util.enableDebugLogging();
-			}
+			if (config.isDebugEnabled()) { Util.enableDebugLogging(); }
 			
 			APPLICATION.setConfig(config).execute();
-		} catch (Throwable e) {
-			err.println("An error occurred during application execution: " + e.getMessage());
-			LOGGER.debug("Error: ",e);
+		} catch (Exception e) {
+			err.println("An error occurred during application execution: "
+					+ e.getMessage());
+			LOGGER.debug("Error: ", e);
 		}
 
 		// TODO cloc analysis - full testing

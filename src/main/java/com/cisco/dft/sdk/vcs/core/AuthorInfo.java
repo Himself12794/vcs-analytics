@@ -129,7 +129,8 @@ public class AuthorInfo extends RecursiveDateLimitedDataContainer<AuthorCommit> 
 		value.append("Name: " + name + ", ");
 		value.append("Commits: " + getCommitCount() + ", ");
 		value.append("Additions: " + getAdditions() + ", ");
-		value.append("Deletions: " + getDeletions() + ", ");
+		value.append("Deletions: " + getDeletions());
+		value.append("\n");
 
 		for (AuthorCommit ac : getCommits()) {
 			value.append(" - " + ac.toString() + "\n\n");

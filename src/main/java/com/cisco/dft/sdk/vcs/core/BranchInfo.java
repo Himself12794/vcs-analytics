@@ -342,16 +342,23 @@ public class BranchInfo extends HistoryViewer {
 	String getMostRecentLoggedCommit() {
 		return this.mostRecentLoggedCommit;
 	}
-
-	@Override
-	public String toString() {
+	
+	public String toString(boolean showCommits) {
 
 		StringBuilder value = new StringBuilder(super.toString());
 
-		value.append("\n");
-		value.append(getAuthorStatistics().sort(SortMethod.COMMITS).toString());
+		if (showCommits) {
+			value.append("\n");
+			value.append(getAuthorStatistics().sort(SortMethod.COMMITS).toString());
+		}
 
 		return value.toString();
+		
+	}
+
+	@Override
+	public String toString() {
+		return toString(true);
 	}
 
 	/**

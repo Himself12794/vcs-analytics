@@ -1,5 +1,6 @@
 package com.cisco.dft.sdk.vcs.main;
 
+import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -30,9 +31,11 @@ import com.google.common.collect.Maps;
  * @author phwhitin
  *
  */
+// TODO add multiple parameters, accessible by location
 public final class ArgParser {
-	
-	private static final Logger LOGGER = LoggerFactory.getLogger(ArgParser.class);
+
+	private static final Logger LOGGER = LoggerFactory
+			.getLogger(ArgParser.class);
 
 	private static final String ACTION = "action";
 
@@ -41,29 +44,29 @@ public final class ArgParser {
 	private Map<String, String> values = Maps.newHashMap();
 
 	private ArgParser() {
-		LOGGER.debug("New arg parser!");
 	}
 
 	public static ArgParser parse(String[] args) {
 
 		LOGGER.debug("Parsing args " + Arrays.toString(args));
-		
+
 		ArgParser parser = new ArgParser();
 
 		if (args.length > 0) {
 
 			parser.paramParser(args[0], true);
-			
+
 			LOGGER.debug("Found command " + args[0]);
 
 			for (int i = 1; i < args.length; i++) {
 
 				if (isOption(args[i])) {
-					
+
 					String[] value = args[i].replaceFirst("--", "").split("=");
-					
-					LOGGER.debug("Found option " + (value.length > 1 ? value[0] : "no value"));
-					
+
+					LOGGER.debug("Found option "
+							+ (value.length > 1 ? value[0] : "no value"));
+
 					if (value.length > 1) {
 						Util.putIfAbsent(parser.values, value[0].toLowerCase(),
 								value[1]);
@@ -71,19 +74,19 @@ public final class ArgParser {
 						Util.putIfAbsent(parser.values, value[0].toLowerCase(),
 								Boolean.TRUE.toString());
 					}
-					
+
 				} else if (isFlag(args[i])) {
-					
+
 					LOGGER.debug("Found flag " + args[i]);
-					
+
 					Util.putIfAbsent(parser.values,
 							args[i].replaceFirst("-", ""),
 							Boolean.TRUE.toString());
-					
+
 				} else {
-					
+
 					LOGGER.debug("Found command parameter " + args[i]);
-					
+
 					Util.putIfAbsent(parser.values, ACTION_PARAM, args[i]);
 				}
 
@@ -98,7 +101,7 @@ public final class ArgParser {
 	}
 
 	private static boolean isFlag(String value) {
-		return value.length() == 2 && value.lastIndexOf("-") == 0;
+		return value.length() == 2 && value.lastIndexOf('-') == 0;
 	}
 
 	private void paramParser(String param, boolean isAction) {
@@ -114,7 +117,7 @@ public final class ArgParser {
 	/**
 	 * Gets the action command. This is the first argument given.
 	 * 
-	 * if theargument is prefixed by "-" or "--", this is null.
+	 * if the argument is prefixed by "-" or "--", this is null.
 	 * 
 	 * @return the command string, or null if no command detected
 	 */
@@ -135,8 +138,8 @@ public final class ArgParser {
 	}
 
 	/**
-	 * Gets the option as a boolean value. This can be a flag, or an option with
-	 * --value=true or value=false, or just --value for true.
+	 * Gets the option as a boolean value. This can be a flag, (-f, -v, etc.) or
+	 * an option with --value=true or --value=false, or just --value for true.
 	 * 
 	 * @param key
 	 * @return true if the flag exists or option is set to true, false if
@@ -167,6 +170,46 @@ public final class ArgParser {
 	}
 
 	/**
+	 * Tries to get the key as a Long, then tries to instantiate a new class of
+	 * type V. If fails, returns null.
+	 * 
+	 * @param key
+	 * @param k
+	 * @param v
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public <V> V getLongAsType(String key, Class<V> v) {
+		
+		Long value = getLong(key);
+		
+		if (value != null) {
+			for (Constructor<?> c : v.getConstructors()) {
+				
+				if (c.getParameterTypes().length == 1) {
+					
+					for (Class<?> clazz : c.getParameterTypes()) {
+						
+						if (clazz.equals(Long.class) || "long".equals(clazz.getName())) {
+							try {
+								return (V) c.newInstance(value);
+							} catch (Exception e) {
+								LOGGER.debug("Failure in type conversion", e);
+							}
+						}
+						
+					}
+					
+				}
+				
+			}
+		}
+		
+		return null;
+		
+	}
+
+	/**
 	 * Trys to get the mapped value as a long. If it does not exist or is not a
 	 * long, returns 0
 	 * 
@@ -192,7 +235,7 @@ public final class ArgParser {
 	 * @return value of key or the default
 	 */
 	public String getString(String key, String defaultV) {
-		return Util.ifNullDefault(values.get(key), defaultV);
+		return Util.ifNullDefault(getString(key), defaultV);
 	}
 
 	/**

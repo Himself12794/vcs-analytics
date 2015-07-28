@@ -123,6 +123,11 @@ public class RepoInfo {
 	
 	@Override
 	public String toString() {
+		return toString(true);
+	}
+	
+	
+	public String toString(boolean showCommits) {
 		
 		Date date = new Date(System.currentTimeMillis()); 
 		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss"); 
@@ -147,7 +152,7 @@ public class RepoInfo {
 		value.append("\n------------------------------------\n");
 		
 		for (BranchInfo bi : branches.values()) {
-			value.append(bi.toString());
+			value.append(bi.toString(showCommits));
 			value.append("************************************\n");
 		}
 		
