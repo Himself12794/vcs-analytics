@@ -63,13 +63,14 @@ public final class Application {
 	 * @throws GitAPIException
 	 */
 	void execute() throws GitAPIException {
+		
+		if (config.isDebugEnabled()) { Util.enableDebugLogging(); }
 
 		LOGGER.debug("Executing with params: " + config.toString());
 
 		if (config.shouldShowVersion()) {
 			out.println(VERISION);
 		}
-		;
 
 		switch (config.getAction()) {
 			case ANALYZE:
@@ -199,12 +200,7 @@ public final class Application {
 	public static void main(String[] args) throws GitAPIException {
 
 		try {
-			
-			ProgramConfig config = ProgramConfig.parseArgs(args);
-			
-			if (config.isDebugEnabled()) { Util.enableDebugLogging(); }
-			
-			APPLICATION.setConfig(config).execute();
+			APPLICATION.setConfig(ProgramConfig.parseArgs(args)).execute();
 		} catch (Exception e) {
 			err.println("An error occurred during application execution: "
 					+ e.getMessage());
@@ -212,8 +208,6 @@ public final class Application {
 		}
 
 		// TODO cloc analysis - full testing
-		// TODO cloc - make all values printable
-		// TODO option for lang stats only
 		// TODO clean output
 
 	}
