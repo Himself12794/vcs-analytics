@@ -136,7 +136,6 @@ public class RepoUtilsTest {
 		assertTrue("master".equals(hv.getBranchName()));
 		assertTrue(hv.usesCLOCStats() ? hv.getLangStats(Language.JAVA).getnFiles() == 23 : hv.getLangStats(Language.JAVA).getnFiles() == 23);
 		assertTrue(hv.getLangPercent(Language.JAVA) >= 0.5F);
-		assertTrue(hv.usesCLOCStats() ? hv.getPrimaryLangCount() == 23 : hv.getPrimaryLangCount() == 23);
 		assertTrue(hv.getDate().equals(arbitraryDate));
 		reo.close();
 	}
