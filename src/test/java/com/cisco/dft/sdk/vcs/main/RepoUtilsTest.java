@@ -44,6 +44,18 @@ public class RepoUtilsTest {
 	}
 	
 	@Test
+	public void configTest() {
+		
+		LOGGER.debug("Testing configuration");
+		assertTrue(!ProgramConfig.DEBUG.shouldShowCommits());
+		assertTrue(ProgramConfig.DEBUG.getStart() == null);
+		assertTrue(ProgramConfig.DEBUG.getEnd() == null); 
+		assertTrue(ProgramConfig.TEST.getStart() != null);
+		assertTrue(ProgramConfig.TEST.getEnd() != null);
+		
+	}
+	
+	@Test
 	public void testUtility() {
 		
 		final String test1 = "test1";
@@ -80,9 +92,11 @@ public class RepoUtilsTest {
 		LOGGER.debug("Testing analyze.");
 		Application.setConfiguration(ProgramConfig.TEST).execute();
 		
+		LOGGER.debug("Testing debug.");
+		Application.setConfiguration(ProgramConfig.DEBUG).execute();
+		
 		LOGGER.debug("Testing help feature");
 		Application.setConfiguration(ProgramConfig.HELP).execute();
-		
 		
 	}
 

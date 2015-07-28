@@ -16,7 +16,7 @@ public class ProgramConfig {
 	}
 	
 	/**Pre-set config for an INIT action. Useful for testing*/
-	static final ProgramConfig INIT = ProgramConfig.parseArgs("init");
+	static final ProgramConfig INIT = ProgramConfig.parseArgs("init", "--nostats", "--builtin-analysis");
 
 	static final ProgramConfig HELP = ProgramConfig.parseArgs("help");
 
@@ -29,7 +29,7 @@ public class ProgramConfig {
 	 * unit tests
 	 */
 	static final ProgramConfig TEST = ProgramConfig.parseArgs("analyze",
-			"https://github.com/Himself12794/powersAPI.git", "--branch=master", "--start=1234567891000");
+			"https://github.com/Himself12794/powersAPI.git", "--branch=master", "--start=1234567891000", "--end=--start=1234867891000");
 
 	static final ProgramConfig DEFAULT = HELP;
 
