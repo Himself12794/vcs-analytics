@@ -8,6 +8,8 @@ import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ch.qos.logback.classic.Level;
+
 import com.cisco.dft.sdk.vcs.common.Util;
 import com.cisco.dft.sdk.vcs.core.AuthorInfoBuilder;
 import com.cisco.dft.sdk.vcs.core.BranchInfo;
@@ -64,7 +66,7 @@ public final class Application {
 	 */
 	void execute() throws GitAPIException {
 		
-		if (config.isDebugEnabled()) { Util.enableDebugLogging(); }
+		if (config.isDebugEnabled()) { Util.setLoggingLevel(Level.DEBUG); }
 
 		LOGGER.debug("Executing with params: " + config.toString());
 
@@ -95,7 +97,7 @@ public final class Application {
 	 * Initializes Cloc.
 	 */
 	private void init() {
-		Cloc.init();
+		ClocService.init();
 	}
 
 	/**
@@ -112,7 +114,7 @@ public final class Application {
 	 * @throws GitAPIException
 	 */
 	private void debug() throws GitAPIException {
-		setConfig(ProgramConfig.DEBUG).analyze();
+		setConfig(ProgramConfig.DEBUG).execute();
 	}
 
 	private void analyze() throws GitAPIException {

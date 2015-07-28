@@ -6,7 +6,6 @@ import java.util.Map;
 
 import org.eclipse.jgit.api.Git;
 
-import com.cisco.dft.sdk.vcs.common.CodeSniffer;
 import com.cisco.dft.sdk.vcs.common.CodeSniffer.Language;
 import com.cisco.dft.sdk.vcs.common.Util;
 import com.cisco.dft.sdk.vcs.core.ClocData.LangStats;
@@ -160,42 +159,6 @@ public class HistoryViewer {
 
 		return newOne;
 
-	}
-
-	/**
-	 * Gets the number of files for that are registered as
-	 * {@code LangType.PRIMARY}.
-	 * <p>
-	 * Refer to {@link CodeSniffer.Language} to see which is considered which.
-	 * 
-	 * @return count
-	 */
-	public int getPrimaryLangCount() {
-		int count = 0;
-		for (LangStats langEntry : data.getLanguageStats()) {
-			if (langEntry.getLanguage().isPrimary()) {
-				count += langEntry.getnFiles();
-			}
-		}
-		return count;
-	}
-
-	/**
-	 * Gets the number of files for that are registered as
-	 * {@code LangType.SECONDARY}.
-	 * <p>
-	 * Refer to {@link CodeSniffer.Language} to see which is considered which.
-	 * 
-	 * @return count
-	 */
-	public int getSecondaryLangCount() {
-		int count = 0;
-		for (LangStats langEntry : data.getLanguageStats()) {
-			if (langEntry.getLanguage().isSecondary()) {
-				count += langEntry.getnFiles();
-			}
-		}
-		return count;
 	}
 
 	public float getLangPercent(Language lang) {

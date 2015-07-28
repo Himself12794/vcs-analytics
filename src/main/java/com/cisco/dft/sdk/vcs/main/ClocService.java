@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 
 import com.cisco.dft.sdk.vcs.common.CodeSniffer.Language;
+import com.cisco.dft.sdk.vcs.common.CommandLineUtils;
 import com.cisco.dft.sdk.vcs.common.OSType;
 import com.cisco.dft.sdk.vcs.common.Util;
 import com.cisco.dft.sdk.vcs.core.ClocData;
@@ -22,9 +23,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.google.common.collect.Maps;
 
-public final class Cloc {
+/**
+ * Utility class for CLOC use.
+ * 
+ * @author phwhitin
+ *
+ */
+public final class ClocService {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger("CLOC");
+	private static final Logger LOGGER = LoggerFactory.getLogger(ClocService.class.getSimpleName());
 
 	private static boolean init = false;
 	
@@ -85,8 +92,8 @@ public final class Cloc {
 					init = true;
 					
 				} catch (IOException e) {
-					LOGGER.error("cloc initialization failed.");
-					LOGGER.debug("cloc initialization failed", e);
+					LOGGER.trace("cloc initialization failed", e);
+					LOGGER.warn("cloc initialization failed");
 					LOGGER.info("Install perl and/or cloc onto your system to use cloc statistics");
 					init = false;
 				}
@@ -126,10 +133,10 @@ public final class Cloc {
 
 		if (!canGetCLOCStats()) { return false; }
 		try {
-			Util.executeCommand("perl", "-v");
+			CommandLineUtils.executeCommand("perl", "-v");
 			return true;
 		} catch (IOException e) {
-			LOGGER.debug("An error occured in perl detection", e);
+			LOGGER.trace("An error occured in perl detection", e);
 			LOGGER.info("Perl not detected");
 			return false;
 		}
@@ -138,10 +145,10 @@ public final class Cloc {
 	public static boolean isClocInstalled() {
 		
 		try {
-			LOGGER.info( "Cloc detected, version is: " + Util.executeCommand("cloc", "-version") );
+			LOGGER.info( "Cloc detected, version is: " + CommandLineUtils.executeCommand("cloc", "-version") );
 			return true;
 		} catch (IOException e) {
-			LOGGER.debug("Cloc not detected", e);
+			LOGGER.trace("Cloc not detected", e);
 			LOGGER.info( "Cloc not detected" );
 			return false;
 		}
@@ -163,11 +170,11 @@ public final class Cloc {
 
 		if (clocInstalled) {
 			LOGGER.debug("Cloc already exists, using that instead. Running on directory " + file.getAbsolutePath());
-			return Util.executeCommand("cloc", "--yaml", file.getAbsolutePath());
+			return CommandLineUtils.executeCommand("cloc", "--yaml", file.getAbsolutePath());
 		} else if (perlInstalled) {
-			return Util.executeCommand("perl", CLOC_PL, "--yaml", "--skip-win-hidden");
+			return CommandLineUtils.executeCommand("perl", CLOC_PL, "--yaml", "--skip-win-hidden");
 		} else {
-			return Util.executeCommand(getFileForOS(false).getPath(), "--yaml","--skip-win-hidden", file.getAbsolutePath());
+			return CommandLineUtils.executeCommand(getFileForOS(false).getPath(), "--yaml","--skip-win-hidden", file.getAbsolutePath());
 		}
 				
 	}
@@ -224,7 +231,7 @@ public final class Cloc {
 		return new ClocData(header, langStats);
 	}
 
-	private Cloc() {
+	private ClocService() {
 	}
 
 }

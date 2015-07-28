@@ -1,8 +1,5 @@
 package com.cisco.dft.sdk.vcs.common;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -10,80 +7,46 @@ import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Level;
 
+/**
+ * Utilities for use throughout the rest of the Application
+ * 
+ * @author phwhitin
+ *
+ */
 public final class Util {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(Util.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger("Utilities");
 
 	private Util() {}
 	
-	public static void enableDebugLogging() {
-		LOGGER.info("Enabling debug logging");
+	/**
+	 * Enables debug logging
+	 */
+	public static void setLoggingLevel(Level level) {
+		LOGGER.info("Enabling " + level.toString() + " logging");
 		ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
-	    root.setLevel(Level.DEBUG);
+	    root.setLevel(level);
 	}
-
+	
+	/**
+	 * When you're too lazy to create a logger for each class.
+	 * 
+	 * @param msg
+	 * @param t
+	 */
 	public static void redirectLogError(String msg, Throwable t) {
 		LOGGER.error(msg, t);
 	}
 
-	public static String executeCommand(String command, String...parameters) throws IOException {
-
-		StringBuilder output = new StringBuilder();
-
-		Process p = Runtime.getRuntime().exec(getCommand(command, parameters));
-
-		try {
-			p.waitFor();
-		} catch (InterruptedException e) {
-			// No action needed
-		}
-
-		BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
-
-		String line = "";
-		
-		try {
-			
-			while ((line = reader.readLine()) != null) {
-				output.append(line);
-				output.append("\n");
-			}
-			
-		} catch (Exception e) {
-			LOGGER.error("An error occured in command execution", e);
-		} finally {
-			reader.close();
-		}
-
-		return output.toString();
-
-	}
-
-	private static String getCommand(String command, String[] parameters) {
-
-		StringBuilder output = new StringBuilder(command);
-		output.append(" ");
-
-		for (String parameter : parameters) {
-
-			output.append(parameter);
-			output.append(" ");
-		}
-
-		return output.toString();
-
-	}
-
 	/**
-	 * If the value exists for the key, it places it in the map, otherwise it
-	 * places the given value.
+	 * If the value does not exist for the key, it places it in the map.
 	 * 
 	 * @param map
 	 * @param key
 	 * @param value
-	 * @return the current value, or the given value if non-existent
+	 * @return the value "value", mutates parameter "map"
 	 */
-	public static <V, K> V putIfAbsent(Map<K, V> map, K key, V value) {
+	public static <K, V> V putIfAbsent(Map<K, V> map, K key, V value) {
 
 		if (map.containsKey(key)) {
 			return map.get(key);
@@ -94,14 +57,19 @@ public final class Util {
 
 	}
 	
+	/**
+	 * Similar to {@link Util#putIfAbsent(Map, Object, Object)}, except it does
+	 * not place the default value into the map, only returns it.
+	 * 
+	 * @param map
+	 * @param key
+	 * @param defaultV
+	 * @return the pre-existing value, or default if non-existent
+	 */
 	public static <K, V> V getOrDefault(Map<K, V> map, K key, V defaultV) {
-		return getOrDefault(map, key, defaultV, false);
-	}
-	
-	public static <K, V> V getOrDefault(Map<K, V> map, K key, V defaultV, boolean nullCheck) {
 		
 		if (map.containsKey(key)) {
-			return nullCheck && map.get(key) == null ? defaultV : map.get(key);
+			return map.get(key);
 		} else {
 			return defaultV;
 		}

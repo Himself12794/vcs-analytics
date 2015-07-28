@@ -41,7 +41,7 @@ TRACE -	Designates finer-grained informational events than the DEBUG.
 	    </rollingPolicy>
 		<encoder>
 			<!-- pattern followed -[DEBUG][DATE and TIME][Class-line][THREAD][MSG] [number of lines of exception] -->
-			<pattern>[%d] [%thread ] [%logger{35} - %L] [%-5level] - %msg %n
+			<pattern>[%d] [%-5level] [%logger{35} - %L] [%thread ] - %msg %n
 			</pattern>
 		</encoder>	
 	</appender>
@@ -49,7 +49,7 @@ TRACE -	Designates finer-grained informational events than the DEBUG.
 	<!-- Console appender -->
 	<appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
-			<pattern>[%d] [%thread ] [%logger{35} - %L] [%-5level] - %msg %n
+			<pattern>[%d] [%-5level] [%logger{35} - %L] [%thread ] - %msg %n
 			</pattern>
 		</encoder>
 		<!-- Show only INFO level on console, no matter what the root level is -->

@@ -211,7 +211,7 @@ public final class GitRepo extends Repo {
 		theRepo = Git.open(theDirectory);
 		repoInfo.setRepo(theRepo);
 
-		LOGGER.info("Found repo in Temp.");
+		LOGGER.info("Found cached version of " + repoInfo.getName());
 
 		if (value) {
 			validateBranchSync(branch);

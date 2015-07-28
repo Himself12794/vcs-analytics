@@ -49,28 +49,6 @@ public final class CodeSniffer {
 		VISUAL_BASIC, VISUAL_FOX_PRO, VISUALFORCE_COMPONENT, VISUALFORCE_PAGE, WINDOWS_MESSAGE_FILE, WINDOWS_MODULE_DEFINITION, 
 		WINDOWS_RESOURCE_FILE, WIX_INCLUDE, WIX_SOURCE, WIX_STRING_LOCALIZATION, XAML, XBASE, XBASE_HEADER, XML, 
 		XQUERY, XSD, XSLT, YACC, YAML, UNDEFINED;
-
-		private LangType type;
-		
-		Language() {
-			this.type = LangType.PRIMARY;
-		}
-
-		public LangType getType() {
-			return type;
-		}
-
-		public boolean isPrimary() {
-			return type == LangType.PRIMARY;
-		}
-
-		public boolean isSecondary() {
-			return type == LangType.SECONDARY;
-		}
-		
-		public boolean isUndefined() {
-			return this == UNDEFINED;
-		}
 		
 		@Override
 		public String toString() {

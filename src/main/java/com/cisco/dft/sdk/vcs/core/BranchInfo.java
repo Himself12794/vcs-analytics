@@ -35,7 +35,7 @@ import com.cisco.dft.sdk.vcs.common.SortMethod;
 import com.cisco.dft.sdk.vcs.common.Util;
 import com.cisco.dft.sdk.vcs.core.ClocData.Header;
 import com.cisco.dft.sdk.vcs.core.ClocData.LangStats;
-import com.cisco.dft.sdk.vcs.main.Cloc;
+import com.cisco.dft.sdk.vcs.main.ClocService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 
@@ -49,7 +49,7 @@ import com.google.common.collect.Range;
 public class BranchInfo extends HistoryViewer {
 
 	private static final Logger LOGGER = LoggerFactory
-			.getLogger(BranchInfo.class);
+			.getLogger(BranchInfo.class.getSimpleName());
 
 	private int commitCount;
 
@@ -266,12 +266,12 @@ public class BranchInfo extends HistoryViewer {
 
 		this.resetInfo();
 
-		if (Cloc.canGetCLOCStats() && useCloc) {
+		if (ClocService.canGetCLOCStats() && useCloc) {
 			
 			LOGGER.debug("Will use cloc to analyze");
 
 			try {
-				ClocData theData = Cloc.getClocStatistics(theRepo
+				ClocData theData = ClocService.getClocStatistics(theRepo
 						.getRepository().getWorkTree());
 				this.getData().imprint(theData);
 				usesCLOCStats = true;
@@ -280,13 +280,11 @@ public class BranchInfo extends HistoryViewer {
 			} catch (IOException e) {
 				usesCLOCStats = false;
 				LOGGER.error(
-						"Could not use CLOC to gather statistics, defaulting to built-in cheap analysis",
+						"Could not use CLOC to gather statistics, defaulting to built-in analysis",
 						e);
 			}
 
-		} else {
-			LOGGER.warn("CLOC disabled, using built-in stat analysis.");
-		}
+		} 
 
 		Map<Language, LangStats> langStats = this.getData()
 				.getLanguageStatsMutable();

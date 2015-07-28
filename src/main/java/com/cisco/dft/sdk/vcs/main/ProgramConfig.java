@@ -2,12 +2,20 @@ package com.cisco.dft.sdk.vcs.main;
 
 import java.util.Date;
 
+/**
+ * Simple pojo used to define Application config and context.
+ * 
+ * @author phwhitin
+ *
+ */
 public class ProgramConfig {
-
+	
+	/**Actions the application can perform*/
 	public static enum Action {
 		ANALYZE, HELP, INIT, DEBUG
 	}
-
+	
+	/**Pre-set config for an INIT action. Useful for testing*/
 	static final ProgramConfig INIT = ProgramConfig.parseArgs("init");
 
 	static final ProgramConfig HELP = ProgramConfig.parseArgs("help");
@@ -21,7 +29,7 @@ public class ProgramConfig {
 	 * unit tests
 	 */
 	static final ProgramConfig TEST = ProgramConfig.parseArgs("analyze",
-			"https://github.com/Himself12794/powersAPI.git", "--branch=master");
+			"https://github.com/Himself12794/powersAPI.git", "--branch=master", "--start=1234567891000");
 
 	static final ProgramConfig DEFAULT = HELP;
 
@@ -115,7 +123,7 @@ public class ProgramConfig {
 		if (action == null) { throw new IllegalArgumentException("Command "
 				+ parser.getAction() + " not recognized"); }
 
-		final String url = parser.getActionParameter();
+		final String url = parser.getActionParameterByIndex(0);
 		final String branch = parser.getString("branch");
 		final String username = parser.getString("username", "");
 		final String password = parser.getString("password", "");

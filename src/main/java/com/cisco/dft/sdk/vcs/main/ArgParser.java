@@ -2,12 +2,14 @@ package com.cisco.dft.sdk.vcs.main;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.cisco.dft.sdk.vcs.common.Util;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 /**
@@ -31,17 +33,16 @@ import com.google.common.collect.Maps;
  * @author phwhitin
  *
  */
-// TODO add multiple parameters, accessible by location
 public final class ArgParser {
 
 	private static final Logger LOGGER = LoggerFactory
-			.getLogger(ArgParser.class);
-
-	private static final String ACTION = "action";
-
-	private static final String ACTION_PARAM = "actionParam";
+			.getLogger(ArgParser.class.getSimpleName());
 
 	private Map<String, String> values = Maps.newHashMap();
+	
+	private String action;
+	
+	private List<String> actionParams = Lists.newArrayList();
 
 	private ArgParser() {
 	}
@@ -54,7 +55,7 @@ public final class ArgParser {
 
 		if (args.length > 0) {
 
-			parser.paramParser(args[0], true);
+			parser.commandParser(args[0]);
 
 			LOGGER.debug("Found command " + args[0]);
 
@@ -65,7 +66,7 @@ public final class ArgParser {
 					String[] value = args[i].replaceFirst("--", "").split("=");
 
 					LOGGER.debug("Found option "
-							+ (value.length > 1 ? value[0] : "no value"));
+							+ (value.length > 0 ? value[0] : "no value"));
 
 					if (value.length > 1) {
 						Util.putIfAbsent(parser.values, value[0].toLowerCase(),
@@ -84,10 +85,8 @@ public final class ArgParser {
 							Boolean.TRUE.toString());
 
 				} else {
-
 					LOGGER.debug("Found command parameter " + args[i]);
-
-					Util.putIfAbsent(parser.values, ACTION_PARAM, args[i]);
+					parser.actionParams.add(args[i]);
 				}
 
 			}
@@ -103,13 +102,15 @@ public final class ArgParser {
 	private static boolean isFlag(String value) {
 		return value.length() == 2 && value.lastIndexOf('-') == 0;
 	}
-
-	private void paramParser(String param, boolean isAction) {
-
-		final String key = isAction ? ACTION : ACTION_PARAM;
+	
+	/**
+	 * Checks the value, and if it is a valid command, stores it as the action
+	 * @param param
+	 */
+	private void commandParser(String param) {
 
 		if (!param.startsWith("--") && !param.startsWith("-")) {
-			values.put(key, param);
+			action = param;
 		}
 
 	}
@@ -122,19 +123,43 @@ public final class ArgParser {
 	 * @return the command string, or null if no command detected
 	 */
 	public String getAction() {
-		return values.get(ACTION);
+		return action;
 	}
 
 	/**
-	 * Gets the action parameter, the second value.
+	 * Gets action parameter by location. Index starts at 0.
 	 * 
-	 * Follows the same rule as the {@link ArgParser#getAction()}, except for
-	 * the second argument. This is not location sensitive.
-	 * 
-	 * @return the command parameter, or null if non-existent
+	 * @param i
+	 * @return
 	 */
-	public String getActionParameter() {
-		return values.get(ACTION_PARAM);
+	public String getActionParameterByIndex(int i) {
+		return actionParams.size() > i ? actionParams.get(i) : null;
+	}
+	
+	/**
+	 * If parameter exists, return it, else null.
+	 * Works similar to {@link ArgParser#actionParameterExists(String)} except instead of verification,
+	 * it returns the value.
+	 * 
+	 * @param param
+	 * @return param if it exists, else null
+	 */
+	public String getActionParameter(String param) {
+		return actionParams.contains(param) ? param : null;		
+	}
+	
+	/**
+	 * Checks if a specific parameter exists.
+	 * <p>
+	 * Don't confuse this with {@link ArgParser#getBoolean(String)}, it is not the same thing.
+	 * This returns a action paramter, i.e. any value following the action command
+	 * that is not a flag or option.
+	 * 
+	 * @param param
+	 * @return
+	 */
+	public boolean actionParameterExists(String param) {
+		return actionParams.contains(param);
 	}
 
 	/**

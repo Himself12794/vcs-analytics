@@ -9,9 +9,12 @@ import java.util.Map;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.classic.Level;
 
 import com.cisco.dft.sdk.vcs.common.CodeSniffer;
 import com.cisco.dft.sdk.vcs.common.CodeSniffer.Language;
@@ -34,6 +37,11 @@ import com.google.common.collect.Range;
 public class RepoUtilsTest {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger("UnitTesting");
+	
+	@Before
+	public void preConfig() {
+		Util.setLoggingLevel(Level.DEBUG);
+	}
 	
 	@Test
 	public void testUtility() {
