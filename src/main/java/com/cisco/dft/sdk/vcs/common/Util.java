@@ -1,9 +1,12 @@
 package com.cisco.dft.sdk.vcs.common;
 
+import java.util.Date;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Range;
 
 import ch.qos.logback.classic.Level;
 
@@ -36,6 +39,53 @@ public final class Util {
 	 */
 	public static void redirectLogError(String msg, Throwable t) {
 		LOGGER.error(msg, t);
+	}
+	
+	/**
+	 * Determines the type of range to return.
+	 * 
+	 * @param start
+	 * @param end
+	 * @return
+	 */
+	public static Range<Date> getAppropriateRange(Date start, Date end) {
+
+		if (bothNull(start, end)) {
+			return nonNullComparison(start, end);
+		} else if (firstOnlyNull(start, end)) {
+			return Range.atMost(end);
+		} else if (lastOnlyNull(start, end)) {
+			return Range.atLeast(start);
+		} else {
+			return Range.all();
+		}
+
+	}
+	
+	private static Range<Date> nonNullComparison(Date start, Date end) {
+
+		final int c = start.compareTo(end);
+
+		if (c < 0) {
+			return Range.closed(start, end);
+		} else if (c > 0) {
+			return Range.closed(end, start);
+		} else {
+			return Range.singleton(start);
+		}
+		
+	}
+	
+	public static boolean bothNull(Object arg0, Object arg1) {
+		return arg0 != null && arg1 != null;
+	}
+	
+	public static boolean firstOnlyNull(Object arg0, Object arg1) {
+		return arg0 == null && arg1 != null;
+	}
+	
+	public static boolean lastOnlyNull(Object arg0, Object arg1) {
+		return arg0 != null && arg1 == null;
 	}
 
 	/**

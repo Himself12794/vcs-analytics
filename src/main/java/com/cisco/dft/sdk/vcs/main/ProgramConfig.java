@@ -29,7 +29,7 @@ public class ProgramConfig {
 	 * unit tests
 	 */
 	static final ProgramConfig TEST = ProgramConfig.parseArgs("analyze",
-			"https://github.com/Himself12794/powersAPI.git", "--branch=master", "--start=1234567891000", "--end=--start=1234867891000");
+			"https://github.com/Himself12794/powersAPI.git", "--branch=master", "--start=1234567891000", "--end=1234867891000");
 
 	static final ProgramConfig DEFAULT = HELP;
 

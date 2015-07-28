@@ -1,7 +1,6 @@
 package com.cisco.dft.sdk.vcs.main;
 
 import java.io.PrintStream;
-import java.util.Date;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
@@ -14,7 +13,6 @@ import com.cisco.dft.sdk.vcs.common.Util;
 import com.cisco.dft.sdk.vcs.core.AuthorInfoBuilder;
 import com.cisco.dft.sdk.vcs.core.BranchInfo;
 import com.cisco.dft.sdk.vcs.core.GitRepo;
-import com.google.common.collect.Range;
 
 /**
  * The application class.
@@ -65,8 +63,10 @@ public final class Application {
 	 * @throws GitAPIException
 	 */
 	void execute() throws GitAPIException {
-		
-		if (config.isDebugEnabled()) { Util.setLoggingLevel(Level.DEBUG); }
+
+		if (config.isDebugEnabled()) {
+			Util.setLoggingLevel(Level.DEBUG);
+		}
 
 		LOGGER.debug("Executing with params: " + config.toString());
 
@@ -144,7 +144,8 @@ public final class Application {
 				}
 
 			} else {
-				out.println(repo.getRepoStatistics().toString(config.shouldShowCommits()));
+				out.println(repo.getRepoStatistics().toString(
+						config.shouldShowCommits()));
 			}
 
 			repo.close();
@@ -159,8 +160,10 @@ public final class Application {
 
 		for (BranchInfo bi : bis) {
 
-			AuthorInfoBuilder aib = bi.getAuthorStatistics().limitToDateRange(
-					getAppropriateRange(config.getStart(), config.getEnd()));
+			AuthorInfoBuilder aib = bi.getAuthorStatistics()
+					.limitToDateRange(
+							Util.getAppropriateRange(config.getStart(),
+									config.getEnd()));
 			out.println(aib);
 
 		}
@@ -175,30 +178,6 @@ public final class Application {
 						.getEnd()));
 	}
 
-	private Range<Date> getAppropriateRange(Date start, Date end) {
-
-		if (start != null && end != null) {
-
-			final int c = start.compareTo(end);
-
-			if (c < 0) {
-				return Range.closed(start, end);
-			} else if (c > 0) {
-				return Range.closed(end, start);
-			} else {
-				return Range.singleton(start);
-			}
-
-		} else if (start == null && end != null) {
-			return Range.atMost(end);
-		} else if (start != null && end == null) {
-			return Range.atLeast(start);
-		} else {
-			return Range.all();
-		}
-
-	}
-
 	public static void main(String[] args) throws GitAPIException {
 
 		try {
@@ -210,7 +189,6 @@ public final class Application {
 		}
 
 		// TODO cloc analysis - full testing
-		// TODO clean output
 
 	}
 
