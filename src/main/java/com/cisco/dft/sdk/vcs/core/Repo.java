@@ -4,6 +4,8 @@ import java.util.List;
 
 public abstract class Repo {
 	
+	public static final String DEFAULT_DIRECTORY_BASE = "vcs-analytics/repositories/";
+	
 	protected final RepoInfo repoInfo = new RepoInfo();
 	
 	/**

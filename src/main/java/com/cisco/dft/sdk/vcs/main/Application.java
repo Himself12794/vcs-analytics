@@ -6,6 +6,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tmatesoft.svn.core.SVNException;
 
 import ch.qos.logback.classic.Level;
 
@@ -13,6 +14,8 @@ import com.cisco.dft.sdk.vcs.common.Util;
 import com.cisco.dft.sdk.vcs.core.AuthorInfoBuilder;
 import com.cisco.dft.sdk.vcs.core.BranchInfo;
 import com.cisco.dft.sdk.vcs.core.GitRepo;
+import com.cisco.dft.sdk.vcs.core.SVNRepo;
+import com.cisco.dft.sdk.vcs.main.ProgramConfig.Action;
 
 /**
  * The application class.
@@ -61,8 +64,9 @@ public final class Application {
 	 * Runs the program with the given config parameters.
 	 * 
 	 * @throws GitAPIException
+	 * @throws SVNException
 	 */
-	void execute() throws GitAPIException {
+	void execute() throws GitAPIException, SVNException {
 
 		if (config.isDebugEnabled()) {
 			Util.setLoggingLevel(Level.DEBUG);
@@ -72,6 +76,11 @@ public final class Application {
 
 		if (config.shouldShowVersion()) {
 			out.println(VERISION);
+		}
+
+		if (!config.getAction().isValid(config)) {
+			out.println(config.getAction().getUsage());
+			return;
 		}
 
 		switch (config.getAction()) {
@@ -102,10 +111,21 @@ public final class Application {
 
 	/**
 	 * Prints the help message to stdout.
-	 * 
 	 */
 	public void help() {
-		out.println(ProgramConfig.getUsage());
+		if (config.getUrl() == null) {
+			out.println(ProgramConfig.getUsage());
+		} else {
+			
+			try {
+				Action action = Action.valueOf(config.getUrl().toUpperCase());
+				out.print(action.getUsage());
+			} catch (Exception e) {
+				LOGGER.trace("Unrecognized help parameter", e);
+				out.println(ProgramConfig.getUsage());
+			}
+			
+		}
 	}
 
 	/**
@@ -114,43 +134,84 @@ public final class Application {
 	 * @throws GitAPIException
 	 */
 	private void debug() throws GitAPIException {
-		setConfig(ProgramConfig.DEBUG).execute();
+		// setConfig(ProgramConfig.DEBUG).execute();
+		try {
+			init();
+			Util.setLoggingLevel(Level.DEBUG);
+			SVNRepo repo = new SVNRepo(config.getUrl());
+			repo.sync(config.getBranch() == null ? SVNRepo.TRUNK : config
+					.getBranch());
+		} catch (SVNException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
-	private void analyze() throws GitAPIException {
+	private void analyze() throws GitAPIException, SVNException {
 
 		if (config.getUrl() == null) {
 
-			out.println("Usage: analyze <url>");
+			out.println();
 
 		} else {
 
 			init();
 
-			UsernamePasswordCredentialsProvider cp = new UsernamePasswordCredentialsProvider(config
-					.getUsername(), config.getPassword());
+			if (config.shouldForceGit()) {
+				analyzeAsGit();
+			} else if (config.shouldForceSvn()) {
+				analyzeAsSVN();
+			} else {
 
-			GitRepo repo = new GitRepo(config.getUrl(), config.getBranch(), false, cp);
-			repo.sync(config.getBranch(), config.shouldGenerateStats(),
-					config.shouldUseCloc());
-
-			if (!(config.getStart() == null && config.getEnd() == null)) {
-
-				if (config.getBranch() != null) {
-					printLimitedRange(repo.getRepoStatistics()
-							.getBranchInfoFor(config.getBranch()));
+				if (config.getUrl().endsWith(".git")) {
+					analyzeAsGit();
 				} else {
-					printLimitedRange(repo.getRepoStatistics().getBranchInfos());
+					analyzeAsSVN();
 				}
 
-			} else {
-				out.println(repo.getRepoStatistics().toString(
-						config.shouldShowCommits()));
 			}
 
-			repo.close();
-
 		}
+
+	}
+
+	private void analyzeAsGit() throws GitAPIException {
+
+		UsernamePasswordCredentialsProvider cp = new UsernamePasswordCredentialsProvider(config
+				.getUsername(), config.getPassword());
+
+		GitRepo repo = new GitRepo(config.getUrl(), config.getBranch(), false, cp);
+		repo.sync(config.getBranch(), config.shouldGenerateStats(),
+				config.shouldUseCloc());
+
+		if (!(config.getStart() == null && config.getEnd() == null)) {
+
+			if (config.getBranch() != null) {
+				printLimitedRange(repo.getRepoStatistics().getBranchInfoFor(
+						config.getBranch()));
+			} else {
+				printLimitedRange(repo.getRepoStatistics().getBranchInfos());
+			}
+
+		} else {
+			out.println(repo.getRepoStatistics().toString(
+					config.shouldShowCommits()));
+		}
+
+		repo.close();
+
+	}
+	
+	/**
+	 * Treats the url as a svn repo
+	 * 
+	 * @throws SVNException
+	 */
+	private void analyzeAsSVN() throws SVNException {
+
+		SVNRepo repo = new SVNRepo(config.getUrl(), config.getBranch());
+		
+		out.println(repo.getRepoStatistics());
 
 	}
 

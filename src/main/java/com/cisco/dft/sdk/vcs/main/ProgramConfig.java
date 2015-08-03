@@ -2,6 +2,8 @@ package com.cisco.dft.sdk.vcs.main;
 
 import java.util.Date;
 
+import com.google.common.base.Predicate;
+
 /**
  * Simple pojo used to define Application config and context.
  * 
@@ -10,9 +12,49 @@ import java.util.Date;
  */
 public class ProgramConfig {
 	
+	private final static Predicate<ProgramConfig> DEFAULT_VALIDITY = new Predicate<ProgramConfig>() {
+
+		@Override
+		public boolean apply(ProgramConfig input) {
+			return true;
+		}
+		
+	};
+	
 	/**Actions the application can perform*/
 	public static enum Action {
-		ANALYZE, HELP, INIT, DEBUG
+		
+		ANALYZE("Gets statistics for a remote repo. Usage: analyze <url>", new Predicate<ProgramConfig>() {
+
+			@Override
+			public boolean apply(ProgramConfig input) {
+				return input.url != null;
+			}
+			
+		}), HELP("Shows usage for an action."), 
+		INIT("Does a test initialization of cloc"), 
+		DEBUG("Runs with preset debug params");
+		
+		private final String usage;
+		
+		private final Predicate<ProgramConfig> validity;
+		
+		Action(String usage) {
+			this(usage, DEFAULT_VALIDITY);
+		}
+		
+		Action(String usage, Predicate<ProgramConfig> requirements) {
+			this.usage = usage;
+			this.validity = requirements;
+		}
+		
+		public String getUsage() {
+			return usage;
+		}
+		
+		public boolean isValid(ProgramConfig params) {
+			return validity.apply(params);
+		}
 	}
 	
 	/**Pre-set config for an INIT action. Useful for testing*/
@@ -52,6 +94,10 @@ public class ProgramConfig {
 	private boolean showVersion;
 	
 	private boolean noCommits;
+	
+	private boolean forceGit;
+	
+	private boolean forceSvn;
 
 	private Date start;
 
@@ -68,6 +114,14 @@ public class ProgramConfig {
 		this.useCloc = useCloc;
 	}
 	
+	public boolean shouldForceGit() {
+		return forceGit;
+	}
+
+	public boolean shouldForceSvn() {
+		return forceSvn;
+	}
+
 	public boolean shouldShowCommits() {
 		return !noCommits;
 	}
@@ -132,6 +186,8 @@ public class ProgramConfig {
 		final boolean version = parser.getBoolean("v");
 		final boolean debug = parser.getBoolean("d");
 		final boolean noCommits = parser.getBoolean("nocommits");
+		final boolean forceGit = parser.getBoolean("forceGit") || parser.getBoolean("g");
+		final boolean forceSvn = parser.getBoolean("forceSvn") || parser.getBoolean("s");
 		final Date start = parser.getLongAsType("start", Date.class);
 		final Date end = parser.getLongAsType("end", Date.class);
 
@@ -141,6 +197,8 @@ public class ProgramConfig {
 		config.debug = debug;
 		config.showVersion = version;
 		config.noCommits = noCommits;
+		config.forceGit = forceGit;
+		config.forceSvn = forceSvn;
 
 		return config;
 	}

@@ -49,7 +49,7 @@ public final class GitRepo extends Repo {
 	 * Default directory relative to the system temp folder to store the
 	 * repository locally so metrics can be pulled from it.
 	 */
-	private static final String DEFAULT_TEMP_CLONE_DIRECTORY = "git-analytics/repositories/";
+	private static final String DEFAULT_TEMP_CLONE_DIRECTORY = DEFAULT_DIRECTORY_BASE + "git/";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(GitRepo.class
 			.getSimpleName());
@@ -58,7 +58,7 @@ public final class GitRepo extends Repo {
 
 	private final File theDirectory;
 
-	private Git theRepo;
+	Git theRepo;
 
 	private UsernamePasswordCredentialsProvider cp;
 
@@ -209,7 +209,7 @@ public final class GitRepo extends Repo {
 	private void initExistingRepo(String branch, boolean value) throws GitAPIException, IOException {
 
 		theRepo = Git.open(theDirectory);
-		repoInfo.setRepo(theRepo);
+		repoInfo.setRepo(this);
 
 		LOGGER.info("Found cached version of " + repoInfo.getName());
 
@@ -391,7 +391,7 @@ public final class GitRepo extends Repo {
 	}
 
 	private void updateRepoInfo(String branch, DiffFormatter df, boolean useCloc) throws IOException {
-		repoInfo.getBranchInfo(branch).getHistory(getNewestCommit(branch), df,
+		repoInfo.getBranchInfo(branch).getHistoryGit(getNewestCommit(branch), df,
 				useCloc);
 	}
 
@@ -524,7 +524,7 @@ public final class GitRepo extends Repo {
 
 		theRepo = command.call();
 
-		repoInfo.setRepo(theRepo);
+		repoInfo.setRepo(this);
 
 		LOGGER.info("Clone successful.");
 

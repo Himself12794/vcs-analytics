@@ -85,7 +85,7 @@ public class AuthorCommit implements DateLimitedData {
 
 	@Override
 	public String toString() {
-		String value = "Commit id: " + id;
+		String value = "Id: " + id;
 		value += ", Timestamp: " + timestamp;
 		value += ", Changed Files: " + changedFiles;
 		value += ", Additions: " + additions;

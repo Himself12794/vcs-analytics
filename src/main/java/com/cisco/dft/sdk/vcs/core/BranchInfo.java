@@ -13,6 +13,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRefNameException;
 import org.eclipse.jgit.api.errors.RefAlreadyExistsException;
 import org.eclipse.jgit.api.errors.RefNotFoundException;
+import org.eclipse.jgit.api.errors.WrongRepositoryStateException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.errors.CorruptObjectException;
@@ -57,19 +58,19 @@ public class BranchInfo extends HistoryViewer {
 
 	private final Map<String, AuthorInfo> authorInfo;
 
-	BranchInfo(Git theRepo) {
+	BranchInfo(Repo theRepo) {
 		this("Unknown", theRepo, "", new Date());
 	}
 
-	BranchInfo(String branch, Git theRepo) {
+	BranchInfo(String branch, Repo theRepo) {
 		this(branch, theRepo, "", new Date());
 	}
 
-	private BranchInfo(final String branch, Git theRepo, String id, Date date) {
+	private BranchInfo(final String branch, Repo theRepo, String id, Date date) {
 		this(branch, theRepo, id, date, new HashMap<Language, Integer>(), new HashMap<String, AuthorInfo>(), new ClocData());
 	}
 
-	private BranchInfo(final String branch, Git theRepo, String id, Date date,
+	private BranchInfo(final String branch, Repo theRepo, String id, Date date,
 			final Map<Language, Integer> languageCount,
 			final Map<String, AuthorInfo> authorInfo, ClocData data) {
 		super(branch, theRepo, id, date, languageCount, data);
@@ -235,23 +236,31 @@ public class BranchInfo extends HistoryViewer {
 	 */
 	private HistoryViewer lookupHistoryFor(String commitId, DiffFormatter df, boolean useCloc) throws IOException, GitAPIException {
 
-		RevWalk rw = new RevWalk(theRepo.getRepository());
-		RevCommit current = rw.parseCommit(theRepo.getRepository().resolve(
+		@SuppressWarnings("resource")
+		Git git = (theRepo instanceof GitRepo) ? ((GitRepo)this.theRepo).theRepo : null; 
+		
+		if (git == null) { 
+			throw new WrongRepositoryStateException("Tried to treat the repository as a GitRepo, when it is not");
+		}
+		
+		
+		RevWalk rw = new RevWalk(git.getRepository());
+		RevCommit current = rw.parseCommit(git.getRepository().resolve(
 				Constants.HEAD));
 		RevCommit rc = rw
-				.parseCommit(theRepo.getRepository().resolve(commitId));
+				.parseCommit(git.getRepository().resolve(commitId));
 
 		rw.close();
 
-		theRepo.checkout().setCreateBranch(false).setName(commitId).call();
+		git.checkout().setCreateBranch(false).setName(commitId).call();
 
 		Date date = new Date(rc.getCommitTime() * 1000L);
 
 		BranchInfo hv = new BranchInfo(branch, theRepo, rc.getId().name(), date);
 
-		hv.getHistory(rc, df, useCloc);
+		hv.getHistoryGit(rc, df, useCloc);
 
-		theRepo.checkout().setCreateBranch(false).setName(current.name());
+		git.checkout().setCreateBranch(false).setName(current.name());
 		HistoryViewer history = new HistoryViewer(branch, theRepo, commitId, date);
 		history.usesCLOCStats = hv.usesCLOCStats;
 		history.data.getLanguageStatsMutable().putAll(
@@ -262,8 +271,13 @@ public class BranchInfo extends HistoryViewer {
 
 	}
 
-	void getHistory(RevCommit rc, DiffFormatter df, boolean useCloc) throws IncorrectObjectTypeException, IOException {
-
+	void getHistoryGit(RevCommit rc, DiffFormatter df, boolean useCloc) throws IncorrectObjectTypeException, IOException {
+		
+		@SuppressWarnings("resource")
+		Git git = (theRepo instanceof GitRepo) ? ((GitRepo)this.theRepo).theRepo : null; 
+		
+		if (git == null) { return; }
+		
 		this.resetInfo();
 
 		if (ClocService.canGetCLOCStats() && useCloc) {
@@ -271,7 +285,7 @@ public class BranchInfo extends HistoryViewer {
 			LOGGER.debug("Will use cloc to analyze");
 
 			try {
-				ClocData theData = ClocService.getClocStatistics(theRepo
+				ClocData theData = ClocService.getClocStatistics(git
 						.getRepository().getWorkTree());
 				this.getData().imprint(theData);
 				usesCLOCStats = true;
@@ -289,7 +303,7 @@ public class BranchInfo extends HistoryViewer {
 		Map<Language, LangStats> langStats = this.getData()
 				.getLanguageStatsMutable();
 
-		ObjectReader reader = theRepo.getRepository().newObjectReader();
+		ObjectReader reader = git.getRepository().newObjectReader();
 
 		EmptyTreeIterator oldTreeIter = new EmptyTreeIterator();
 		oldTreeIter.reset();
@@ -298,7 +312,7 @@ public class BranchInfo extends HistoryViewer {
 		ObjectId newTree = rc.getTree();
 		newTreeIter.reset(reader, newTree);
 
-		df.setRepository(theRepo.getRepository());
+		df.setRepository(git.getRepository());
 		List<DiffEntry> entries = df.scan(oldTreeIter, newTreeIter);
 
 		Header header = this.getData().getHeader();

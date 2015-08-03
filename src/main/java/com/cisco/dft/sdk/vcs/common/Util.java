@@ -6,9 +6,9 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Range;
-
 import ch.qos.logback.classic.Level;
+
+import com.google.common.collect.Range;
 
 /**
  * Utilities for use throughout the rest of the Application
@@ -50,7 +50,7 @@ public final class Util {
 	 */
 	public static Range<Date> getAppropriateRange(Date start, Date end) {
 
-		if (bothNull(start, end)) {
+		if (bothNotNull(start, end)) {
 			return nonNullComparison(start, end);
 		} else if (firstOnlyNull(start, end)) {
 			return Range.atMost(end);
@@ -62,7 +62,14 @@ public final class Util {
 
 	}
 	
-	private static Range<Date> nonNullComparison(Date start, Date end) {
+	/**
+	 * This checks the range and swaps them if they were given in the wrong order.
+	 * 
+	 * @param start
+	 * @param end
+	 * @return
+	 */
+	public static Range<Date> nonNullComparison(Date start, Date end) {
 
 		final int c = start.compareTo(end);
 
@@ -76,7 +83,7 @@ public final class Util {
 		
 	}
 	
-	public static boolean bothNull(Object arg0, Object arg1) {
+	public static boolean bothNotNull(Object arg0, Object arg1) {
 		return arg0 != null && arg1 != null;
 	}
 	

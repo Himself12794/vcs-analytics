@@ -6,15 +6,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
-import org.eclipse.jgit.api.Git;
-
 import com.google.common.collect.Maps;
 
 public class RepoInfo {
 	
 	private String name; 
 	
-	private Git theRepo;
+	private Repo theRepo;
 
 	private final Map<String, BranchInfo> branches = Maps.newHashMap();
 	
@@ -117,7 +115,7 @@ public class RepoInfo {
 		return branches.values().toArray(new BranchInfo[branches.values().size()]);
 	}
 	
-	void setRepo(Git theRepo) {
+	void setRepo(Repo theRepo) {
 		this.theRepo = theRepo;
 	}
 	

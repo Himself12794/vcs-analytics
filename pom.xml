@@ -5,7 +5,7 @@
 
 	<groupId>com.cisco.dft.sdk</groupId>
 	<artifactId>source-code-analytics-sdk</artifactId>
-	<version>0.0.1</version>
+	<version>1.0</version>
 	<name>source-code-analytics-sdk</name>
 	<description>Source Code Analytics SDK</description>
 
@@ -18,11 +18,11 @@
 	</properties>
 	
   	<dependencies>
-  		<dependency>
-			<groupId>org.tmatesoft.svnkit</groupId>
-			<artifactId>svnkit</artifactId>
-			<version>1.8.10</version>
-		</dependency>
+		<dependency>
+            <groupId>org.tmatesoft.svnkit</groupId>
+            <artifactId>svnkit</artifactId>
+            <version>1.8.5</version>
+        </dependency>
 		<dependency>
 		    <groupId>com.google.guava</groupId>
 		    <artifactId>guava</artifactId>

@@ -13,6 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tmatesoft.svn.core.SVNException;
 
 import ch.qos.logback.classic.Level;
 
@@ -79,12 +80,13 @@ public class RepoUtilsTest {
 		
 		test3.equals(Repo.guessName("http://my-project.git"));
 		test3.equals(Repo.guessName("http://my-project"));
+		test3.equals(Repo.guessName("http:\\my-project"));
 		
 		
 	}
 	
 	@Test
-	public void testApp() throws GitAPIException {
+	public void testApp() throws GitAPIException, SVNException {
 		
 		LOGGER.debug("Testing init feature. (will log errors if system does not allow execute permissions)");
 		Application.setConfiguration(ProgramConfig.INIT).execute();

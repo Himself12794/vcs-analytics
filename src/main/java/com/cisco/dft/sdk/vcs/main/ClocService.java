@@ -44,7 +44,7 @@ public final class ClocService {
 	public static final File SRC_DIR = new File(Util.class.getClassLoader()
 			.getResource(CLOC_DIR).getPath());
 
-	public static final File BIN_DIR = new File(FileUtils.getTempDirectory(), "git-analytics/" + CLOC_DIR);
+	public static final File BIN_DIR = new File(FileUtils.getTempDirectory(), "vcs-analytics/" + CLOC_DIR);
 
 	public static final String CLOC_EXE = "cloc-1.60.exe";
 
@@ -54,7 +54,9 @@ public final class ClocService {
 	 * Initializes CLOC use. This must be called first, or CLOC will not be able
 	 * to be used, regardless of installations or access permissions.
 	 */
-	static void init() {
+	public static void init() {
+		
+		if (init) { return; }
 		
 		if (isClocInstalled()) {
 			
@@ -81,7 +83,7 @@ public final class ClocService {
 						FileUtils.forceMkdir(BIN_DIR);
 		
 						LOGGER.debug("Extracting "
-								+ getFileForOS(true).getAbsolutePath() + " to "
+								+ getFileForOS(true).getName() + " to "
 								+ getFileForOS(false).getAbsolutePath());
 		
 						InputStream link = (Util.class.getResourceAsStream("/"
@@ -188,9 +190,11 @@ public final class ClocService {
 	 */
 	@SuppressWarnings("unchecked")
 	public static ClocData getClocStatistics(File file) throws IOException {
-
+		
 		if (!canGetCLOCStats()) { throw new IOException("Cannot run CLOC"); }
 
+		LOGGER.debug("Getting cloc statistics for directory " + file.getAbsolutePath());
+		
 		String yamlStr = getCLOCDataAsYaml(file);
 		
 		Map<Language, LangStats> langStats = Maps.newHashMap();

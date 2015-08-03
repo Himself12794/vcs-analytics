@@ -56,6 +56,18 @@ public class AuthorInfo extends RecursiveDateLimitedDataContainer<AuthorCommit> 
 
 		return this;
 	}
+	
+	@Override
+	public boolean add(AuthorCommit ac) {
+		
+		for (AuthorCommit a : this.data) {
+			if (a.getTimestamp().equals(ac.getTimestamp())) {
+				return false;
+			}
+		}
+		
+		return super.add(ac);
+	}
 
 	/**
 	 * Gets a list of commits this author has made. Use
