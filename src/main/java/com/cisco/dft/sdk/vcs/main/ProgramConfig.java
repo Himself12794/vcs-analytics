@@ -11,67 +11,25 @@ import com.google.common.base.Predicate;
  *
  */
 public class ProgramConfig {
-	
-	private final static Predicate<ProgramConfig> DEFAULT_VALIDITY = new Predicate<ProgramConfig>() {
 
-		@Override
-		public boolean apply(ProgramConfig input) {
-			return true;
-		}
-		
-	};
-	
-	/**Actions the application can perform*/
-	public static enum Action {
-		
-		ANALYZE("Gets statistics for a remote repo. Usage: analyze <url>", new Predicate<ProgramConfig>() {
-
-			@Override
-			public boolean apply(ProgramConfig input) {
-				return input.url != null;
-			}
-			
-		}), HELP("Shows usage for an action."), 
-		INIT("Does a test initialization of cloc"), 
-		DEBUG("Runs with preset debug params");
-		
-		private final String usage;
-		
-		private final Predicate<ProgramConfig> validity;
-		
-		Action(String usage) {
-			this(usage, DEFAULT_VALIDITY);
-		}
-		
-		Action(String usage, Predicate<ProgramConfig> requirements) {
-			this.usage = usage;
-			this.validity = requirements;
-		}
-		
-		public String getUsage() {
-			return usage;
-		}
-		
-		public boolean isValid(ProgramConfig params) {
-			return validity.apply(params);
-		}
-	}
-	
-	/**Pre-set config for an INIT action. Useful for testing*/
-	static final ProgramConfig INIT = ProgramConfig.parseArgs("init", "--nostats", "--builtin-analysis");
+	/** Pre-set config for an INIT action. Useful for testing */
+	static final ProgramConfig INIT = ProgramConfig.parseArgs("init",
+			"--nostats", "--builtin-analysis");
 
 	static final ProgramConfig HELP = ProgramConfig.parseArgs("help");
 
 	/** A debug test configuration */
 	static final ProgramConfig DEBUG = ProgramConfig.parseArgs("analyze", "-d",
-			"https://github.com/Himself12794/powersAPI.git", "--branch=master", "--nocommits");
+			"https://github.com/Himself12794/powersAPI.git", "--branch=master",
+			"--nocommits");
 
 	/**
 	 * Just like {@link ProgramConfig.DEBUG}, but with debug logging off for
 	 * unit tests
 	 */
 	static final ProgramConfig TEST = ProgramConfig.parseArgs("analyze",
-			"https://github.com/Himself12794/powersAPI.git", "--branch=master", "--start=1234567891000", "--end=1234867891000");
+			"https://github.com/Himself12794/powersAPI.git", "--branch=master",
+			"--start=1234567891000", "--end=1234867891000");
 
 	static final ProgramConfig DEFAULT = HELP;
 
@@ -92,11 +50,11 @@ public class ProgramConfig {
 	private boolean debug;
 
 	private boolean showVersion;
-	
+
 	private boolean noCommits;
-	
+
 	private boolean forceGit;
-	
+
 	private boolean forceSvn;
 
 	private Date start;
@@ -113,7 +71,7 @@ public class ProgramConfig {
 		this.shouldGenerateStats = generateStats;
 		this.useCloc = useCloc;
 	}
-	
+
 	public boolean shouldForceGit() {
 		return forceGit;
 	}
@@ -186,8 +144,10 @@ public class ProgramConfig {
 		final boolean version = parser.getBoolean("v");
 		final boolean debug = parser.getBoolean("d");
 		final boolean noCommits = parser.getBoolean("nocommits");
-		final boolean forceGit = parser.getBoolean("forceGit") || parser.getBoolean("g");
-		final boolean forceSvn = parser.getBoolean("forceSvn") || parser.getBoolean("s");
+		final boolean forceGit = parser.getBoolean("forceGit")
+				|| parser.getBoolean("g");
+		final boolean forceSvn = parser.getBoolean("forceSvn")
+				|| parser.getBoolean("s");
 		final Date start = parser.getLongAsType("start", Date.class);
 		final Date end = parser.getLongAsType("end", Date.class);
 
@@ -238,6 +198,54 @@ public class ProgramConfig {
 				+ (start == null ? "first-commit" : start) + ",End="
 				+ (end == null ? "last-commit" : end) + ",Debug=" + debug;
 		return value;
+	}
+
+	/** Actions the application can perform */
+	public static enum Action {
+
+		ANALYZE("Gets statistics for a remote repo. Usage: analyze <url>", new Predicate<ProgramConfig>() {
+
+			@Override
+			public boolean apply(ProgramConfig input) {
+				return input == null ? false : input.url != null;
+			}
+
+		}), HELP("Shows usage for an action."), INIT("Does a test initialization of cloc"), DEBUG("Runs with preset debug params");
+
+		private final String usage;
+
+		private final Predicate<ProgramConfig> validity;
+
+		Action(String usage) {
+			this(usage, new Predicate<ProgramConfig>() {
+
+				@Override
+				public boolean apply(ProgramConfig input) {
+					return true;
+				}
+
+			});
+		}
+
+		Action(String usage, Predicate<ProgramConfig> requirements) {
+			this.usage = usage;
+			this.validity = requirements;
+		}
+
+		public String getUsage() {
+			return usage;
+		}
+
+		/**
+		 * Checks whether or not the command is valid using the given
+		 * configuration
+		 * 
+		 * @param params
+		 * @return
+		 */
+		public boolean isValid(ProgramConfig params) {
+			return validity.apply(params);
+		}
 	}
 
 }

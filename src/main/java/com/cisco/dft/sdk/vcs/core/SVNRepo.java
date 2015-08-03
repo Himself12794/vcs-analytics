@@ -122,7 +122,7 @@ public class SVNRepo extends Repo {
 		bi.resetInfo();
 
 		updateRepoInfo(bi);
-		//updateAuthorInfo(bi);
+		updateAuthorInfo(bi);
 
 	}
 
@@ -145,7 +145,7 @@ public class SVNRepo extends Repo {
 
 	}
 
-	@SuppressWarnings({ "unchecked", "unused" })
+	@SuppressWarnings({ "unchecked" })
 	private void updateAuthorInfo(BranchInfo bi) throws SVNException {
 
 		final long startRevision = 0L;
@@ -190,8 +190,6 @@ public class SVNRepo extends Repo {
 		}
 
 		doDiff(rev1, rev2, baos, files);
-
-		// System.out.println(baos.toString());
 
 		for (String line : baos.toString().split("\n")) {
 			Matcher m = Pattern.compile("@@(.*?)@@").matcher(line);

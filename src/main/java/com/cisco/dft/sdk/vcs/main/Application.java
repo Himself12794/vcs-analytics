@@ -132,19 +132,15 @@ public final class Application {
 	 * Runs with some debug data and preset options and parameters.
 	 * 
 	 * @throws GitAPIException
+	 * @throws SVNException 
 	 */
-	private void debug() throws GitAPIException {
-		// setConfig(ProgramConfig.DEBUG).execute();
-		try {
+	private void debug() throws GitAPIException, SVNException {
+		
 			init();
 			Util.setLoggingLevel(Level.DEBUG);
 			SVNRepo repo = new SVNRepo(config.getUrl());
 			repo.sync(config.getBranch() == null ? SVNRepo.TRUNK : config
 					.getBranch());
-		} catch (SVNException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
 	private void analyze() throws GitAPIException, SVNException {
