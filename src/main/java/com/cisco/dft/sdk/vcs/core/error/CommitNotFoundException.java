@@ -1,4 +1,4 @@
-package com.cisco.dft.sdk.vcs.common;
+package com.cisco.dft.sdk.vcs.core.error;
 
 public class CommitNotFoundException extends NullPointerException {
 

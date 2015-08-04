@@ -30,12 +30,12 @@ import org.eclipse.jgit.treewalk.EmptyTreeIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.cisco.dft.sdk.vcs.common.CodeSniffer;
-import com.cisco.dft.sdk.vcs.common.CodeSniffer.Language;
-import com.cisco.dft.sdk.vcs.common.SortMethod;
-import com.cisco.dft.sdk.vcs.common.Util;
+import com.cisco.dft.sdk.vcs.common.util.CodeSniffer;
+import com.cisco.dft.sdk.vcs.common.util.CodeSniffer.Language;
+import com.cisco.dft.sdk.vcs.common.util.Util;
 import com.cisco.dft.sdk.vcs.core.ClocData.Header;
 import com.cisco.dft.sdk.vcs.core.ClocData.LangStats;
+import com.cisco.dft.sdk.vcs.core.util.SortMethod;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 
@@ -50,8 +50,6 @@ public class BranchInfo extends HistoryViewer {
 
 	private static final Logger LOGGER = LoggerFactory
 			.getLogger(BranchInfo.class.getSimpleName());
-
-	private int commitCount;
 
 	private String mostRecentLoggedCommit;
 
@@ -79,10 +77,6 @@ public class BranchInfo extends HistoryViewer {
 
 	void resetInfo() {
 
-		for (Language lang : languageCount.keySet()) {
-			languageCount.put(lang, 0);
-		}
-
 		this.theDate = new Date();
 
 		setFileCount(0);
@@ -90,16 +84,6 @@ public class BranchInfo extends HistoryViewer {
 
 		data.reset();
 
-	}
-
-	void incrementCommitCount(int x) {
-
-		commitCount += x;
-
-	}
-
-	public int getCommitCount() {
-		return commitCount;
 	}
 
 	/**
@@ -323,8 +307,6 @@ public class BranchInfo extends HistoryViewer {
 			LangStats langStat = Util.putIfAbsent(langStats, lang,
 					new LangStats(lang));
 
-			incrementLanguage(lang, 1);
-
 			incrementFileCount(1);
 
 			langStat.setnFiles(langStat.getnFiles() + 1);
@@ -340,6 +322,16 @@ public class BranchInfo extends HistoryViewer {
 
 		}
 
+	}
+	
+	public int getCommitCount() {
+		int count = 0;
+		
+		for (AuthorInfo ai : authorInfo.values()) {
+			count += ai.getCommitCount();
+		}
+		
+		return count;
 	}
 
 	ClocData getData() {
@@ -357,6 +349,9 @@ public class BranchInfo extends HistoryViewer {
 	public String toString(boolean showCommits) {
 
 		StringBuilder value = new StringBuilder(super.toString());
+		value.append("\nCommit Count: ");
+		value.append(getCommitCount());
+		value.append("/n");
 
 		if (showCommits) {
 			value.append("\n");

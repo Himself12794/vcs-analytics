@@ -154,8 +154,6 @@ public class SVNRepo extends Repo {
 		Collection<SVNLogEntry> logEntries = theRepo.log(new String[] { temp },
 				null, startRevision, theRepo.getLatestRevision(), true, true);
 
-		bi.incrementCommitCount(logEntries.size());
-
 		for (SVNLogEntry leEntry : logEntries) {
 
 			List<String> paths = Lists.newArrayList();

@@ -10,13 +10,12 @@ import org.tmatesoft.svn.core.SVNException;
 
 import ch.qos.logback.classic.Level;
 
-import com.cisco.dft.sdk.vcs.common.Util;
+import com.cisco.dft.sdk.vcs.common.util.Util;
 import com.cisco.dft.sdk.vcs.core.AuthorInfoBuilder;
 import com.cisco.dft.sdk.vcs.core.BranchInfo;
 import com.cisco.dft.sdk.vcs.core.ClocService;
 import com.cisco.dft.sdk.vcs.core.GitRepo;
 import com.cisco.dft.sdk.vcs.core.SVNRepo;
-import com.cisco.dft.sdk.vcs.main.ProgramConfig.Action;
 
 /**
  * The application class. For total SDK abstraction, the library is still valid

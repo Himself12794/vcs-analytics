@@ -1,4 +1,4 @@
-package com.cisco.dft.sdk.vcs.common;
+package com.cisco.dft.sdk.vcs.common.util;
 
 import java.util.Date;
 import java.util.Map;
@@ -26,9 +26,9 @@ public final class Util {
 	 * Enables debug logging
 	 */
 	public static void setLoggingLevel(Level level) {
-		LOGGER.info("Enabling " + level.toString() + " logging");
 		ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
 	    root.setLevel(level);
+		LOGGER.debug("Enabled " + level.toString() + " logging");
 	}
 	
 	/**

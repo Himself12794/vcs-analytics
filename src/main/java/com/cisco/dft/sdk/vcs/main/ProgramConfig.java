@@ -7,8 +7,6 @@ import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Predicate;
-
 /**
  * Simple pojo used to define Application config and context.
  * 
@@ -202,8 +200,8 @@ public class ProgramConfig {
 				+ "\n      --builtin-analysis (Indicates to use builtin stat analysis)"
 				+ "\n      --username=<username> (Used for access to private repos)"
 				+ "\n      --password=<password> (Used for access to private repos)"
-				+ "\n      --start=<epoch-time> (Epoch time, in millis, to limit start date)"
-				+ "\n      --end=<epoch-time> (Epoch time, in millis, to limit end date)"
+				+ "\n      --start=<epoch-time> (Format: YYYY-MM-DDTHH:MM:SS+HH:MM)"
+				+ "\n      --end=<epoch-time> (Format: YYYY-MM-DDTHH:MM:SS+HH:MM)"
 				+ "\n      --nocommits (Indicates that only language information should be shown)"
 				+ "\n      -s (forces the application to treat the url as a SVN repo"
 				+ "\n      -g (forces the application to treat the url as a Git repo"
@@ -226,54 +224,6 @@ public class ProgramConfig {
 				+ (start == null ? "first-commit" : start) + ",End="
 				+ (end == null ? "last-commit" : end) + ",Debug=" + debug;
 		return value;
-	}
-
-	/** Actions the application can perform */
-	public static enum Action {
-
-		ANALYZE("Gets statistics for a remote repo. Usage: analyze <url>\n", new Predicate<ProgramConfig>() {
-
-			@Override
-			public boolean apply(ProgramConfig input) {
-				return input == null ? false : input.url != null;
-			}
-
-		}), HELP("Shows usage for an action."), INIT("Does a test initialization of cloc"), DEBUG("Runs with preset debug params");
-
-		private final String usage;
-
-		private final Predicate<ProgramConfig> validity;
-
-		Action(String usage) {
-			this(usage, new Predicate<ProgramConfig>() {
-
-				@Override
-				public boolean apply(ProgramConfig input) {
-					return true;
-				}
-
-			});
-		}
-
-		Action(String usage, Predicate<ProgramConfig> requirements) {
-			this.usage = usage;
-			this.validity = requirements;
-		}
-
-		public String getUsage() {
-			return usage;
-		}
-
-		/**
-		 * Checks whether or not the command is valid using the given
-		 * configuration
-		 * 
-		 * @param params
-		 * @return
-		 */
-		public boolean isValid(ProgramConfig params) {
-			return validity.apply(params);
-		}
 	}
 
 }

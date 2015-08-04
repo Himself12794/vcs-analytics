@@ -4,10 +4,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.cisco.dft.sdk.vcs.common.CodeSniffer.Language;
-import com.cisco.dft.sdk.vcs.common.Util;
+import com.cisco.dft.sdk.vcs.common.util.CodeSniffer.Language;
+import com.cisco.dft.sdk.vcs.common.util.Util;
 import com.cisco.dft.sdk.vcs.core.ClocData.LangStats;
-import com.google.common.collect.Maps;
 
 public class HistoryViewer {
 
@@ -22,8 +21,6 @@ public class HistoryViewer {
 	protected final String branch;
 
 	protected final ClocData data;
-
-	protected final Map<Language, Integer> languageCount;
 
 	HistoryViewer(Repo theRepo, String ac, Date date) {
 		this("Unknown", theRepo, ac, date);
@@ -40,7 +37,6 @@ public class HistoryViewer {
 		this.branch = branch;
 		this.history = ac;
 		this.theDate = date;
-		this.languageCount = languageCount;
 		this.theRepo = theRepo;
 		this.data = data;
 
@@ -114,32 +110,6 @@ public class HistoryViewer {
 
 	public String getLastCommitId() {
 		return history;
-	}
-
-	void incrementLanguage(Language lang, int x) {
-
-		if (!languageCount.containsKey(lang)) {
-
-			languageCount.put(lang, x);
-
-		} else {
-
-			languageCount.put(lang, languageCount.get(lang) + x);
-
-		}
-
-	}
-
-	/**
-	 * Use {@link HistoryViewer#getLangStatistics()} instead, this information
-	 * is not near as precise as the old stat gathering.
-	 * 
-	 * @deprecated
-	 * @return the map of language counts for use with iteration
-	 */
-	@Deprecated
-	public Map<Language, Integer> getLangCountMap() {
-		return Maps.newHashMap(languageCount);
 	}
 
 	/**

@@ -5,8 +5,8 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-import com.cisco.dft.sdk.vcs.common.DateLimitedDataContainer;
-import com.cisco.dft.sdk.vcs.common.SortMethod;
+import com.cisco.dft.sdk.vcs.common.util.DateLimitedDataContainer;
+import com.cisco.dft.sdk.vcs.core.util.SortMethod;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 
@@ -104,6 +104,16 @@ public class AuthorInfoBuilder {
 	 */
 	public String getBranchName() { return BranchInfo.branchTrimmer(branch); }
 	
+	public int getTotalCommitCount() {
+		int count = 0;
+		
+		for (AuthorInfo ai : authorInfo.getData()) {
+			count += ai.getCommitCount();
+		}
+		
+		return count;
+	}
+	
 	/**
 	 * Limit author information returned to those who have committed within given time frame.
 	 * 
@@ -141,6 +151,9 @@ public class AuthorInfoBuilder {
 		value.append(" - ");
 		value.append((authorInfo.getDateRange().hasUpperBound() ? authorInfo.getDateRange().upperEndpoint() : "most-recent-commit"));
 		value.append("\n");
+		value.append("Total Commit Count: ");
+		value.append(getTotalCommitCount());
+		value.append("\n\n");
 		
 		for (AuthorInfo ai : authorInfo.getData()) { value.append(ai.toString()); }
 		

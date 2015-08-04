@@ -1,4 +1,4 @@
-package com.cisco.dft.sdk.vcs.common;
+package com.cisco.dft.sdk.vcs.common.util;
 
 /**
  * Borrowed from Mekong.com. Detects OS type.

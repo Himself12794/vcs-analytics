@@ -1,4 +1,4 @@
-package com.cisco.dft.sdk.vcs.common;
+package com.cisco.dft.sdk.vcs.common.util;
 
 import java.io.File;
 import java.util.Map;
@@ -22,61 +22,73 @@ public final class CodeSniffer {
 	}
 
 	/**
-	 * Representation of many common programming languages. 
-	 * Made with reference to <a href="http://cloc.sourceforge.net">CLOC Sourceforge</a>
+	 * Representation of many common programming languages. Made with reference
+	 * to <a href="http://cloc.sourceforge.net">CLOC Sourceforge</a>
 	 * 
-	 * There are two different types of languages as classified by this: Primary and
-	 * Secondary. Refer to {@link LangType}
+	 * There are two different types of languages as classified by this: Primary
+	 * and Secondary. Refer to {@link LangType}
 	 * 
 	 * @author phwhitin
 	 *
 	 */
 	public static enum Language {
-		
+
 		C, CPP, CSS, ABAP, ACTIONSCRIPT, ADA, ADSO_IDSM, AMPLE, ANT,
-		APEX_TRIGGER, ARDUINO_SKETCH, ASP, ASPdotNET, ASSEMBLY, AUTOHOTKEY, AWK, 
-		/**BASH*/BOURNE_AGAIN_SHELL, /**SH*/BOURNE_AGAIN, C_SHELL, CSHARP, C_CPP_HEADER, CCS, CLOJURE, CLOJURESCRIPT,
-		CMAKE, COBOL, COFFEESCRIPT, COLDFUSION, COLDFUSION_CFSSCRIPT, CUDA, CYTHON, D_DTRACE, DAL, DART, DIFF, DITA,
-		DOS_BATCH, DTD, ECPP, ELIXER, ERB, ERLANG, EXPECT, FSHARP, FOCUS, FORTRAN_77, FORTRAN_90, FORTRAN_95, GO, GRAILS,
-		GROOVY, HAML, HANDLEBARS, HARBOUR, HASKELL, HLSL, HTML, IDL, IDL_QT_PROJECT_PROLOG, INSTALLSHIELD, JAVA, JAVASCRIPT,
-		JAVASERVER_FACES, JCL, JSON, JSP, KERMIT, KORN_SHELL, KOTLIN, LESS, LEX, LISP, LISP_JULIA, LISP_OPENCL, LIVELINK_OSCRIPT,
-		LUA, M4, MAKE, MATLAB, MAVEN, MODULA3, MSBUILD_SCRIPT, MUMPS, MUSTACHE, MXML, NANT_SCRIPT, NASTRAN_DMAP, OBJECTIVE_C,
-		OBJECTIVE_CPP, OCAML, ORACLE_FORMS, ORACLE_REPORTS, PASCAL, PASCAL_PUPPET, PATRAN_COMMAND_LANGUAGE, PERL, PERL_PROLOG,
-		PHP, PHP_PASCAL, PIG_LATIN, PL_I, POWERSHELL, PROLOG, PROTOCOL_BUFFERS, PURESCRIPT, PYTHON, QML, R, RACKET, RAZOR, 
-		REXX, ROBOTFRAMEWORK, RUBY, RUBY_HTML, RUST, SAS, SASS, SCALA, SED, SKILL, SKILLPP, SMARTY, SOFTBRIDGE_BASIC, 
-		SQL, SQL_DATA, SQL_STORED_PROCEDURE, STANDARD_ML, SWIFT, TCL_TK, TEAMCENTER_MET, MTH, TITANIUM_STYLE_SHEET, 
-		TYPESCRIPT, UNITY_PREFAB, VALA, VALA_HEADER, VELOCITY_TEMPLATE_LANGUAGE, VERILOG_SYSTEMVERILOG, VHDL, VIM_SCRIPT,
-		VISUAL_BASIC, VISUAL_FOX_PRO, VISUALFORCE_COMPONENT, VISUALFORCE_PAGE, WINDOWS_MESSAGE_FILE, WINDOWS_MODULE_DEFINITION, 
-		WINDOWS_RESOURCE_FILE, WIX_INCLUDE, WIX_SOURCE, WIX_STRING_LOCALIZATION, XAML, XBASE, XBASE_HEADER, XML, 
+		APEX_TRIGGER, ARDUINO_SKETCH, ASP, ASPdotNET, ASSEMBLY, AUTOHOTKEY,
+		AWK,
+		/** BASH */
+		BOURNE_AGAIN_SHELL, /** SH */
+		BOURNE_AGAIN, C_SHELL, CSHARP, C_CPP_HEADER, CCS, CLOJURE,
+		CLOJURESCRIPT, CMAKE, COBOL, COFFEESCRIPT, COLDFUSION,
+		COLDFUSION_CFSSCRIPT, CUDA, CYTHON, D_DTRACE, DAL, DART, DIFF, DITA,
+		DOS_BATCH, DTD, ECPP, ELIXER, ERB, ERLANG, EXPECT, FSHARP, FOCUS,
+		FORTRAN_77, FORTRAN_90, FORTRAN_95, GO, GRAILS, GROOVY, HAML,
+		HANDLEBARS, HARBOUR, HASKELL, HLSL, HTML, IDL, IDL_QT_PROJECT_PROLOG,
+		INSTALLSHIELD, JAVA, JAVASCRIPT, JAVASERVER_FACES, JCL, JSON, JSP,
+		KERMIT, KORN_SHELL, KOTLIN, LESS, LEX, LISP, LISP_JULIA, LISP_OPENCL,
+		LIVELINK_OSCRIPT, LUA, M4, MAKE, MATLAB, MAVEN, MODULA3,
+		MSBUILD_SCRIPT, MUMPS, MUSTACHE, MXML, NANT_SCRIPT, NASTRAN_DMAP,
+		OBJECTIVE_C, OBJECTIVE_CPP, OCAML, ORACLE_FORMS, ORACLE_REPORTS,
+		PASCAL, PASCAL_PUPPET, PATRAN_COMMAND_LANGUAGE, PERL, PERL_PROLOG, PHP,
+		PHP_PASCAL, PIG_LATIN, PL_I, POWERSHELL, PROLOG, PROTOCOL_BUFFERS,
+		PURESCRIPT, PYTHON, QML, R, RACKET, RAZOR, REXX, ROBOTFRAMEWORK, RUBY,
+		RUBY_HTML, RUST, SAS, SASS, SCALA, SED, SKILL, SKILLPP, SMARTY,
+		SOFTBRIDGE_BASIC, SQL, SQL_DATA, SQL_STORED_PROCEDURE, STANDARD_ML,
+		SWIFT, TCL_TK, TEAMCENTER_MET, MTH, TITANIUM_STYLE_SHEET, TYPESCRIPT,
+		UNITY_PREFAB, VALA, VALA_HEADER, VELOCITY_TEMPLATE_LANGUAGE,
+		VERILOG_SYSTEMVERILOG, VHDL, VIM_SCRIPT, VISUAL_BASIC, VISUAL_FOX_PRO,
+		VISUALFORCE_COMPONENT, VISUALFORCE_PAGE, WINDOWS_MESSAGE_FILE,
+		WINDOWS_MODULE_DEFINITION, WINDOWS_RESOURCE_FILE, WIX_INCLUDE,
+		WIX_SOURCE, WIX_STRING_LOCALIZATION, XAML, XBASE, XBASE_HEADER, XML,
 		XQUERY, XSD, XSLT, YACC, YAML, UNDEFINED;
-		
+
 		@Override
 		public String toString() {
-		
-			String value = name().replace('_', ' ').replace("SHARP", "#").replace("dot", ".");
-			
+
+			String value = name().replace('_', ' ').replace("SHARP", "#")
+					.replace("dot", ".");
+
 			if (this != PASCAL_PUPPET) {
 				value = value.replace("PP", "++");
 			}
-			
+
 			return value;
 		}
-		
+
 		@JsonCreator
 		public static Language getType(String name) {
 			String value = name;
-			value = value.toUpperCase().replaceAll("[ /-]", "_")
-					.toUpperCase().replace('+', 'P')
-					.replace("#", "SHARP")
+			value = value.toUpperCase().replaceAll("[ /-]", "_").toUpperCase()
+					.replace('+', 'P').replace("#", "SHARP")
 					.replace(".", "dot");
-			
+
 			try {
 				return Language.valueOf(value);
 			} catch (Exception e) {
 				Util.redirectLogError("Error occured in mapping", e);
 				return Language.UNDEFINED;
 			}
-			
+
 		}
 
 	}
@@ -160,5 +172,5 @@ public final class CodeSniffer {
 	public static Language detectLanguage(File file) {
 		return detectLanguage(file.getName());
 	}
-	
+
 }

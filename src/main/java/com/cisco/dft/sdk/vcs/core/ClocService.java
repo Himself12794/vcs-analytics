@@ -12,10 +12,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 
-import com.cisco.dft.sdk.vcs.common.CodeSniffer.Language;
-import com.cisco.dft.sdk.vcs.common.CommandLineUtils;
-import com.cisco.dft.sdk.vcs.common.OSType;
-import com.cisco.dft.sdk.vcs.common.Util;
+import com.cisco.dft.sdk.vcs.common.util.CodeSniffer.Language;
+import com.cisco.dft.sdk.vcs.common.util.CommandLineUtils;
+import com.cisco.dft.sdk.vcs.common.util.OSType;
+import com.cisco.dft.sdk.vcs.common.util.Util;
 import com.cisco.dft.sdk.vcs.core.ClocData.Header;
 import com.cisco.dft.sdk.vcs.core.ClocData.LangStats;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,12 +30,13 @@ import com.google.common.collect.Maps;
  */
 public final class ClocService {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ClocService.class.getSimpleName());
+	private static final Logger LOGGER = LoggerFactory
+			.getLogger(ClocService.class.getSimpleName());
 
 	private static boolean init = false;
-	
+
 	private static boolean clocInstalled = false;
-	
+
 	private static boolean perlInstalled = false;
 
 	private static final String CLOC_DIR = "cloc/";
@@ -43,7 +44,8 @@ public final class ClocService {
 	public static final File SRC_DIR = new File(Util.class.getClassLoader()
 			.getResource(CLOC_DIR).getPath());
 
-	public static final File BIN_DIR = new File(FileUtils.getTempDirectory(), "vcs-analytics/" + CLOC_DIR);
+	public static final File BIN_DIR = new File(FileUtils.getTempDirectory(), "vcs-analytics/"
+			+ CLOC_DIR);
 
 	public static final String CLOC_EXE = "cloc-1.60.exe";
 
@@ -54,44 +56,45 @@ public final class ClocService {
 	 * to be used, regardless of installations or access permissions.
 	 */
 	public static void init() {
-		
+
 		if (init) { return; }
-		
+
 		if (isClocInstalled()) {
-			
+
 			clocInstalled = true;
 			init = true;
-			
+
 		} else if (isPerlInstalled()) {
-			
+
 			perlInstalled = true;
 			init = true;
-			
+
 		} else {
-			
+
 			if (!OSType.getOSType().isWindows()) {
 				init = false;
 			} else {
-		
+
 				try {
-		
+
 					File file = getFileForOS(false);
 					if (!file.exists()) {
-		
-						LOGGER.debug("Making directory " + BIN_DIR.getAbsolutePath());
+
+						LOGGER.debug("Making directory "
+								+ BIN_DIR.getAbsolutePath());
 						FileUtils.forceMkdir(BIN_DIR);
-		
+
 						LOGGER.debug("Extracting "
 								+ getFileForOS(true).getName() + " to "
 								+ getFileForOS(false).getAbsolutePath());
-		
+
 						InputStream link = (Util.class.getResourceAsStream("/"
 								+ CLOC_DIR + getFileForOS(true).getName()));
 						Files.copy(link, file.getAbsoluteFile().toPath());
 					}
-		
+
 					init = true;
-					
+
 				} catch (IOException e) {
 					LOGGER.trace("cloc initialization failed", e);
 					LOGGER.warn("cloc initialization failed");
@@ -102,9 +105,10 @@ public final class ClocService {
 		}
 
 	}
-	
+
 	/**
 	 * Run with true to get classpath location, false for tmp directory
+	 * 
 	 * @param src
 	 * @return
 	 */
@@ -142,18 +146,20 @@ public final class ClocService {
 			return false;
 		}
 	}
-	
+
 	public static boolean isClocInstalled() {
-		
+
 		try {
-			LOGGER.debug( "Cloc version " + CommandLineUtils.executeCommand("cloc", "-version") + " detected on system.");
+			LOGGER.debug("Cloc version "
+					+ CommandLineUtils.executeCommand("cloc", "-version")
+							.replace("\n", " ") + "detected on system.");
 			return true;
 		} catch (IOException e) {
 			LOGGER.trace("Cloc not detected", e);
-			LOGGER.debug( "Cloc not detected" );
+			LOGGER.debug("Cloc not detected");
 			return false;
 		}
-		
+
 	}
 
 	/**
@@ -170,14 +176,19 @@ public final class ClocService {
 		if (!canGetCLOCStats()) { throw new IOException("Cannot run cloc"); }
 
 		if (clocInstalled) {
-			LOGGER.debug("Cloc already exists, using that instead. Running on directory " + file.getAbsolutePath());
-			return CommandLineUtils.executeCommand("cloc", "--yaml", file.getAbsolutePath());
+			LOGGER.debug("Cloc already exists, using that instead. Running on directory "
+					+ file.getAbsolutePath());
+			return CommandLineUtils.executeCommand("cloc", "--yaml",
+					file.getAbsolutePath());
 		} else if (perlInstalled) {
-			return CommandLineUtils.executeCommand("perl", CLOC_PL, "--yaml", "--skip-win-hidden");
+			return CommandLineUtils.executeCommand("perl", CLOC_PL, "--yaml",
+					"--skip-win-hidden");
 		} else {
-			return CommandLineUtils.executeCommand(getFileForOS(false).getPath(), "--yaml","--skip-win-hidden", file.getAbsolutePath());
+			return CommandLineUtils.executeCommand(getFileForOS(false)
+					.getPath(), "--yaml", "--skip-win-hidden", file
+					.getAbsolutePath());
 		}
-				
+
 	}
 
 	/**
@@ -189,13 +200,14 @@ public final class ClocService {
 	 */
 	@SuppressWarnings("unchecked")
 	public static ClocData getClocStatistics(File file) throws IOException {
-		
+
 		if (!canGetCLOCStats()) { throw new IOException("Cannot run CLOC"); }
 
-		LOGGER.debug("Getting cloc statistics for directory " + file.getAbsolutePath());
-		
+		LOGGER.debug("Getting cloc statistics for directory "
+				+ file.getAbsolutePath());
+
 		String yamlStr = getCLOCDataAsYaml(file);
-		
+
 		Map<Language, LangStats> langStats = Maps.newHashMap();
 
 		Header header = new Header();

@@ -6,8 +6,8 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-import com.cisco.dft.sdk.vcs.common.CommitNotFoundException;
-import com.cisco.dft.sdk.vcs.common.DateLimitedDataContainer.RecursiveDateLimitedDataContainer;
+import com.cisco.dft.sdk.vcs.common.util.DateLimitedDataContainer.RecursiveDateLimitedDataContainer;
+import com.cisco.dft.sdk.vcs.core.error.CommitNotFoundException;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 

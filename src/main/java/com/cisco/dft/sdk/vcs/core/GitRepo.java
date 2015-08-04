@@ -32,8 +32,8 @@ import org.eclipse.jgit.treewalk.EmptyTreeIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.cisco.dft.sdk.vcs.common.BranchNotFoundException;
-import com.cisco.dft.sdk.vcs.common.Util;
+import com.cisco.dft.sdk.vcs.common.util.Util;
+import com.cisco.dft.sdk.vcs.core.error.BranchNotFoundException;
 import com.google.common.collect.Lists;
 
 /**
@@ -377,7 +377,6 @@ public final class GitRepo extends Repo {
 					.getCommitTime()) * 1000), totalFilesAffected, totalAdditions, totalDeletions, isMergeCommit, rc
 					.getShortMessage()));
 
-			bi.incrementCommitCount(1);
 
 			prev = rc;
 		}
