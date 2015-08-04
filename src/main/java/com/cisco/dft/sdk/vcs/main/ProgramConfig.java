@@ -2,6 +2,11 @@ package com.cisco.dft.sdk.vcs.main;
 
 import java.util.Date;
 
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.base.Predicate;
 
 /**
@@ -11,6 +16,8 @@ import com.google.common.base.Predicate;
  *
  */
 public class ProgramConfig {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger("ProgamConfig");
 
 	/** Pre-set config for an INIT action. Useful for testing */
 	static final ProgramConfig INIT = ProgramConfig.parseArgs("init",
@@ -130,10 +137,11 @@ public class ProgramConfig {
 
 	public static ProgramConfig parseArgs(ArgParser parser) {
 
-		final Action action = parser.getActionAsEnum(Action.class);
+		Action action = parser.getActionAsEnum(Action.class);
 
-		if (action == null) { throw new IllegalArgumentException("Command "
-				+ parser.getAction() + " not recognized"); }
+		if (action == null) { 
+			action = Action.HELP;
+		}
 
 		final String url = parser.getActionParameterByIndex(0);
 		final String branch = parser.getString("branch");
@@ -148,8 +156,8 @@ public class ProgramConfig {
 				|| parser.getBoolean("g");
 		final boolean forceSvn = parser.getBoolean("forceSvn")
 				|| parser.getBoolean("s");
-		final Date start = parser.getLongAsType("start", Date.class);
-		final Date end = parser.getLongAsType("end", Date.class);
+		final Date end = getDate(parser.getString("end"));
+		final Date start = getDate(parser.getString("start"));
 
 		final ProgramConfig config = new ProgramConfig(action, url, branch, username, password, generateStats, useCloc);
 		config.end = end;
@@ -161,6 +169,24 @@ public class ProgramConfig {
 		config.forceSvn = forceSvn;
 
 		return config;
+	}
+	
+	private static Date getDate(String date) {
+		
+		try {
+			return DateTime.parse(date).toDateTime(DateTimeZone.getDefault()).toDate();
+		} catch (Exception iae) {
+			LOGGER.trace("Could not read start input as a DateTime object", iae);
+		}
+		
+		try {
+			return new Date(Long.parseLong(date));
+		} catch (NumberFormatException nfe) {
+			// No action needed
+		}
+		
+		return null;
+		
 	}
 
 	public static ProgramConfig parseArgs(String... args) {
@@ -179,6 +205,8 @@ public class ProgramConfig {
 				+ "\n      --start=<epoch-time> (Epoch time, in millis, to limit start date)"
 				+ "\n      --end=<epoch-time> (Epoch time, in millis, to limit end date)"
 				+ "\n      --nocommits (Indicates that only language information should be shown)"
+				+ "\n      -s (forces the application to treat the url as a SVN repo"
+				+ "\n      -g (forces the application to treat the url as a Git repo"
 				+ "\n"
 				+ "\n  help  - Shows help"
 				+ "\n"
@@ -203,7 +231,7 @@ public class ProgramConfig {
 	/** Actions the application can perform */
 	public static enum Action {
 
-		ANALYZE("Gets statistics for a remote repo. Usage: analyze <url>", new Predicate<ProgramConfig>() {
+		ANALYZE("Gets statistics for a remote repo. Usage: analyze <url>\n", new Predicate<ProgramConfig>() {
 
 			@Override
 			public boolean apply(ProgramConfig input) {

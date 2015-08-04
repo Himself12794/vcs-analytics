@@ -36,7 +36,6 @@ import com.cisco.dft.sdk.vcs.common.SortMethod;
 import com.cisco.dft.sdk.vcs.common.Util;
 import com.cisco.dft.sdk.vcs.core.ClocData.Header;
 import com.cisco.dft.sdk.vcs.core.ClocData.LangStats;
-import com.cisco.dft.sdk.vcs.main.ClocService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 

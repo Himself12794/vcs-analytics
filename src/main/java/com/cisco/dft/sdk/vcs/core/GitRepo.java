@@ -296,8 +296,9 @@ public final class GitRepo extends Repo {
 		try {
 
 			theRepo.checkout()
-					.setName("origin/" + BranchInfo.branchTrimmer(branch))
+					.setName("refs/remotes/origin/" + BranchInfo.branchTrimmer(branch))
 					.setCreateBranch(false).call();
+			
 			boolean flag = theRepo.fetch().setCredentialsProvider(cp)
 					.setRemoveDeletedRefs(true).call().getTrackingRefUpdates()
 					.isEmpty();

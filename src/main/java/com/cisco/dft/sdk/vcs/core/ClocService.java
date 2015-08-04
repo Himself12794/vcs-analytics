@@ -1,4 +1,4 @@
-package com.cisco.dft.sdk.vcs.main;
+package com.cisco.dft.sdk.vcs.core;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,7 +16,6 @@ import com.cisco.dft.sdk.vcs.common.CodeSniffer.Language;
 import com.cisco.dft.sdk.vcs.common.CommandLineUtils;
 import com.cisco.dft.sdk.vcs.common.OSType;
 import com.cisco.dft.sdk.vcs.common.Util;
-import com.cisco.dft.sdk.vcs.core.ClocData;
 import com.cisco.dft.sdk.vcs.core.ClocData.Header;
 import com.cisco.dft.sdk.vcs.core.ClocData.LangStats;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -147,11 +146,11 @@ public final class ClocService {
 	public static boolean isClocInstalled() {
 		
 		try {
-			LOGGER.info( "Cloc detected, version is: " + CommandLineUtils.executeCommand("cloc", "-version") );
+			LOGGER.debug( "Cloc version " + CommandLineUtils.executeCommand("cloc", "-version") + " detected on system.");
 			return true;
 		} catch (IOException e) {
 			LOGGER.trace("Cloc not detected", e);
-			LOGGER.info( "Cloc not detected" );
+			LOGGER.debug( "Cloc not detected" );
 			return false;
 		}
 		

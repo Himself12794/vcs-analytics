@@ -13,19 +13,21 @@ import ch.qos.logback.classic.Level;
 import com.cisco.dft.sdk.vcs.common.Util;
 import com.cisco.dft.sdk.vcs.core.AuthorInfoBuilder;
 import com.cisco.dft.sdk.vcs.core.BranchInfo;
+import com.cisco.dft.sdk.vcs.core.ClocService;
 import com.cisco.dft.sdk.vcs.core.GitRepo;
 import com.cisco.dft.sdk.vcs.core.SVNRepo;
 import com.cisco.dft.sdk.vcs.main.ProgramConfig.Action;
 
 /**
- * The application class.
+ * The application class. For total SDK abstraction, the library is still valid
+ * with this package totally removed.
  * 
  * @author phwhitin
  *
  */
 public final class Application {
 
-	public static final String VERISION = "v1.0";
+	public static final String VERISION = "v1.1.0";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger("Application");
 
@@ -116,7 +118,7 @@ public final class Application {
 		if (config.getUrl() == null) {
 			out.println(ProgramConfig.getUsage());
 		} else {
-			
+
 			try {
 				Action action = Action.valueOf(config.getUrl().toUpperCase());
 				out.print(action.getUsage());
@@ -124,7 +126,7 @@ public final class Application {
 				LOGGER.trace("Unrecognized help parameter", e);
 				out.println(ProgramConfig.getUsage());
 			}
-			
+
 		}
 	}
 
@@ -132,15 +134,10 @@ public final class Application {
 	 * Runs with some debug data and preset options and parameters.
 	 * 
 	 * @throws GitAPIException
-	 * @throws SVNException 
+	 * @throws SVNException
 	 */
 	private void debug() throws GitAPIException, SVNException {
-		
-			init();
-			Util.setLoggingLevel(Level.DEBUG);
-			SVNRepo repo = new SVNRepo(config.getUrl());
-			repo.sync(config.getBranch() == null ? SVNRepo.TRUNK : config
-					.getBranch());
+		setConfig(ProgramConfig.DEBUG).execute();
 	}
 
 	private void analyze() throws GitAPIException, SVNException {
@@ -197,7 +194,7 @@ public final class Application {
 		repo.close();
 
 	}
-	
+
 	/**
 	 * Treats the url as a svn repo
 	 * 
@@ -206,7 +203,7 @@ public final class Application {
 	private void analyzeAsSVN() throws SVNException {
 
 		SVNRepo repo = new SVNRepo(config.getUrl(), config.getBranch());
-		
+
 		out.println(repo.getRepoStatistics());
 
 	}

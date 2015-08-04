@@ -31,7 +31,6 @@ import org.tmatesoft.svn.core.wc.SVNWCUtil;
 import org.tmatesoft.svn.core.wc2.SvnDiff;
 import org.tmatesoft.svn.core.wc2.SvnTarget;
 
-import com.cisco.dft.sdk.vcs.main.ClocService;
 import com.google.common.collect.Lists;
 
 /**
