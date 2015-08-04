@@ -35,7 +35,7 @@ import com.google.common.collect.Lists;
 
 /**
  * SVN Repositories use directories, instead of references, for branches.
- * 
+ *
  * @author phwhitin
  *
  */
@@ -49,8 +49,7 @@ public class SVNRepo extends Repo {
 	 * Default directory relative to the system temp folder to store the
 	 * repository locally so metrics can be pulled from it.
 	 */
-	private static final String DEFAULT_TEMP_CLONE_DIRECTORY = DEFAULT_DIRECTORY_BASE
-			+ "svn/";
+	private static final String DEFAULT_TEMP_CLONE_DIRECTORY = DEFAULT_DIRECTORY_BASE + "svn/";
 
 	private final File theDirectory;
 
@@ -60,127 +59,51 @@ public class SVNRepo extends Repo {
 
 	private final ISVNAuthenticationManager authManager;
 
-	public SVNRepo(String url) throws SVNException {
+	public SVNRepo(final String url) throws SVNException {
 		this(url, null, "username", "password");
 	}
-	
-	public SVNRepo(String url, String branch) throws SVNException {
+
+	public SVNRepo(final String url, final String branch) throws SVNException {
 		this(url, branch, "username", "password");
 	}
 
-	public SVNRepo(String url, String branch, String username, String password) throws SVNException {
+	public SVNRepo(final String url, final String branch, final String username,
+			final String password) throws SVNException {
 
 		DAVRepositoryFactory.setup();
 
 		this.url = SVNURL.parseURIEncoded(url);
 		theRepo = SVNRepositoryFactory.create(this.url);
-		authManager = SVNWCUtil.createDefaultAuthenticationManager(username,
-				password);
+		authManager = SVNWCUtil.createDefaultAuthenticationManager(username, password);
 		theRepo.setAuthenticationManager(authManager);
 		repoInfo.setName(guessName(url));
 		theDirectory = new File(FileUtils.getTempDirectory(), DEFAULT_TEMP_CLONE_DIRECTORY
 				+ theRepo.getRepositoryUUID(true));
 
-		SVNClientManager ourClientManager = SVNClientManager.newInstance();
-		long latestRevision = theRepo.getLatestRevision();
+		final SVNClientManager ourClientManager = SVNClientManager.newInstance();
+		final long latestRevision = theRepo.getLatestRevision();
 
 		ourClientManager.setAuthenticationManager(authManager);
 
-		SVNUpdateClient updateClient = ourClientManager.getUpdateClient();
+		final SVNUpdateClient updateClient = ourClientManager.getUpdateClient();
 		updateClient.setIgnoreExternals(false);
 		updateClient.doExport(theRepo.getLocation(), theDirectory,
-				SVNRevision.create(latestRevision),
-				SVNRevision.create(latestRevision), null, true,
+				SVNRevision.create(latestRevision), SVNRevision.create(latestRevision), null, true,
 				SVNDepth.INFINITY);
 
 		sync(branch == null ? TRUNK : branch);
 
 	}
 
-	@Override
-	public void sync() {
-		try {
-			sync(TRUNK);
-		} catch (Exception e) {
-			LOGGER.debug("Directory " + TRUNK + " does not exist", e);
-		}
-	}
-
-	/**
-	 * Adds information about the specified branch.
-	 * 
-	 * @param branch
-	 * @throws SVNException
-	 *             if the directory does not exist
-	 */
-	public void sync(String branch) throws SVNException {
-
-		final String temp = TRUNK.equals(branch) ? TRUNK : "branches/" + branch;
-
-		BranchInfo bi = repoInfo.getBranchInfo(temp);
-		bi.resetInfo();
-
-		updateRepoInfo(bi);
-		updateAuthorInfo(bi);
-
-	}
-
-	private void updateRepoInfo(BranchInfo bi) throws SVNException {
-
-		String branch = bi.getBranch();
-
-		if (ClocService.canGetCLOCStats()) {
-
-			try {
-				ClocData data = ClocService
-						.getClocStatistics(new File(theDirectory, branch));
-				bi.getData().imprint(data);
-				bi.usesCLOCStats = true;
-			} catch (IOException e) {
-				LOGGER.debug("Cloc stat gathering failed", e);
-			}
-
-		}
-
-	}
-
-	@SuppressWarnings({ "unchecked" })
-	private void updateAuthorInfo(BranchInfo bi) throws SVNException {
-
-		final long startRevision = 0L;
-
-		final String temp = bi.getBranch();
-
-		Collection<SVNLogEntry> logEntries = theRepo.log(new String[] { temp },
-				null, startRevision, theRepo.getLatestRevision(), true, true);
-
-		for (SVNLogEntry leEntry : logEntries) {
-
-			List<String> paths = Lists.newArrayList();
-
-			for (Entry<String, SVNLogEntryPath> e : leEntry.getChangedPaths()
-					.entrySet()) {
-				if (e.getValue().getKind() == SVNNodeKind.FILE) { paths.add(e.getValue().getPath()); }
-			}
-
-			String author = leEntry.getAuthor();
-			AuthorInfo ai = bi.getAuthorInfo(author);
-
-			ai.add(new AuthorCommit(Long.toString(leEntry.getRevision()), leEntry
-					.getDate(), 0, 0, 0, false, leEntry.getMessage().replace(
-					"\n", " ")));
-		}
-	}
-
 	@SuppressWarnings("unused")
-	private void compareRevisions(SVNRevision rev1, SVNRevision rev2, String... paths) throws SVNException {
-		
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	private void compareRevisions(final SVNRevision rev1, final SVNRevision rev2, final String... paths) throws SVNException {
+
+		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
 		int additions = 0;
 		int deletions = 0;
 
-		SVNURL[] files = new SVNURL[paths.length];
+		final SVNURL[] files = new SVNURL[paths.length];
 
 		for (int i = 0; i < files.length; i++) {
 			files[i] = SVNURL.parseURIEncoded(theRepo.getLocation() + paths[i]);
@@ -188,56 +111,145 @@ public class SVNRepo extends Repo {
 
 		doDiff(rev1, rev2, baos, files);
 
-		for (String line : baos.toString().split("\n")) {
-			Matcher m = Pattern.compile("@@(.*?)@@").matcher(line);
+		for (final String line : baos.toString().split("\n")) {
+			final Matcher m = Pattern.compile("@@(.*?)@@").matcher(line);
 			while (m.find()) {
 				System.out.println(m.group(0));
-				String values[] = m.group(0).split(" ");
+				final String values[] = m.group(0).split(" ");
 
-				String[] deletionIndent = values[1].split(",");
-				int num0 = Math.abs(Integer.valueOf(deletionIndent[0]));
-				int num1 = Integer.valueOf(deletionIndent[1]);
+				final String[] deletionIndent = values[1].split(",");
+				final int num0 = Math.abs(Integer.valueOf(deletionIndent[0]));
+				final int num1 = Integer.valueOf(deletionIndent[1]);
 				System.out.println("found -" + num0 + "," + num1);
 
-				int linesDeleted = num0 + num1 + 1;
+				final int linesDeleted = num0 + num1 + 1;
 				deletions += linesDeleted;
 
-				String[] additionIndent = values[2].split(",");
-				int num2 = Math.abs(Integer.valueOf(additionIndent[0]));
-				int num3 = Integer.valueOf(additionIndent[1]);
+				final String[] additionIndent = values[2].split(",");
+				final int num2 = Math.abs(Integer.valueOf(additionIndent[0]));
+				final int num3 = Integer.valueOf(additionIndent[1]);
 				System.out.println("found +" + num2 + "," + num3);
 
-				int linesAdded = num3 + num2 + 1;
+				final int linesAdded = num3 + num2 + 1;
 				additions += linesAdded;
 			}
 		}
 
-		System.out.println("Additions: " + additions + ", deletions: "
-				+ deletions);
+		System.out.println("Additions: " + additions + ", deletions: " + deletions);
 
 	}
-	
-	private void doDiff(SVNRevision rev1, SVNRevision rev2, OutputStream baos, SVNURL...urls ) throws SVNException {
-		SVNDiffClient diffs = new SVNDiffClient(this.authManager, null);
-		for (SVNURL url : urls) {
+
+	private void doDiff(final SVNRevision rev1, final SVNRevision rev2, final OutputStream baos, final SVNURL... urls) throws SVNException {
+		final SVNDiffClient diffs = new SVNDiffClient(authManager, null);
+		for (final SVNURL url : urls) {
 			final SvnDiff diff = diffs.getOperationsFactory().createDiff();
 			diff.setDiffGenerator(diffs.getDiffGenerator());
-			diff.setSources(SvnTarget.fromURL(url, rev1), SvnTarget.fromURL(url, rev2)); 
+			diff.setSources(SvnTarget.fromURL(url, rev1), SvnTarget.fromURL(url, rev2));
 			diff.setDepth(SVNDepth.INFINITY);
-			diff.setIgnoreAncestry(true); 
+			diff.setIgnoreAncestry(true);
 			diff.setOutput(baos);
-			diff.setApplicalbeChangelists(null); 
+			diff.setApplicalbeChangelists(null);
 			diff.setShowCopiesAsAdds(true);
-			diff.setUseGitDiffFormat(false); 
+			diff.setUseGitDiffFormat(false);
 			diff.run();
 		}
 	}
 
-	public static String[] getBranchPaths(String branch, String... paths) {
+	/**
+	 * Don't use this, it only returns the head path. You'll have to manually
+	 * indicate branches, since revisions are updates to the repositories as a
+	 * whole, and not restricted to branches. Branches generally are just
+	 * changes in the folder branches, however there is no definitive way to
+	 * know when the branch identifier stops, and actual code starts.
+	 *
+	 * @deprecated Because of how branches work in SVN, it's not trivial to get
+	 *             a list of branches
+	 */
+	@Override
+	@Deprecated
+	public List<String> getBranches() {
+		return Lists.newArrayList(TRUNK);
+	}
 
-		List<String> matches = Lists.newArrayList();
+	@Override
+	public void sync() {
+		try {
+			sync(TRUNK);
+		} catch (final Exception e) {
+			LOGGER.debug("Directory " + TRUNK + " does not exist", e);
+		}
+	}
 
-		for (String path : paths) {
+	/**
+	 * Adds information about the specified branch.
+	 *
+	 * @param branch
+	 * @throws SVNException
+	 *             if the directory does not exist
+	 */
+	public void sync(final String branch) throws SVNException {
+
+		final String temp = TRUNK.equals(branch) ? TRUNK : "branches/" + branch;
+
+		final BranchInfo bi = repoInfo.getBranchInfo(temp);
+		bi.resetInfo();
+
+		updateRepoInfo(bi);
+		updateAuthorInfo(bi);
+
+	}
+
+	@SuppressWarnings({ "unchecked" })
+	private void updateAuthorInfo(final BranchInfo bi) throws SVNException {
+
+		final long startRevision = 0L;
+
+		final String temp = bi.getBranch();
+
+		final Collection<SVNLogEntry> logEntries = theRepo.log(new String[] { temp }, null,
+				startRevision, theRepo.getLatestRevision(), true, true);
+
+		for (final SVNLogEntry leEntry : logEntries) {
+
+			final List<String> paths = Lists.newArrayList();
+
+			for (final Entry<String, SVNLogEntryPath> e : leEntry.getChangedPaths().entrySet()) {
+				if (e.getValue().getKind() == SVNNodeKind.FILE) {
+					paths.add(e.getValue().getPath());
+				}
+			}
+
+			final String author = leEntry.getAuthor();
+			final AuthorInfo ai = bi.getAuthorInfo(author);
+
+			ai.add(new AuthorCommit(Long.toString(leEntry.getRevision()), leEntry.getDate(), 0, 0, 0, false, leEntry
+					.getMessage().replace("\n", " ")));
+		}
+	}
+
+	private void updateRepoInfo(final BranchInfo bi) throws SVNException {
+
+		final String branch = bi.getBranch();
+
+		if (ClocService.canGetCLOCStats()) {
+
+			try {
+				final ClocData data = ClocService.getClocStatistics(new File(theDirectory, branch));
+				bi.getData().imprint(data);
+				bi.usesCLOCStats = true;
+			} catch (final IOException e) {
+				LOGGER.debug("Cloc stat gathering failed", e);
+			}
+
+		}
+
+	}
+
+	public static String[] getBranchPaths(final String branch, final String... paths) {
+
+		final List<String> matches = Lists.newArrayList();
+
+		for (final String path : paths) {
 
 			if (path.startsWith("/" + branch)) {
 				System.out.println(path);
@@ -248,22 +260,6 @@ public class SVNRepo extends Repo {
 
 		return matches.toArray(new String[matches.size()]);
 
-	}
-
-	/**
-	 * Don't use this, it only returns the head path. You'll have to manually
-	 * indicate branches, since revisions are updates to the repositories as a
-	 * whole, and not restricted to branches. Branches generally are just
-	 * changes in the folder branches, however there is no definitive way to
-	 * know when the branch identifier stops, and actual code starts.
-	 * 
-	 * @deprecated Because of how branches work in SVN, it's not trivial to get
-	 *             a list of branches
-	 */
-	@Override
-	@Deprecated
-	public List<String> getBranches() {
-		return Lists.newArrayList(TRUNK);
 	}
 
 }

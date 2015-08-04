@@ -12,7 +12,7 @@ import com.google.common.collect.Range;
 
 /**
  * Utilities for use throughout the rest of the Application
- * 
+ *
  * @author phwhitin
  *
  */
@@ -20,56 +20,76 @@ public final class Util {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger("Utilities");
 
-	private Util() {}
-	
-	/**
-	 * Enables debug logging
-	 */
-	public static void setLoggingLevel(Level level) {
-		ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
-	    root.setLevel(level);
-		LOGGER.debug("Enabled " + level.toString() + " logging");
+	private static final int DEFAULT_ALLOWED_NAME_SIZE = 20;
+
+	private Util() {
 	}
-	
-	/**
-	 * When you're too lazy to create a logger for each class.
-	 * 
-	 * @param msg
-	 * @param t
-	 */
-	public static void redirectLogError(String msg, Throwable t) {
-		LOGGER.error(msg, t);
-	}
-	
+
 	/**
 	 * Determines the type of range to return.
-	 * 
+	 *
 	 * @param start
 	 * @param end
 	 * @return
 	 */
-	public static Range<Date> getAppropriateRange(Date start, Date end) {
+	public static Range<Date> getAppropriateRange(final Date start, final Date end) {
 
-		if (bothNotNull(start, end)) {
+		if (!nullBoth(start, end)) {
 			return nonNullComparison(start, end);
-		} else if (firstOnlyNull(start, end)) {
+		} else if (nullFirstOnly(start, end)) {
 			return Range.atMost(end);
-		} else if (lastOnlyNull(start, end)) {
+		} else if (nullLastOnly(start, end)) {
 			return Range.atLeast(start);
 		} else {
 			return Range.all();
 		}
 
 	}
-	
+
 	/**
-	 * This checks the range and swaps them if they were given in the wrong order.
-	 * 
+	 * Similar to {@link Util#putIfAbsent(Map, Object, Object)}, except it does
+	 * not place the default value into the map, only returns it.
+	 *
+	 * @param map
+	 * @param key
+	 * @param defaultV
+	 * @return the pre-existing value, or default if non-existent
+	 */
+	public static <K, V> V getOrDefault(final Map<K, V> map, final K key, final V defaultV) {
+
+		if (map.containsKey(key)) {
+			return map.get(key);
+		} else {
+			return defaultV;
+		}
+
+	}
+
+	/**
+	 * If {@code arg0} is null, returns {@code arg1}, otherwise returns
+	 * {@code arg0}.
+	 *
+	 * @param arg0
+	 * @param arg1
+	 * @return
+	 */
+	public static <T> T ifNullDefault(final T arg0, final T arg1) {
+		if (arg0 == null) {
+			return arg1;
+		} else {
+			return arg0;
+		}
+	}
+
+	/**
+	 * This checks the range and swaps them if they were given in the wrong
+	 * order.
+	 *
 	 * @param start
 	 * @param end
 	 * @return
 	 */
-	public static Range<Date> nonNullComparison(Date start, Date end) {
+	public static Range<Date> nonNullComparison(final Date start, final Date end) {
 
 		final int c = start.compareTo(end);
 
@@ -80,30 +100,34 @@ public final class Util {
 		} else {
 			return Range.singleton(start);
 		}
-		
+
 	}
-	
-	public static boolean bothNotNull(Object arg0, Object arg1) {
-		return arg0 != null && arg1 != null;
+
+	public static boolean nullBoth(final Object arg0, final Object arg1) {
+		return arg0 == null && arg1 == null;
 	}
-	
-	public static boolean firstOnlyNull(Object arg0, Object arg1) {
+
+	public static boolean nullFirstOnly(final Object arg0, final Object arg1) {
 		return arg0 == null && arg1 != null;
 	}
-	
-	public static boolean lastOnlyNull(Object arg0, Object arg1) {
+
+	public static boolean nullLastOnly(final Object arg0, final Object arg1) {
 		return arg0 != null && arg1 == null;
+	}
+
+	public static String printNTimes(final char value, final int n, final boolean lineBreak) {
+		return valueWithFiller("", n, value) + (lineBreak ? "\n" : "");
 	}
 
 	/**
 	 * If the value does not exist for the key, it places it in the map.
-	 * 
+	 *
 	 * @param map
 	 * @param key
 	 * @param value
 	 * @return the value "value", mutates parameter "map"
 	 */
-	public static <K, V> V putIfAbsent(Map<K, V> map, K key, V value) {
+	public static <K, V> V putIfAbsent(final Map<K, V> map, final K key, final V value) {
 
 		if (map.containsKey(key)) {
 			return map.get(key);
@@ -113,84 +137,66 @@ public final class Util {
 		}
 
 	}
-	
+
 	/**
-	 * Similar to {@link Util#putIfAbsent(Map, Object, Object)}, except it does
-	 * not place the default value into the map, only returns it.
-	 * 
-	 * @param map
-	 * @param key
-	 * @param defaultV
-	 * @return the pre-existing value, or default if non-existent
+	 * When you're too lazy to create a logger for each class.
+	 *
+	 * @param msg
+	 * @param t
 	 */
-	public static <K, V> V getOrDefault(Map<K, V> map, K key, V defaultV) {
-		
-		if (map.containsKey(key)) {
-			return map.get(key);
-		} else {
-			return defaultV;
-		}
-		
+	public static void redirectLogError(final String msg, final Throwable t) {
+		LOGGER.error(msg, t);
 	}
-	
+
 	/**
-	 * If {@code arg0} is null, returns {@code arg0}, otherwise
-	 * returns {@code arg0}.
-	 * 
-	 * @param arg0
-	 * @param arg1
-	 * @return
+	 * Enables debug logging
 	 */
-	public static <T> T ifNullDefault(T arg0, T arg1) {
-		if (arg0 == null) { return arg1; }
-		else { return arg0; } 
+	public static void setLoggingLevel(final Level level) {
+		final ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) LoggerFactory
+				.getLogger(Logger.ROOT_LOGGER_NAME);
+		root.setLevel(level);
+		LOGGER.debug("Enabled " + level.toString() + " logging");
 	}
-	
-	private static final int DEFAULT_ALLOWED_NAME_SIZE = 20;
-	
+
 	/**
-	 * {@link Util#valueWithSpaces(Object, int)} with size set to 20.
-	 * 
-	 * @param x
-	 * @return
-	 */
-	public static String valueWithSpaces(final Object x) {
-		return valueWithFiller(x, DEFAULT_ALLOWED_NAME_SIZE, ' ');
-	}
-	
-	/**
-	 * Gets the string form of the obj, ensuring it is no longer than the given size,
-	 * and if it is less, fills the rest of with spaces.
-	 * 
+	 * Gets the string form of the obj, ensuring it is no longer than the given
+	 * size, and if it is less, fills the rest of with spaces.
+	 *
 	 * @param obj
 	 * @param size
 	 * @return
 	 */
 	public static String valueWithFiller(final Object obj, final int size, final char filler) {
-		
+
 		final String temp = String.valueOf(obj);
 		final int length = temp.length();
 		final String name = length > size ? temp.substring(0, size) : temp;
-		
+
 		final StringBuilder value = new StringBuilder();
-		
+
 		value.append(name);
-		
+
 		if (length < size) {
-			
+
 			for (int i = 0; i < size - length; i++) {
-				
+
 				value.append(filler);
-				
+
 			}
-			
+
 		}
-		
+
 		return value.toString();
 	}
-	
-	public static String printNTimes(final char value, final int n) {
-		return valueWithFiller("", n, value);
+
+	/**
+	 * {@link Util#valueWithSpaces(Object, int)} with size set to 20.
+	 *
+	 * @param x
+	 * @return
+	 */
+	public static String valueWithSpaces(final Object x) {
+		return valueWithFiller(x, DEFAULT_ALLOWED_NAME_SIZE, ' ');
 	}
 
 }

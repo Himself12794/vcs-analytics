@@ -42,65 +42,38 @@ import com.google.common.collect.Range;
 /**
  * Class used to hold information about a specific branch in a repository. Also
  * a history viewer class whose date is that of the most recent commit.
- * 
+ *
  * @author phwhitin
  *
  */
 public class BranchInfo extends HistoryViewer {
 
-	private static final Logger LOGGER = LoggerFactory
-			.getLogger(BranchInfo.class.getSimpleName());
+	private static final Logger LOGGER = LoggerFactory.getLogger(BranchInfo.class.getSimpleName());
 
 	private String mostRecentLoggedCommit;
 
 	private final Map<String, AuthorInfo> authorInfo;
 
-	BranchInfo(Repo theRepo) {
+	BranchInfo(final Repo theRepo) {
 		this("Unknown", theRepo, "", new Date());
 	}
 
-	BranchInfo(String branch, Repo theRepo) {
+	BranchInfo(final String branch, final Repo theRepo) {
 		this(branch, theRepo, "", new Date());
 	}
 
-	private BranchInfo(final String branch, Repo theRepo, String id, Date date) {
-		this(branch, theRepo, id, date, new HashMap<Language, Integer>(), new HashMap<String, AuthorInfo>(), new ClocData());
+	private BranchInfo(final String branch, final Repo theRepo, final String id, final Date date) {
+		this(branch, theRepo, id, date, new HashMap<String, AuthorInfo>(), new ClocData());
 	}
 
-	private BranchInfo(final String branch, Repo theRepo, String id, Date date,
-			final Map<Language, Integer> languageCount,
-			final Map<String, AuthorInfo> authorInfo, ClocData data) {
-		super(branch, theRepo, id, date, languageCount, data);
+	private BranchInfo(final String branch, final Repo theRepo, final String id, final Date date,
+			final Map<String, AuthorInfo> authorInfo, final ClocData data) {
+		super(branch, theRepo, id, date, data);
 		this.authorInfo = authorInfo;
 
 	}
 
-	void resetInfo() {
-
-		this.theDate = new Date();
-
-		setFileCount(0);
-		setLineCount(0);
-
-		data.reset();
-
-	}
-
-	/**
-	 * Gets the statistics that have been logged for this branch. The data is
-	 * stored in memory for efficiency, so data may be inaccurate unless
-	 * {@link GitRepo#sync()} is run. All data is copied, so there is no danger
-	 * in compromising internal information.
-	 * 
-	 * @return a statistics builder for this repo
-	 */
-	public AuthorInfoBuilder getAuthorStatistics() {
-
-		return new AuthorInfoBuilder(Lists.newArrayList(authorInfo.values()), branch);
-
-	}
-
-	AuthorInfo getAuthorInfo(String author) {
+	AuthorInfo getAuthorInfo(final String author) {
 
 		AuthorInfo ai;
 
@@ -118,80 +91,49 @@ public class BranchInfo extends HistoryViewer {
 	}
 
 	/**
-	 * Generates a snapshot of the repository at the certain date using cloc. If no history
-	 * is found before this date, the object returned is empty.
-	 * <p>
-	 * Note that the Date object counts time down to the millisecond, so make
-	 * sure you add an appreciable margin if your date is more general.
-	 * 
-	 * @param date
-	 * @return the history object, never null
+	 * Gets the statistics that have been logged for this branch. The data is
+	 * stored in memory for efficiency, so data may be inaccurate unless
+	 * {@link GitRepo#sync()} is run. All data is copied, so there is no danger
+	 * in compromising internal information.
+	 *
+	 * @return a statistics builder for this repo
 	 */
-	public HistoryViewer getHistoryForDate(Date date) {
-		return getHistoryForDate(date, true);
+	public AuthorInfoBuilder getAuthorStatistics() {
+
+		return new AuthorInfoBuilder(Lists.newArrayList(authorInfo.values()), branch);
+
 	}
 
-	/**
-	 * Generates a snapshot of the repository at the certain date. If no history
-	 * is found before this date, the object returned is empty.
-	 * <p>
-	 * Note that the Date object counts time down to the millisecond, so make
-	 * sure you add an appreciable margin if your date is more general.
-	 * <p>
-	 * Indicating the that the history information should use cloc does not necessary mean
-	 * it will succeed, only that it will try. If cloc is not enabled, this will fail
-	 * regardless.
-	 * 
-	 * @param date
-	 * @param useCloc if the statistics should be generated using cloc 
-	 * @return the history object, never null
-	 */
-	public HistoryViewer getHistoryForDate(Date date, boolean useCloc) {
+	public int getCommitCount() {
+		int count = 0;
 
-		Date prev = new Date(0L);
-
-		AuthorCommit temp2 = new AuthorCommit();
-
-		for (AuthorInfo ai : authorInfo.values()) {
-
-			ai.limitToDateRange(Range.closed(prev, date));
-
-			List<AuthorCommit> acs = ai.getCommits();
-
-			for (AuthorCommit ac : acs) {
-
-				Date date2 = ac.getTimestamp();
-				if (date2.after(prev) && date2.compareTo(date) < 1) {
-					temp2 = ac;
-					prev = date2;
-				}
-
-			}
-
+		for (final AuthorInfo ai : authorInfo.values()) {
+			count += ai.getCommitCount();
 		}
 
-		HistoryViewer hv = getHistoryForCommit(temp2.getId(), useCloc);
-		hv.setDate(date);
-		return hv;
+		return count;
+	}
 
+	ClocData getData() {
+		return data;
 	}
 
 	/**
 	 * Looks up the history for the specified commit and generates a snapshot.
-	 * 
+	 *
 	 * @param commitId
 	 * @return
 	 */
-	public HistoryViewer getHistoryForCommit(String commitId, boolean useCloc) {
+	public HistoryViewer getHistoryForCommit(final String commitId, final boolean useCloc) {
 
 		HistoryViewer hv = new HistoryViewer(branch, theRepo, commitId, new Date());
-		DiffFormatter df = new DiffFormatter(new ByteArrayOutputStream());
+		final DiffFormatter df = new DiffFormatter(new ByteArrayOutputStream());
 
 		try {
 
 			hv = lookupHistoryFor(commitId, df, useCloc);
 
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			LOGGER.error("Could not find history for commit id " + commitId, e);
 		} finally {
 			df.close();
@@ -202,9 +144,140 @@ public class BranchInfo extends HistoryViewer {
 	}
 
 	/**
+	 * Generates a snapshot of the repository at the certain date using cloc. If
+	 * no history is found before this date, the object returned is empty.
+	 * <p>
+	 * Note that the Date object counts time down to the millisecond, so make
+	 * sure you add an appreciable margin if your date is more general.
+	 *
+	 * @param date
+	 * @return the history object, never null
+	 */
+	public HistoryViewer getHistoryForDate(final Date date) {
+		return getHistoryForDate(date, true);
+	}
+
+	/**
+	 * Generates a snapshot of the repository at the certain date. If no history
+	 * is found before this date, the object returned is empty.
+	 * <p>
+	 * Note that the Date object counts time down to the millisecond, so make
+	 * sure you add an appreciable margin if your date is more general.
+	 * <p>
+	 * Indicating the that the history information should use cloc does not
+	 * necessary mean it will succeed, only that it will try. If cloc is not
+	 * enabled, this will fail regardless.
+	 *
+	 * @param date
+	 * @param useCloc
+	 *            if the statistics should be generated using cloc
+	 * @return the history object, never null
+	 */
+	public HistoryViewer getHistoryForDate(final Date date, final boolean useCloc) {
+
+		Date prev = new Date(0L);
+
+		AuthorCommit temp2 = new AuthorCommit();
+
+		for (final AuthorInfo ai : authorInfo.values()) {
+
+			ai.limitToDateRange(Range.closed(prev, date));
+
+			final List<AuthorCommit> acs = ai.getCommits();
+
+			for (final AuthorCommit ac : acs) {
+
+				final Date date2 = ac.getTimestamp();
+				if (date2.after(prev) && date2.compareTo(date) < 1) {
+					temp2 = ac;
+					prev = date2;
+				}
+
+			}
+
+		}
+
+		final HistoryViewer hv = getHistoryForCommit(temp2.getId(), useCloc);
+		hv.setDate(date);
+		return hv;
+
+	}
+
+	void getHistoryGit(final RevCommit rc, final DiffFormatter df, final boolean useCloc) throws IncorrectObjectTypeException, IOException {
+
+		@SuppressWarnings("resource")
+		final Git git = theRepo instanceof GitRepo ? ((GitRepo) theRepo).theRepo : null;
+
+		if (git == null) { return; }
+
+		resetInfo();
+
+		if (ClocService.canGetCLOCStats() && useCloc) {
+
+			LOGGER.debug("Will use cloc to analyze");
+
+			try {
+				final ClocData theData = ClocService.getClocStatistics(git.getRepository()
+						.getWorkTree());
+				getData().imprint(theData);
+				usesCLOCStats = true;
+				return;
+
+			} catch (final IOException e) {
+				usesCLOCStats = false;
+				LOGGER.error(
+						"Could not use CLOC to gather statistics, defaulting to built-in analysis",
+						e);
+			}
+
+		}
+
+		final Map<Language, LangStats> langStats = getData().getLanguageStatsMutable();
+
+		final ObjectReader reader = git.getRepository().newObjectReader();
+
+		final EmptyTreeIterator oldTreeIter = new EmptyTreeIterator();
+		oldTreeIter.reset();
+
+		final CanonicalTreeParser newTreeIter = new CanonicalTreeParser();
+		final ObjectId newTree = rc.getTree();
+		newTreeIter.reset(reader, newTree);
+
+		df.setRepository(git.getRepository());
+		final List<DiffEntry> entries = df.scan(oldTreeIter, newTreeIter);
+
+		final Header header = getData().getHeader();
+
+		for (final DiffEntry entry : entries) {
+
+			final Language lang = CodeSniffer.detectLanguage(entry.getNewPath());
+
+			final LangStats langStat = Util.putIfAbsent(langStats, lang, new LangStats(lang));
+
+			incrementFileCount(1);
+
+			langStat.setnFiles(langStat.getnFiles() + 1);
+
+			for (final HunkHeader hunk : df.toFileHeader(entry).getHunks()) {
+
+				header.setnLines(header.getnLines() + hunk.getNewLineCount());
+				langStat.setCodeLines(langStat.getCodeLines() + hunk.getNewLineCount());
+				incrementLineCount(hunk.getNewLineCount());
+
+			}
+
+		}
+
+	}
+
+	String getMostRecentLoggedCommit() {
+		return mostRecentLoggedCommit;
+	}
+
+	/**
 	 * Generates a snapshot of the repository at this commit. If the commit id
 	 * is invalid, it returns an empty data object.
-	 * 
+	 *
 	 * @param commitId
 	 * @return data object containing information for this commit. This never
 	 *         returns null.
@@ -217,149 +290,50 @@ public class BranchInfo extends HistoryViewer {
 	 * @throws RefNotFoundException
 	 * @throws RefAlreadyExistsException
 	 */
-	private HistoryViewer lookupHistoryFor(String commitId, DiffFormatter df, boolean useCloc) throws IOException, GitAPIException {
+	private HistoryViewer lookupHistoryFor(final String commitId, final DiffFormatter df, final boolean useCloc) throws IOException, GitAPIException {
 
 		@SuppressWarnings("resource")
-		Git git = (theRepo instanceof GitRepo) ? ((GitRepo)this.theRepo).theRepo : null; 
-		
-		if (git == null) { 
-			throw new WrongRepositoryStateException("Tried to treat the repository as a GitRepo, when it is not");
-		}
-		
-		
-		RevWalk rw = new RevWalk(git.getRepository());
-		RevCommit current = rw.parseCommit(git.getRepository().resolve(
-				Constants.HEAD));
-		RevCommit rc = rw
-				.parseCommit(git.getRepository().resolve(commitId));
+		final Git git = theRepo instanceof GitRepo ? ((GitRepo) theRepo).theRepo : null;
+
+		if (git == null) { throw new WrongRepositoryStateException("Tried to treat the repository as a GitRepo, when it is not"); }
+
+		final RevWalk rw = new RevWalk(git.getRepository());
+		final RevCommit current = rw.parseCommit(git.getRepository().resolve(Constants.HEAD));
+		final RevCommit rc = rw.parseCommit(git.getRepository().resolve(commitId));
 
 		rw.close();
 
 		git.checkout().setCreateBranch(false).setName(commitId).call();
 
-		Date date = new Date(rc.getCommitTime() * 1000L);
+		final Date date = new Date(rc.getCommitTime() * 1000L);
 
-		BranchInfo hv = new BranchInfo(branch, theRepo, rc.getId().name(), date);
+		final BranchInfo hv = new BranchInfo(branch, theRepo, rc.getId().name(), date);
 
 		hv.getHistoryGit(rc, df, useCloc);
 
 		git.checkout().setCreateBranch(false).setName(current.name());
-		HistoryViewer history = new HistoryViewer(branch, theRepo, commitId, date);
+		final HistoryViewer history = new HistoryViewer(branch, theRepo, commitId, date);
 		history.usesCLOCStats = hv.usesCLOCStats;
-		history.data.getLanguageStatsMutable().putAll(
-				hv.data.getLanguageStatsMutable());
+		history.data.getLanguageStatsMutable().putAll(hv.data.getLanguageStatsMutable());
 		history.data.getHeader().imprint(hv.data.getHeader());
 
 		return history;
 
 	}
 
-	void getHistoryGit(RevCommit rc, DiffFormatter df, boolean useCloc) throws IncorrectObjectTypeException, IOException {
-		
-		@SuppressWarnings("resource")
-		Git git = (theRepo instanceof GitRepo) ? ((GitRepo)this.theRepo).theRepo : null; 
-		
-		if (git == null) { return; }
-		
-		this.resetInfo();
+	void resetInfo() {
 
-		if (ClocService.canGetCLOCStats() && useCloc) {
-			
-			LOGGER.debug("Will use cloc to analyze");
+		theDate = new Date();
 
-			try {
-				ClocData theData = ClocService.getClocStatistics(git
-						.getRepository().getWorkTree());
-				this.getData().imprint(theData);
-				usesCLOCStats = true;
-				return;
+		setFileCount(0);
+		setLineCount(0);
 
-			} catch (IOException e) {
-				usesCLOCStats = false;
-				LOGGER.error(
-						"Could not use CLOC to gather statistics, defaulting to built-in analysis",
-						e);
-			}
-
-		} 
-
-		Map<Language, LangStats> langStats = this.getData()
-				.getLanguageStatsMutable();
-
-		ObjectReader reader = git.getRepository().newObjectReader();
-
-		EmptyTreeIterator oldTreeIter = new EmptyTreeIterator();
-		oldTreeIter.reset();
-
-		CanonicalTreeParser newTreeIter = new CanonicalTreeParser();
-		ObjectId newTree = rc.getTree();
-		newTreeIter.reset(reader, newTree);
-
-		df.setRepository(git.getRepository());
-		List<DiffEntry> entries = df.scan(oldTreeIter, newTreeIter);
-
-		Header header = this.getData().getHeader();
-
-		for (DiffEntry entry : entries) {
-
-			Language lang = CodeSniffer.detectLanguage(entry.getNewPath());
-
-			LangStats langStat = Util.putIfAbsent(langStats, lang,
-					new LangStats(lang));
-
-			incrementFileCount(1);
-
-			langStat.setnFiles(langStat.getnFiles() + 1);
-
-			for (HunkHeader hunk : df.toFileHeader(entry).getHunks()) {
-
-				header.setnLines(header.getnLines() + hunk.getNewLineCount());
-				langStat.setCodeLines(langStat.getCodeLines()
-						+ hunk.getNewLineCount());
-				this.incrementLineCount(hunk.getNewLineCount());
-
-			}
-
-		}
+		data.reset();
 
 	}
-	
-	public int getCommitCount() {
-		int count = 0;
-		
-		for (AuthorInfo ai : authorInfo.values()) {
-			count += ai.getCommitCount();
-		}
-		
-		return count;
-	}
 
-	ClocData getData() {
-		return data;
-	}
-
-	void setMostRecentCommit(String string) {
-		this.mostRecentLoggedCommit = string;
-	}
-
-	String getMostRecentLoggedCommit() {
-		return this.mostRecentLoggedCommit;
-	}
-	
-	public String toString(boolean showCommits) {
-
-		StringBuilder value = new StringBuilder(super.toString());
-		value.append("\nCommit Count: ");
-		value.append(getCommitCount());
-		value.append("/n");
-
-		if (showCommits) {
-			value.append("\n");
-			value.append(getAuthorStatistics().sort(SortMethod.COMMITS).toString());
-		}
-
-		return value.toString();
-		
+	void setMostRecentCommit(final String string) {
+		mostRecentLoggedCommit = string;
 	}
 
 	@Override
@@ -367,33 +341,39 @@ public class BranchInfo extends HistoryViewer {
 		return toString(true);
 	}
 
-	/**
-	 * Clips the "refs/heads/" prefix off branch names.
-	 * 
-	 * @param branch
-	 * @return the freshly trimmed branch
-	 */
-	public static String branchTrimmer(String branch) {
-		return branch.replace(Constants.R_HEADS, "");
+	public String toString(final boolean showCommits) {
+
+		final StringBuilder value = new StringBuilder(super.toString());
+		value.append("\nTotal Commit Count: ");
+		value.append(getCommitCount());
+		value.append("\n");
+
+		if (showCommits) {
+			value.append("\n");
+			value.append(getAuthorStatistics().sort(SortMethod.COMMITS).toString());
+		}
+
+		return value.toString();
+
 	}
 
 	/**
 	 * Adds the "refs/heads/" prefix to branch names.
-	 * 
+	 *
 	 * @param branch
 	 * @return the fresh branch name
 	 */
-	public static String branchAdder(String branch) {
+	public static String branchAdder(final String branch) {
 		return Constants.R_HEADS + branch;
 	}
 
 	/**
 	 * Ensures the string is prefixed by "refs/heads/"
-	 * 
+	 *
 	 * @param branch
 	 * @return
 	 */
-	static String branchNameResolver(String branch) {
+	static String branchNameResolver(final String branch) {
 
 		String value = branch == null ? "" : branch;
 		if (!value.contains(Constants.R_HEADS)) {
@@ -402,6 +382,16 @@ public class BranchInfo extends HistoryViewer {
 
 		return value;
 
+	}
+
+	/**
+	 * Clips the "refs/heads/" prefix off branch names.
+	 *
+	 * @param branch
+	 * @return the freshly trimmed branch
+	 */
+	public static String branchTrimmer(final String branch) {
+		return branch.replace(Constants.R_HEADS, "");
 	}
 
 }

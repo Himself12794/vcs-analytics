@@ -7,7 +7,7 @@ import com.google.common.collect.Range;
 
 /**
  * Used to store information about a commit made by author.
- * 
+ *
  * @author phwhitin
  *
  */
@@ -26,14 +26,14 @@ public class AuthorCommit implements DateLimitedData {
 	private final boolean isMergeCommit;
 
 	private final String message;
-	
+
 	public AuthorCommit() {
 		this("", new Date(0L), 0, 0, 0, false, "");
 	}
 
-	public AuthorCommit(final String id, final Date timestamp,
-			final int changedFiles, final int additions, final int deletions,
-			final boolean isMergeCommit, final String message) {
+	public AuthorCommit(final String id, final Date timestamp, final int changedFiles,
+			final int additions, final int deletions, final boolean isMergeCommit,
+			final String message) {
 
 		this.id = id;
 		this.timestamp = (Date) timestamp.clone();
@@ -45,42 +45,47 @@ public class AuthorCommit implements DateLimitedData {
 
 	}
 
-	/**
-	 * Gets the SHA-1 id.
-	 * 
-	 * @return
-	 */
-	public String getId() {
-		return id;
-	}
-
-	/**
-	 * Unix-time. (in seconds)
-	 * 
-	 * @return
-	 */
-	public Date getTimestamp() {
-		return (Date) timestamp.clone();
+	public int getAdditions() {
+		return additions;
 	}
 
 	public int getChangedFiles() {
 		return changedFiles;
 	}
 
-	public int getAdditions() {
-		return additions;
-	}
-
 	public int getDeletions() {
 		return deletions;
 	}
 
-	public boolean isMergeCommit() {
-		return isMergeCommit;
+	/**
+	 * Gets the SHA-1 id.
+	 *
+	 * @return
+	 */
+	public String getId() {
+		return id;
 	}
 
 	public String getMessage() {
 		return message;
+	}
+
+	/**
+	 * Unix-time. (in seconds)
+	 *
+	 * @return
+	 */
+	public Date getTimestamp() {
+		return (Date) timestamp.clone();
+	}
+
+	@Override
+	public boolean isInDateRange(final Range<Date> dateRange) {
+		return dateRange.contains(timestamp);
+	}
+
+	public boolean isMergeCommit() {
+		return isMergeCommit;
 	}
 
 	@Override
@@ -94,11 +99,6 @@ public class AuthorCommit implements DateLimitedData {
 		value += "Message: " + message;
 
 		return value;
-	}
-
-	@Override
-	public boolean isInDateRange(Range<Date> dateRange) {
-		return dateRange.contains(timestamp);
 	}
 
 }

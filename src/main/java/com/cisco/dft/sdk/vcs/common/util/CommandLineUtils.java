@@ -8,33 +8,36 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class CommandLineUtils {
-	
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(CommandLineUtils.class);
 
-	public static String executeCommand(String command, String...parameters) throws IOException {
+	private CommandLineUtils() {
+	}
 
-		StringBuilder output = new StringBuilder();
+	public static String executeCommand(final String command, final String... parameters) throws IOException {
 
-		Process p = Runtime.getRuntime().exec(getCommand(command, parameters));
+		final StringBuilder output = new StringBuilder();
+
+		final Process p = Runtime.getRuntime().exec(getCommand(command, parameters));
 
 		try {
 			p.waitFor();
-		} catch (InterruptedException e) {
+		} catch (final InterruptedException e) {
 			// No action needed
 		}
 
-		BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+		final BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
 
 		String line = "";
-		
+
 		try {
-			
+
 			while ((line = reader.readLine()) != null) {
 				output.append(line);
 				output.append("\n");
 			}
-			
-		} catch (Exception e) {
+
+		} catch (final Exception e) {
 			LOGGER.error("An error occured in command execution", e);
 		} finally {
 			reader.close();
@@ -44,12 +47,12 @@ public final class CommandLineUtils {
 
 	}
 
-	private static String getCommand(String command, String[] parameters) {
+	private static String getCommand(final String command, final String[] parameters) {
 
-		StringBuilder output = new StringBuilder(command);
+		final StringBuilder output = new StringBuilder(command);
 		output.append(" ");
 
-		for (String parameter : parameters) {
+		for (final String parameter : parameters) {
 
 			output.append(parameter);
 			output.append(" ");
@@ -59,6 +62,4 @@ public final class CommandLineUtils {
 
 	}
 
-	private CommandLineUtils() {}
-	
 }

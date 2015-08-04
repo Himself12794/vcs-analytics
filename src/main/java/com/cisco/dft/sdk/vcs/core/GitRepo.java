@@ -39,7 +39,7 @@ import com.google.common.collect.Lists;
 /**
  * Used to get information about different authors who have committed to a
  * remote repo.
- * 
+ *
  * @author phwhitin
  *
  */
@@ -51,8 +51,7 @@ public final class GitRepo extends Repo {
 	 */
 	private static final String DEFAULT_TEMP_CLONE_DIRECTORY = DEFAULT_DIRECTORY_BASE + "git/";
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(GitRepo.class
-			.getSimpleName());
+	private static final Logger LOGGER = LoggerFactory.getLogger(GitRepo.class.getSimpleName());
 
 	private final RepoInfo repoInfo = new RepoInfo();
 
@@ -60,7 +59,7 @@ public final class GitRepo extends Repo {
 
 	Git theRepo;
 
-	private UsernamePasswordCredentialsProvider cp;
+	private final UsernamePasswordCredentialsProvider cp;
 
 	/**
 	 * Links a remote repo with a local version so information can be pulled
@@ -72,17 +71,13 @@ public final class GitRepo extends Repo {
 	 * <p>
 	 * Initializing in this way will automatically sync the data if no local
 	 * copy is found. If auto-sync is not desired, run with a boolean as false.
-	 * 
+	 *
 	 * @param url
 	 *            the url to grab the data from
 	 * @throws GitAPIException
 	 */
-	public GitRepo(String url) throws GitAPIException {
+	public GitRepo(final String url) throws GitAPIException {
 		this(url, true);
-	}
-
-	public GitRepo(String url, String branch) throws GitAPIException {
-		this(url, branch, true);
 	}
 
 	/**
@@ -92,7 +87,7 @@ public final class GitRepo extends Repo {
 	 * local version. If there is no local copy, the repo automatically clones.
 	 * <p>
 	 * The repo is cloned bare to only include necessary information.
-	 * 
+	 *
 	 * @param url
 	 *            the url to grab the data from
 	 * @param generateStats
@@ -100,20 +95,24 @@ public final class GitRepo extends Repo {
 	 *            data
 	 * @throws GitAPIException
 	 */
-	public GitRepo(String url, boolean generateStats) throws GitAPIException {
+	public GitRepo(final String url, final boolean generateStats) throws GitAPIException {
 		this(url, null, null, generateStats, null);
 	}
 
-	public GitRepo(String url, String branch, boolean generateStats) throws GitAPIException {
+	public GitRepo(final String url, final String branch) throws GitAPIException {
+		this(url, branch, true);
+	}
+
+	public GitRepo(final String url, final String branch, final boolean generateStats) throws GitAPIException {
 		this(url, null, branch, generateStats, null);
 	}
 
-	public GitRepo(String url, String branch, boolean generateStats,
-			UsernamePasswordCredentialsProvider cp) throws GitAPIException {
+	public GitRepo(final String url, final String branch, final boolean generateStats,
+			final UsernamePasswordCredentialsProvider cp) throws GitAPIException {
 		this(url, cp, branch, generateStats, null);
 	}
 
-	public GitRepo(String url, UsernamePasswordCredentialsProvider cp) throws GitAPIException {
+	public GitRepo(final String url, final UsernamePasswordCredentialsProvider cp) throws GitAPIException {
 		this(url, cp, null, true, null);
 	}
 
@@ -124,7 +123,7 @@ public final class GitRepo extends Repo {
 	 * local version. If there is no local copy, the repo automatically clones.
 	 * <p>
 	 * The repo is cloned bare to only include necessary information.
-	 * 
+	 *
 	 * @param scrubbedUrl
 	 *            the url to grab the data from
 	 * @param cp
@@ -134,24 +133,22 @@ public final class GitRepo extends Repo {
 	 *            whether statistics should be generated about the repository
 	 * @throws GitAPIException
 	 */
-	public GitRepo(String url, UsernamePasswordCredentialsProvider cp,
-			String branch, boolean generateStatistics, File directory) throws GitAPIException {
+	public GitRepo(final String url, final UsernamePasswordCredentialsProvider cp,
+			final String branch, final boolean generateStatistics, final File directory) throws GitAPIException {
 
-		String scrubbedUrl = urlScrubber(url);
+		final String scrubbedUrl = urlScrubber(url);
 
 		repoInfo.setName(guessName(scrubbedUrl));
 
-		this.theDirectory = getDirectory(scrubbedUrl, directory);
+		theDirectory = getDirectory(scrubbedUrl, directory);
 
-		this.cp = cp != null
-				? cp
-				: new UsernamePasswordCredentialsProvider("username", "password");
+		this.cp = cp != null ? cp : new UsernamePasswordCredentialsProvider("username", "password");
 
 		if (theDirectory.exists()) {
 
 			try {
 				initExistingRepo(branch, generateStatistics);
-			} catch (IOException e) {
+			} catch (final IOException e) {
 
 				LOGGER.warn("Temporary data missing or corrupt, attempting to re-clone.");
 				LOGGER.debug("Could not reload existing repository", e);
@@ -160,7 +157,7 @@ public final class GitRepo extends Repo {
 
 				try {
 					createRepo(scrubbedUrl, branch, generateStatistics);
-				} catch (Exception e1) {
+				} catch (final Exception e1) {
 					throw new TransportException("Could not connect to remote repository.", e1);
 				}
 			}
@@ -169,7 +166,7 @@ public final class GitRepo extends Repo {
 
 			try {
 				createRepo(scrubbedUrl, branch, generateStatistics);
-			} catch (Exception e1) {
+			} catch (final Exception e1) {
 				throw new TransportException("Could not connect to remote repository.", e1);
 			}
 
@@ -178,227 +175,18 @@ public final class GitRepo extends Repo {
 	}
 
 	/**
-	 * Returns a list of the branches in this repository.
-	 * 
-	 * @return
+	 * Call this when you are done with this repo. Only call this when you are
+	 * done using it, I can't be responsible for incorrect information if this
+	 * is used incorrectly. :)
 	 */
-	public List<String> getBranches() {
-
-		List<String> branches = Lists.newArrayList();
-
-		try {
-
-			for (Ref ref : theRepo.lsRemote().call()) {
-
-				if (!ref.getName().equals(Constants.HEAD)
-						&& ref.getName().contains(Constants.R_HEADS)) {
-					branches.add(ref.getName());
-				}
-
-			}
-
-		} catch (GitAPIException e) {
-			LOGGER.error("An error occured, could not get branches");
-			LOGGER.debug("Error occured", e);
-		}
-
-		return branches;
-
-	}
-
-	private void initExistingRepo(String branch, boolean value) throws GitAPIException, IOException {
-
-		theRepo = Git.open(theDirectory);
-		repoInfo.setRepo(this);
-
-		LOGGER.info("Found cached version of " + repoInfo.getName());
-
-		if (value) {
-			validateBranchSync(branch);
-		}
-
-	}
-
-	private void validateBranchSync(String branch) throws GitAPIException {
-
-		if (branch == null) {
-			sync(true, true);
-		} else {
-			sync(branch, true, true);
-		}
-
-	}
-
-	/**
-	 * Syncs the repository with the remote, updating history if necessary.
-	 * 
-	 * @return
-	 */
-	public void sync() {
-		sync(true, true);
-	}
-
-	/**
-	 * Synchronizes only the specific branch.
-	 * 
-	 * @param branch
-	 * @throws GitAPIException
-	 */
-	public void sync(String branch) throws GitAPIException {
-		sync(branch, true, true);
-	}
-
-	/**
-	 * Synchronizes with remote.
-	 * 
-	 * @param generateStatistics
-	 *            whether or not statistics should be generated or updated
-	 * @throws GitAPIException
-	 */
-	public void sync(boolean generateStatistics, boolean useCloc) {
-
-		for (String branch : getBranches()) {
-			try {
-				sync(branch, generateStatistics, useCloc);
-			} catch (GitAPIException e) {
-				LOGGER.error("An error occured in synchronizing data", e);
-			}
-		}
-
-	}
-
-	/**
-	 * Synchronizes with remote. Only updates info about the specified branch.
-	 * 
-	 * @param branchResolved
-	 *            the branch about which to update info
-	 * @param generateStatistics
-	 *            whether or not to update info
-	 * @throws GitAPIException
-	 */
-	public void sync(String branch, boolean generateStatistics, boolean useCloc) throws GitAPIException {
-
-		if (branch == null) {
-			sync(generateStatistics, useCloc);
-			return;
-		}
-
-		String branchResolved = BranchInfo.branchNameResolver(branch);
-
-		if (!getBranches().contains(branchResolved)) { throw new BranchNotFoundException("Branch "
-				+ branch + " does not exist."); }
-
-		LOGGER.info(repoInfo.getName() + ": Syncing data for branch "
-				+ BranchInfo.branchTrimmer(branch));
-
-		DiffFormatter df = new DiffFormatter(new ByteArrayOutputStream());
-
-		try {
-
-			theRepo.checkout()
-					.setName("refs/remotes/origin/" + BranchInfo.branchTrimmer(branch))
-					.setCreateBranch(false).call();
-			
-			boolean flag = theRepo.fetch().setCredentialsProvider(cp)
-					.setRemoveDeletedRefs(true).call().getTrackingRefUpdates()
-					.isEmpty();
-
-			if (!flag || generateStatistics) {
-
-				updateAuthorInfo(branchResolved, df);
-				updateRepoInfo(branchResolved, df, useCloc);
-				repoInfo.resolveBranchInfo(getBranches());
-
-			}
-
-		} catch (Exception e) {
-			LOGGER.info(
-					"There was an error in connection to remote, could not update info",
-					e);
-		}
-
-		df.close();
-	}
-
-	private void updateAuthorInfo(String branch, DiffFormatter df) throws GitAPIException, IOException {
-
-		BranchInfo bi = repoInfo.getBranchInfo(branch);
-
-		LOGGER.info(repoInfo.getName() + ": Updating statistics for branch "
-				+ bi.getBranchName());
-
-		RevWalk walk = new RevWalk(theRepo.getRepository());
-		ObjectId from = theRepo.getRepository().resolve(Constants.HEAD);
-		walk.sort(RevSort.REVERSE);
-
-		if (bi.getMostRecentLoggedCommit() != null) {
-			ObjectId to = theRepo.getRepository().resolve(
-					bi.getMostRecentLoggedCommit());
-			walk.markUninteresting(walk.parseCommit(to));
-
-		}
-
-		walk.markStart(walk.parseCommit(from));
-
-		RevCommit prev = null;
-
-		for (RevCommit rc : walk) {
-			String author = rc.getAuthorIdent().getName();
-			AuthorInfo ai = bi.getAuthorInfo(author);
-			final boolean isMergeCommit = rc.getParentCount() > 1;
-
-			int totalAdditions = 0;
-			int totalDeletions = 0;
-			int totalFilesAffected = 0;
-
-			if (rc.getParentCount() == 0) {
-
-				int[] results = compareCommits(null, rc, df);
-				totalAdditions += results[0];
-				totalDeletions += results[1];
-				totalFilesAffected += results[2];
-
-			} else {
-
-				for (RevCommit rev : rc.getParents()) {
-
-					int[] results = compareCommits(rev, rc, df);
-					totalAdditions += results[0];
-					totalDeletions += results[1];
-					totalFilesAffected += results[2];
-
-				}
-
-			}
-
-			ai.incrementAdditions(totalAdditions);
-			ai.incrementDeletions(totalDeletions);
-			ai.add(new AuthorCommit(rc.name(), new Date(((long) rc
-					.getCommitTime()) * 1000), totalFilesAffected, totalAdditions, totalDeletions, isMergeCommit, rc
-					.getShortMessage()));
-
-
-			prev = rc;
-		}
-
-		if (prev != null) {
-			bi.setMostRecentCommit(prev.getId().name());
-		}
-
-		walk.close();
-		walk.dispose();
-
-	}
-
-	private void updateRepoInfo(String branch, DiffFormatter df, boolean useCloc) throws IOException {
-		repoInfo.getBranchInfo(branch).getHistoryGit(getNewestCommit(branch), df,
-				useCloc);
+	public void close() {
+		theRepo.getRepository().close();
 	}
 
 	/**
 	 * Compares two commits.
-	 * 
-	 * 
+	 *
+	 *
 	 * @param prev
 	 * @param curr
 	 * @param df
@@ -406,9 +194,9 @@ public final class GitRepo extends Repo {
 	 *         deletions, 2 = files changed, 3 = totalChanges
 	 * @throws IOException
 	 */
-	private int[] compareCommits(RevCommit prev, RevCommit curr, DiffFormatter df) throws IOException {
+	private int[] compareCommits(final RevCommit prev, final RevCommit curr, final DiffFormatter df) throws IOException {
 
-		ObjectReader reader = theRepo.getRepository().newObjectReader();
+		final ObjectReader reader = theRepo.getRepository().newObjectReader();
 
 		AbstractTreeIterator oldTreeIter = null;
 		if (prev == null) {
@@ -419,7 +207,7 @@ public final class GitRepo extends Repo {
 		} else {
 
 			oldTreeIter = new CanonicalTreeParser();
-			ObjectId oldTree = prev.getTree();
+			final ObjectId oldTree = prev.getTree();
 			((CanonicalTreeParser) oldTreeIter).reset(reader, oldTree);
 
 		}
@@ -433,31 +221,29 @@ public final class GitRepo extends Repo {
 		} else {
 
 			newTreeIter = new CanonicalTreeParser();
-			ObjectId newTree = curr.getTree();
+			final ObjectId newTree = curr.getTree();
 			((CanonicalTreeParser) newTreeIter).reset(reader, newTree);
 
 		}
 
 		df.setRepository(theRepo.getRepository());
-		List<DiffEntry> entries = df.scan(oldTreeIter, newTreeIter);
+		final List<DiffEntry> entries = df.scan(oldTreeIter, newTreeIter);
 
 		int deletions = 0;
 		int additions = 0;
 		int changedFiles = 0;
 
-		for (DiffEntry entry : entries) {
+		for (final DiffEntry entry : entries) {
 
 			changedFiles++;
-			FileHeader fh = df.toFileHeader(entry);
+			final FileHeader fh = df.toFileHeader(entry);
 
-			for (HunkHeader hunk : fh.getHunks()) {
+			for (final HunkHeader hunk : fh.getHunks()) {
 
-				for (Edit edit : hunk.toEditList()) {
+				for (final Edit edit : hunk.toEditList()) {
 
-					final int deletionLines = (edit.getEndA() - edit
-							.getBeginA());
-					final int additionLines = (edit.getEndB() - edit
-							.getBeginB());
+					final int deletionLines = edit.getEndA() - edit.getBeginA();
+					final int additionLines = edit.getEndB() - edit.getBeginB();
 
 					deletions += deletionLines;
 					additions += additionLines;
@@ -469,17 +255,95 @@ public final class GitRepo extends Repo {
 		return new int[] { additions, deletions, changedFiles };
 	}
 
-	private RevCommit getNewestCommit(String branch) {
+	/**
+	 * Tries to clone a repo from remote to local.
+	 *
+	 * @param theDirectory
+	 * @param uri
+	 * @param cp
+	 * @throws GitAPIException
+	 * @throws IllegalStateException
+	 */
+	private void createRepo(final String remote, final String branch, final boolean sync) throws IllegalStateException, GitAPIException {
+
+		LOGGER.info("Cloning repo from remote url.");
+
+		final CloneCommand command = Git.cloneRepository().setDirectory(theDirectory)
+				.setBranch(Util.ifNullDefault(branch, Constants.HEAD)).setURI(remote)
+				.setCredentialsProvider(cp);
+
+		theRepo = command.call();
+
+		repoInfo.setRepo(this);
+
+		LOGGER.info("Clone successful.");
+
+		if (sync) {
+
+			syncValidateBranch(branch);
+
+		}
+
+	}
+
+	/**
+	 * Returns a list of the branches in this repository.
+	 *
+	 * @return
+	 */
+	@Override
+	public List<String> getBranches() {
+
+		final List<String> branches = Lists.newArrayList();
+
+		try {
+
+			for (final Ref ref : theRepo.lsRemote().call()) {
+
+				if (!ref.getName().equals(Constants.HEAD)
+						&& ref.getName().contains(Constants.R_HEADS)) {
+					branches.add(ref.getName());
+				}
+
+			}
+
+		} catch (final GitAPIException e) {
+			LOGGER.error("An error occured, could not get branches");
+			LOGGER.debug("Error occured", e);
+		}
+
+		return branches;
+
+	}
+
+	/**
+	 * Gets the directory where temporary data is stored.
+	 *
+	 * @return
+	 */
+	public File getDirectory() {
+		return theDirectory;
+	}
+
+	private File getDirectory(final String url, final File alternate) {
+
+		if (alternate != null && alternate.exists() && alternate.isDirectory()) { return alternate; }
+
+		final UUID name = UUID.nameUUIDFromBytes(url.getBytes());
+		return new File(FileUtils.getTempDirectory(), GitRepo.DEFAULT_TEMP_CLONE_DIRECTORY
+				+ name.toString());
+
+	}
+
+	private RevCommit getNewestCommit(final String branch) {
 
 		RevCommit newest = null;
 		try {
 
-			theRepo.checkout()
-					.setName("origin/" + BranchInfo.branchTrimmer(branch))
+			theRepo.checkout().setName("origin/" + BranchInfo.branchTrimmer(branch))
 					.setCreateBranch(false).call();
-			RevWalk rw = new RevWalk(theRepo.getRepository());
-			newest = rw.parseCommit(theRepo.getRepository().resolve(
-					Constants.HEAD));
+			final RevWalk rw = new RevWalk(theRepo.getRepository());
+			newest = rw.parseCommit(theRepo.getRepository().resolve(Constants.HEAD));
 			rw.dispose();
 			rw.close();
 
@@ -498,83 +362,33 @@ public final class GitRepo extends Repo {
 	 * <li>Language statistics</li>
 	 * </ol>
 	 * Note: Merge requests do not seem to show any additions or deletions.
-	 * 
+	 *
 	 * @return a copy of the statistics object. changing this will not effect
 	 *         statistics as a whole.
 	 */
+	@Override
 	public RepoInfo getRepoStatistics() {
 		return repoInfo;
 	}
 
-	/**
-	 * Tries to clone a repo from remote to local.
-	 * 
-	 * @param theDirectory
-	 * @param uri
-	 * @param cp
-	 * @throws GitAPIException
-	 * @throws IllegalStateException
-	 */
-	private void createRepo(String remote, String branch, boolean sync) throws IllegalStateException, GitAPIException {
+	private void initExistingRepo(final String branch, final boolean value) throws GitAPIException, IOException {
 
-		LOGGER.info("Cloning repo from remote url.");
-
-		CloneCommand command = Git.cloneRepository().setDirectory(theDirectory)
-				.setBranch(Util.ifNullDefault(branch, Constants.HEAD)).setURI(remote).setCredentialsProvider(cp);
-
-		theRepo = command.call();
-
+		theRepo = Git.open(theDirectory);
 		repoInfo.setRepo(this);
 
-		LOGGER.info("Clone successful.");
+		LOGGER.info("Found cached version of " + repoInfo.getName());
 
-		if (sync) {
-
-			validateBranchSync(branch);
-
+		if (value) {
+			syncValidateBranch(branch);
 		}
 
 	}
 
-	/**
-	 * Gets the directory where temporary data is stored.
-	 * 
-	 * @return
-	 */
-	public File getDirectory() {
-		return theDirectory;
-	}
-
-	private File getDirectory(String url, File alternate) {
-
-		if (alternate != null && alternate.exists() && alternate.isDirectory()) { return alternate; }
-
-		UUID name = UUID.nameUUIDFromBytes(url.getBytes());
-		return new File(FileUtils.getTempDirectory(), GitRepo.DEFAULT_TEMP_CLONE_DIRECTORY
-				+ name.toString());
-
-	}
-
-	/**
-	 * JGit seems to have problems using http to clone, so this attempts to
-	 * change urls using http to https instead.
-	 * 
-	 * <br />
-	 * <b>Note: </b> This does not attempt to validate the url.
-	 * 
-	 * @param url
-	 * @return the url with https
-	 */
-	private static String urlScrubber(String url) {
-		return url.startsWith("http://") ? url.replace("http://", "https://")
-				: url;
-	}
-
-	private void removeDefunctDirectory(File dir) {
+	private void removeDefunctDirectory(final File dir) {
 
 		try {
 			FileUtils.deleteDirectory(dir);
-		} catch (IOException e1) {
+		} catch (final IOException e1) {
 			LOGGER.warn("An error occured trying to refresh the directory");
 			LOGGER.debug("Error is", e1);
 		}
@@ -582,17 +396,196 @@ public final class GitRepo extends Repo {
 	}
 
 	/**
-	 * Call this when you are done with this repo. Only call this when you are
-	 * done using it, I can't be responsible for incorrect information if this
-	 * is used incorrectly. :)
+	 * Syncs the repository with the remote, updating history if necessary.
+	 *
+	 * @return
 	 */
-	public void close() {
-		theRepo.getRepository().close();
+	@Override
+	public void sync() {
+		sync(true, true);
+	}
+
+	/**
+	 * Synchronizes with remote.
+	 *
+	 * @param generateStatistics
+	 *            whether or not statistics should be generated or updated
+	 * @throws GitAPIException
+	 */
+	public void sync(final boolean generateStatistics, final boolean useCloc) {
+
+		for (final String branch : getBranches()) {
+			try {
+				sync(branch, generateStatistics, useCloc);
+			} catch (final GitAPIException e) {
+				LOGGER.error("An error occured in synchronizing data", e);
+			}
+		}
+
+	}
+
+	/**
+	 * Synchronizes only the specific branch.
+	 *
+	 * @param branch
+	 * @throws GitAPIException
+	 */
+	public void sync(final String branch) throws GitAPIException {
+		sync(branch, true, true);
+	}
+
+	/**
+	 * Synchronizes with remote. Only updates info about the specified branch.
+	 *
+	 * @param branchResolved
+	 *            the branch about which to update info
+	 * @param generateStatistics
+	 *            whether or not to update info
+	 * @throws GitAPIException
+	 */
+	public void sync(final String branch, final boolean generateStatistics, final boolean useCloc) throws GitAPIException {
+
+		if (branch == null) {
+			sync(generateStatistics, useCloc);
+			return;
+		}
+
+		final String branchResolved = BranchInfo.branchNameResolver(branch);
+
+		if (!getBranches().contains(branchResolved)) { throw new BranchNotFoundException("Branch "
+				+ branch + " does not exist."); }
+
+		LOGGER.info(repoInfo.getName() + ": Syncing data for branch "
+				+ BranchInfo.branchTrimmer(branch));
+
+		final DiffFormatter df = new DiffFormatter(new ByteArrayOutputStream());
+
+		try {
+
+			theRepo.checkout().setName("refs/remotes/origin/" + BranchInfo.branchTrimmer(branch))
+					.setCreateBranch(false).call();
+
+			final boolean flag = theRepo.fetch().setCredentialsProvider(cp)
+					.setRemoveDeletedRefs(true).call().getTrackingRefUpdates().isEmpty();
+
+			if (!flag || generateStatistics) {
+
+				updateAuthorInfo(branchResolved, df);
+				updateRepoInfo(branchResolved, df, useCloc);
+				repoInfo.resolveBranchInfo(getBranches());
+
+			}
+
+		} catch (final Exception e) {
+			LOGGER.info("There was an error in connection to remote, could not update info", e);
+		}
+
+		df.close();
+	}
+
+	/**
+	 * Runs the appropriate sync method depending on the null state of branch
+	 *
+	 * @param branch
+	 *            the branch to sync
+	 */
+	private void syncValidateBranch(final String branch) throws GitAPIException {
+
+		if (branch == null) {
+			sync(true, true);
+		} else {
+			sync(branch, true, true);
+		}
+
 	}
 
 	@Override
 	public String toString() {
 		return repoInfo.toString();
+	}
+
+	private void updateAuthorInfo(final String branch, final DiffFormatter df) throws GitAPIException, IOException {
+
+		final BranchInfo bi = repoInfo.getBranchInfo(branch);
+
+		LOGGER.info(repoInfo.getName() + ": Updating statistics for branch " + bi.getBranchName());
+
+		final RevWalk walk = new RevWalk(theRepo.getRepository());
+		final ObjectId from = theRepo.getRepository().resolve(Constants.HEAD);
+		walk.sort(RevSort.REVERSE);
+
+		if (bi.getMostRecentLoggedCommit() != null) {
+			final ObjectId to = theRepo.getRepository().resolve(bi.getMostRecentLoggedCommit());
+			walk.markUninteresting(walk.parseCommit(to));
+
+		}
+
+		walk.markStart(walk.parseCommit(from));
+
+		RevCommit prev = null;
+
+		for (final RevCommit rc : walk) {
+			final String author = rc.getAuthorIdent().getName();
+			final AuthorInfo ai = bi.getAuthorInfo(author);
+			final boolean isMergeCommit = rc.getParentCount() > 1;
+
+			int totalAdditions = 0;
+			int totalDeletions = 0;
+			int totalFilesAffected = 0;
+
+			if (rc.getParentCount() == 0) {
+
+				final int[] results = compareCommits(null, rc, df);
+				totalAdditions += results[0];
+				totalDeletions += results[1];
+				totalFilesAffected += results[2];
+
+			} else {
+
+				for (final RevCommit rev : rc.getParents()) {
+
+					final int[] results = compareCommits(rev, rc, df);
+					totalAdditions += results[0];
+					totalDeletions += results[1];
+					totalFilesAffected += results[2];
+
+				}
+
+			}
+
+			ai.incrementAdditions(totalAdditions);
+			ai.incrementDeletions(totalDeletions);
+			ai.add(new AuthorCommit(rc.name(), new Date((long) rc.getCommitTime() * 1000), totalFilesAffected, totalAdditions, totalDeletions, isMergeCommit, rc
+					.getShortMessage()));
+
+			prev = rc;
+		}
+
+		if (prev != null) {
+			bi.setMostRecentCommit(prev.getId().name());
+		}
+
+		walk.close();
+		walk.dispose();
+
+	}
+
+	private void updateRepoInfo(final String branch, final DiffFormatter df, final boolean useCloc) throws IOException {
+		repoInfo.getBranchInfo(branch).getHistoryGit(getNewestCommit(branch), df, useCloc);
+	}
+
+	/**
+	 * JGit seems to have problems using http to clone, so this attempts to
+	 * change urls using http to https instead.
+	 *
+	 * <br />
+	 * <b>Note: </b> This does not attempt to validate the url.
+	 *
+	 * @param url
+	 * @return the url with https
+	 */
+	private static String urlScrubber(final String url) {
+		return url.startsWith("http://") ? url.replace("http://", "https://") : url;
 	}
 
 }

@@ -20,7 +20,7 @@ import com.cisco.dft.sdk.vcs.core.SVNRepo;
 /**
  * The application class. For total SDK abstraction, the library is still valid
  * with this package totally removed.
- * 
+ *
  * @author phwhitin
  *
  */
@@ -43,27 +43,90 @@ public final class Application {
 		setConfig(ProgramConfig.HELP);
 	}
 
-	/**
-	 * Sets the config parameters. Cannot be null.
-	 * 
-	 * @param config
-	 * @return
-	 */
-	private Application setConfig(ProgramConfig config) {
-		LOGGER.trace("Setting configuration as " + config);
-		if (config != null) {
-			this.config = config;
+	private void analyze() throws GitAPIException, SVNException {
+
+		if (config.getUrl() == null) {
+
+			out.println();
+
+		} else {
+
+			init();
+
+			if (config.shouldForceGit()) {
+				analyzeAsGit();
+			} else if (config.shouldForceSvn()) {
+				analyzeAsSVN();
+			} else {
+
+				if (config.getUrl().endsWith(".git")) {
+					analyzeAsGit();
+				} else {
+					analyzeAsSVN();
+				}
+
+			}
+
 		}
-		return this;
+
 	}
 
-	private ProgramConfig getConfig() {
-		return config;
+	private void analyzeAsGit() throws GitAPIException {
+
+		final UsernamePasswordCredentialsProvider cp = new UsernamePasswordCredentialsProvider(config
+				.getUsername(), config.getPassword());
+
+		final GitRepo repo = new GitRepo(config.getUrl(), config.getBranch(), false, cp);
+		repo.sync(config.getBranch(), config.shouldGenerateStats(), config.shouldUseCloc());
+
+		if (!(config.getStart() == null && config.getEnd() == null)) {
+
+			if (config.getBranch() != null) {
+				printLimitedRange(repo.getRepoStatistics().getBranchInfoFor(config.getBranch()));
+			} else {
+				printLimitedRange(repo.getRepoStatistics().getBranchInfos());
+			}
+
+		} else {
+			out.println(repo.getRepoStatistics().toString(config.shouldShowCommits()));
+		}
+
+		repo.close();
+
+	}
+
+	/**
+	 * Treats the url as a svn repo
+	 *
+	 * @throws SVNException
+	 */
+	private void analyzeAsSVN() throws SVNException {
+
+		final SVNRepo repo = new SVNRepo(config.getUrl(), config.getBranch());
+
+		out.println(repo.getRepoStatistics());
+
+	}
+
+	/**
+	 * Runs with some debug data and preset options and parameters.
+	 *
+	 * @throws GitAPIException
+	 * @throws SVNException
+	 */
+	private void debug() throws GitAPIException, SVNException {
+		setConfig(ProgramConfig.DEBUG).execute();
+	}
+
+	private void debugRange() {
+		LOGGER.debug("Limiting data to range: "
+				+ (config.getStart() == null ? "first-commit" : config.getStart()) + " - "
+				+ (config.getEnd() == null ? "most-recent-commit" : config.getEnd()));
 	}
 
 	/**
 	 * Runs the program with the given config parameters.
-	 * 
+	 *
 	 * @throws GitAPIException
 	 * @throws SVNException
 	 */
@@ -103,11 +166,8 @@ public final class Application {
 
 	}
 
-	/**
-	 * Initializes Cloc.
-	 */
-	private void init() {
-		ClocService.init();
+	private ProgramConfig getConfig() {
+		return config;
 	}
 
 	/**
@@ -119,9 +179,9 @@ public final class Application {
 		} else {
 
 			try {
-				Action action = Action.valueOf(config.getUrl().toUpperCase());
+				final Action action = Action.valueOf(config.getUrl().toUpperCase());
 				out.print(action.getUsage());
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				LOGGER.trace("Unrecognized help parameter", e);
 				out.println(ProgramConfig.getUsage());
 			}
@@ -130,114 +190,53 @@ public final class Application {
 	}
 
 	/**
-	 * Runs with some debug data and preset options and parameters.
-	 * 
-	 * @throws GitAPIException
-	 * @throws SVNException
+	 * Initializes Cloc.
 	 */
-	private void debug() throws GitAPIException, SVNException {
-		setConfig(ProgramConfig.DEBUG).execute();
+	private void init() {
+		ClocService.init();
 	}
 
-	private void analyze() throws GitAPIException, SVNException {
-
-		if (config.getUrl() == null) {
-
-			out.println();
-
-		} else {
-
-			init();
-
-			if (config.shouldForceGit()) {
-				analyzeAsGit();
-			} else if (config.shouldForceSvn()) {
-				analyzeAsSVN();
-			} else {
-
-				if (config.getUrl().endsWith(".git")) {
-					analyzeAsGit();
-				} else {
-					analyzeAsSVN();
-				}
-
-			}
-
-		}
-
-	}
-
-	private void analyzeAsGit() throws GitAPIException {
-
-		UsernamePasswordCredentialsProvider cp = new UsernamePasswordCredentialsProvider(config
-				.getUsername(), config.getPassword());
-
-		GitRepo repo = new GitRepo(config.getUrl(), config.getBranch(), false, cp);
-		repo.sync(config.getBranch(), config.shouldGenerateStats(),
-				config.shouldUseCloc());
-
-		if (!(config.getStart() == null && config.getEnd() == null)) {
-
-			if (config.getBranch() != null) {
-				printLimitedRange(repo.getRepoStatistics().getBranchInfoFor(
-						config.getBranch()));
-			} else {
-				printLimitedRange(repo.getRepoStatistics().getBranchInfos());
-			}
-
-		} else {
-			out.println(repo.getRepoStatistics().toString(
-					config.shouldShowCommits()));
-		}
-
-		repo.close();
-
-	}
-
-	/**
-	 * Treats the url as a svn repo
-	 * 
-	 * @throws SVNException
-	 */
-	private void analyzeAsSVN() throws SVNException {
-
-		SVNRepo repo = new SVNRepo(config.getUrl(), config.getBranch());
-
-		out.println(repo.getRepoStatistics());
-
-	}
-
-	private void printLimitedRange(BranchInfo... bis) {
+	private void printLimitedRange(final BranchInfo... bis) {
 
 		debugRange();
 
-		for (BranchInfo bi : bis) {
+		for (final BranchInfo bi : bis) {
 
-			AuthorInfoBuilder aib = bi.getAuthorStatistics()
-					.limitToDateRange(
-							Util.getAppropriateRange(config.getStart(),
-									config.getEnd()));
+			final AuthorInfoBuilder aib = bi.getAuthorStatistics().limitToDateRange(
+					Util.getAppropriateRange(config.getStart(), config.getEnd()));
 			out.println(aib);
 
 		}
 	}
 
-	private void debugRange() {
-		LOGGER.debug("Limiting data to range: "
-				+ (config.getStart() == null ? "first-commit" : config
-						.getStart())
-				+ " - "
-				+ (config.getEnd() == null ? "most-recent-commit" : config
-						.getEnd()));
+	/**
+	 * Sets the config parameters. Cannot be null.
+	 *
+	 * @param config
+	 * @return
+	 */
+	private Application setConfig(final ProgramConfig config) {
+		LOGGER.trace("Setting configuration as " + config);
+		if (config != null) {
+			this.config = config;
+		}
+		return this;
 	}
 
-	public static void main(String[] args) throws GitAPIException {
+	public static ProgramConfig getConfiguration() {
+		return APPLICATION.getConfig();
+	}
+
+	static Application getInstance() {
+		return APPLICATION;
+	}
+
+	public static void main(final String[] args) throws GitAPIException {
 
 		try {
 			APPLICATION.setConfig(ProgramConfig.parseArgs(args)).execute();
-		} catch (Exception e) {
-			err.println("An error occurred during application execution: "
-					+ e.getMessage());
+		} catch (final Exception e) {
+			err.println("An error occurred during application execution: " + e.getMessage());
 			LOGGER.debug("Error: ", e);
 		}
 
@@ -245,15 +244,7 @@ public final class Application {
 
 	}
 
-	static Application getInstance() {
-		return APPLICATION;
-	}
-
-	public static ProgramConfig getConfiguration() {
-		return APPLICATION.getConfig();
-	}
-
-	static Application setConfiguration(ProgramConfig config) {
+	static Application setConfiguration(final ProgramConfig config) {
 		getInstance().setConfig(config);
 		return getInstance();
 	}

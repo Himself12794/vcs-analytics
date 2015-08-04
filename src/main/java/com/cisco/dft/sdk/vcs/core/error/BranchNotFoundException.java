@@ -6,7 +6,7 @@ public class BranchNotFoundException extends GitAPIException {
 
 	private static final long serialVersionUID = 7093767439732861675L;
 
-	public BranchNotFoundException(String message) {
+	public BranchNotFoundException(final String message) {
 		super(message);
 	}
 

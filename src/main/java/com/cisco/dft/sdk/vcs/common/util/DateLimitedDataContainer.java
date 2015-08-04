@@ -16,7 +16,7 @@ import com.google.common.collect.Range;
  * DateLimitedDataContainer, it will check the date limit on that as well, and
  * so on. If desired, this can also work similarly to a list as long as all of
  * its entries implement {@link DateLimitedData}
- * 
+ *
  * @author phwhitin
  *
  * @param <T>
@@ -42,93 +42,19 @@ public class DateLimitedDataContainer<T extends DateLimitedData> {
 	}
 
 	/**
-	 * Removes any date limits imposed.
-	 * 
-	 * @return the limited object
-	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public DateLimitedDataContainer<T> includeAll() {
-		for (T t : data) {
-			if (t instanceof DateLimitedDataContainer) {
-				((DateLimitedDataContainer) t).limitToDateRange(Range.all());
-			}
-		}
-		limitedData = Lists.newArrayList();
-		dateRange = Range.all();
-		return this;
-	}
-
-	/**
-	 * Determines if the data is limited.
-	 * 
-	 * @return whether or not the data is limited
-	 */
-	public boolean isLimited() {
-		return !dateRange.equals(Range.all());
-	}
-
-	/**
-	 * Gets the list associated with the data.
-	 * 
-	 * @return if limited, the limited data, else the full data
-	 */
-	public List<T> getData() {
-		return isLimited() ? limitedData : data;
-	}
-
-	/**
-	 * Limits returned data to a specific range. If you need to override this,
-	 * don't forget to call super.{@link #limitToDateRange(DateRange)} or it
-	 * won't work correctly.
-	 * 
-	 * @param dateRange
-	 *            the date range to use
-	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public void limitToDateRange(Range<Date> dateRange) {
-
-		includeAll();
-		this.dateRange = dateRange;
-
-		for (T t : data) {
-
-			if (t.isInDateRange(dateRange)) {
-
-				if (t instanceof DateLimitedDataContainer) {
-					((DateLimitedDataContainer) t).limitToDateRange(dateRange);
-				}
-
-				limitedData.add(t);
-			}
-		}
-
-	}
-
-	/**
 	 * Delegate for {@link List#add(Object)}.
-	 * 
+	 *
 	 * @param t
 	 * @return
 	 */
-	public boolean add(T t) {
-		return t.isInDateRange(dateRange) ? data.add(t) && limitedData.add(t)
-				: data.add(t);
-	}
-
-	/**
-	 * Delegate for {@link List#get(int)}. Works appropriately if the data is
-	 * limited.
-	 * 
-	 * @param index
-	 * @return
-	 */
-	public T get(int index) {
-		return isLimited() ? limitedData.get(index) : data.get(index);
+	public boolean add(final T t) {
+		return t.isInDateRange(this.dateRange) ? this.data.add(t) && this.limitedData.add(t)
+				: this.data.add(t);
 	}
 
 	public DateLimitedDataContainer<T> copy() {
 
-		DateLimitedDataContainer<T> theCopy = new DateLimitedDataContainer<T>(this.data);
+		final DateLimitedDataContainer<T> theCopy = new DateLimitedDataContainer<T>(this.data);
 		theCopy.dateRange = this.dateRange;
 		theCopy.limitedData = this.limitedData;
 
@@ -136,8 +62,28 @@ public class DateLimitedDataContainer<T extends DateLimitedData> {
 	}
 
 	/**
+	 * Delegate for {@link List#get(int)}. Works appropriately if the data is
+	 * limited.
+	 *
+	 * @param index
+	 * @return
+	 */
+	public T get(final int index) {
+		return isLimited() ? this.limitedData.get(index) : this.data.get(index);
+	}
+
+	/**
+	 * Gets the list associated with the data.
+	 *
+	 * @return if limited, the limited data, else the full data
+	 */
+	public List<T> getData() {
+		return isLimited() ? this.limitedData : this.data;
+	}
+
+	/**
 	 * The current date range used for this repo.
-	 * 
+	 *
 	 * @return
 	 */
 	public Range<Date> getDateRange() {
@@ -145,18 +91,72 @@ public class DateLimitedDataContainer<T extends DateLimitedData> {
 	}
 
 	/**
+	 * Removes any date limits imposed.
+	 *
+	 * @return the limited object
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public DateLimitedDataContainer<T> includeAll() {
+		for (final T t : this.data) {
+			if (t instanceof DateLimitedDataContainer) {
+				((DateLimitedDataContainer) t).limitToDateRange(Range.all());
+			}
+		}
+		this.limitedData = Lists.newArrayList();
+		this.dateRange = Range.all();
+		return this;
+	}
+
+	/**
+	 * Determines if the data is limited.
+	 *
+	 * @return whether or not the data is limited
+	 */
+	public boolean isLimited() {
+		return !this.dateRange.equals(Range.all());
+	}
+
+	/**
+	 * Limits returned data to a specific range. If you need to override this,
+	 * don't forget to call super.{@link #limitToDateRange(DateRange)} or it
+	 * won't work correctly.
+	 *
+	 * @param dateRange
+	 *            the date range to use
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public void limitToDateRange(final Range<Date> dateRange) {
+
+		includeAll();
+		this.dateRange = dateRange;
+
+		for (final T t : this.data) {
+
+			if (t.isInDateRange(dateRange)) {
+
+				if (t instanceof DateLimitedDataContainer) {
+					((DateLimitedDataContainer) t).limitToDateRange(dateRange);
+				}
+
+				this.limitedData.add(t);
+			}
+		}
+
+	}
+
+	/**
 	 * Convenience sub class of {@link DateLimitedDataContainer} that also
 	 * provides an implementation of {@link DateLimitedData} for ease of
 	 * recursion.
-	 * 
+	 *
 	 * @author phwhitin
 	 *
 	 * @param <T>
 	 */
-	public static class RecursiveDateLimitedDataContainer<T extends DateLimitedData>
-			extends DateLimitedDataContainer<T> implements DateLimitedData {
+	public static class RecursiveDateLimitedDataContainer<T extends DateLimitedData> extends
+			DateLimitedDataContainer<T> implements DateLimitedData {
 
-		public RecursiveDateLimitedDataContainer(List<T> data) {
+		public RecursiveDateLimitedDataContainer(final List<T> data) {
 			super(data);
 		}
 
@@ -165,10 +165,10 @@ public class DateLimitedDataContainer<T extends DateLimitedData> {
 		 * range.
 		 */
 		@Override
-		public boolean isInDateRange(Range<Date> dateRange) {
+		public boolean isInDateRange(final Range<Date> dateRange) {
 			boolean flag = false;
 
-			for (T t : data) {
+			for (final T t : data) {
 				flag |= t.isInDateRange(dateRange);
 			}
 

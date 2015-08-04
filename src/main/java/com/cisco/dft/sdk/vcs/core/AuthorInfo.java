@@ -13,7 +13,7 @@ import com.google.common.collect.Range;
 
 /**
  * Wrapper class used for author data pulled from the repository.
- * 
+ *
  * @author phwhitin
  *
  */
@@ -29,7 +29,8 @@ public class AuthorInfo extends RecursiveDateLimitedDataContainer<AuthorCommit> 
 		this(name, 0, 0, new ArrayList<AuthorCommit>());
 	}
 
-	AuthorInfo(final String name, int additions, int deletions, List<AuthorCommit> commits) {
+	AuthorInfo(final String name, final int additions, final int deletions,
+			final List<AuthorCommit> commits) {
 		super(commits);
 		this.name = name;
 		this.additions = additions;
@@ -38,51 +39,54 @@ public class AuthorInfo extends RecursiveDateLimitedDataContainer<AuthorCommit> 
 	}
 
 	@Override
-	public void limitToDateRange(Range<Date> dateRange) {
-		includeAll();
-		super.limitToDateRange(dateRange);
+	public boolean add(final AuthorCommit ac) {
 
-		for (AuthorCommit ac : limitedData) {
-			limitedAdditions += ac.getAdditions();
-			limitedDeletions += ac.getDeletions();
+		for (final AuthorCommit a : data) {
+			if (a.getTimestamp().equals(ac.getTimestamp())) { return false; }
 		}
-	}
 
-	@Override
-	public AuthorInfo includeAll() {
-		super.includeAll();
-		limitedAdditions = 0;
-		limitedDeletions = 0;
-
-		return this;
-	}
-	
-	@Override
-	public boolean add(AuthorCommit ac) {
-		
-		for (AuthorCommit a : this.data) {
-			if (a.getTimestamp().equals(ac.getTimestamp())) {
-				return false;
-			}
-		}
-		
 		return super.add(ac);
+	}
+
+	@Override
+	public AuthorInfo copy() {
+		final AuthorInfo theCopy = new AuthorInfo(name, additions, deletions, data);
+		theCopy.limitToDateRange(getDateRange());
+		return theCopy;
+	}
+
+	public int getAdditions() {
+		return isLimited() ? limitedAdditions : additions;
+	}
+
+	public AuthorCommit getCommitById(final String id) {
+
+		for (final AuthorCommit ac : data) {
+			if (ac.getId().equals(id)) { return ac; }
+		}
+
+		throw new CommitNotFoundException();
+	}
+
+	public int getCommitCount() {
+		return isLimited() ? limitedData.size() : data.size();
 	}
 
 	/**
 	 * Gets a list of commits this author has made. Use
-	 * {@link AuthorInfo#limitToDateRange(Date, Date, boolean)} to set the range.
-	 * 
+	 * {@link AuthorInfo#limitToDateRange(Date, Date, boolean)} to set the
+	 * range.
+	 *
 	 * @return list of author commits
 	 */
 	public List<AuthorCommit> getCommits() {
 
-		List<AuthorCommit> toUse = getData();
+		final List<AuthorCommit> toUse = getData();
 
-		Comparator<AuthorCommit> sorter = new Comparator<AuthorCommit>() {
+		final Comparator<AuthorCommit> sorter = new Comparator<AuthorCommit>() {
 
 			@Override
-			public int compare(AuthorCommit p1, AuthorCommit p2) {
+			public int compare(final AuthorCommit p1, final AuthorCommit p2) {
 
 				return p2.getTimestamp().compareTo(p1.getTimestamp());
 			}
@@ -94,49 +98,46 @@ public class AuthorInfo extends RecursiveDateLimitedDataContainer<AuthorCommit> 
 		return Lists.newArrayList(toUse);
 	}
 
-	public String getName() {
-		return name;
-	}
-
-	public int getCommitCount() {
-		return isLimited() ? limitedData.size() : data.size();
-	}
-
-	public int getAdditions() {
-		return isLimited() ? limitedAdditions : additions;
-	}
-
-	void incrementAdditions(int x) {
-		this.additions += x;
-	}
-
 	public int getDeletions() {
 		return isLimited() ? limitedDeletions : deletions;
 	}
 
-	void incrementDeletions(int x) {
+	public String getName() {
+		return name;
+	}
+
+	@Override
+	public AuthorInfo includeAll() {
+		super.includeAll();
+		limitedAdditions = 0;
+		limitedDeletions = 0;
+
+		return this;
+	}
+
+	void incrementAdditions(final int x) {
+		additions += x;
+	}
+
+	void incrementDeletions(final int x) {
 		deletions += x;
 	}
-	
-	public AuthorCommit getCommitById(String id) {
-		
-		for (AuthorCommit ac : data) {
-			if (ac.getId().equals(id)) { return ac; }
+
+	@Override
+	public void limitToDateRange(final Range<Date> dateRange) {
+		includeAll();
+		super.limitToDateRange(dateRange);
+
+		for (final AuthorCommit ac : limitedData) {
+			limitedAdditions += ac.getAdditions();
+			limitedDeletions += ac.getDeletions();
 		}
-		
-		throw new CommitNotFoundException();
-	}
-	
-	public AuthorInfo copy() {
-		AuthorInfo theCopy = new AuthorInfo(name, additions, deletions, data);
-		theCopy.limitToDateRange(this.getDateRange());
-		return theCopy;
 	}
 
 	@Override
 	public String toString() {
 
-		StringBuilder value = new StringBuilder();
+		final StringBuilder value = new StringBuilder();
 
 		value.append("Name: " + name + ", ");
 		value.append("Commits: " + getCommitCount() + ", ");
@@ -145,7 +146,7 @@ public class AuthorInfo extends RecursiveDateLimitedDataContainer<AuthorCommit> 
 		value.append(getDeletions());
 		value.append("\n");
 
-		for (AuthorCommit ac : getCommits()) {
+		for (final AuthorCommit ac : getCommits()) {
 			value.append(" - " + ac.toString() + "\n\n");
 		}
 
