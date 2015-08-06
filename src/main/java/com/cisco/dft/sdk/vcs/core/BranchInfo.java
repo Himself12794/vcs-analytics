@@ -30,12 +30,12 @@ import org.eclipse.jgit.treewalk.EmptyTreeIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.cisco.dft.sdk.vcs.common.util.CodeSniffer;
-import com.cisco.dft.sdk.vcs.common.util.CodeSniffer.Language;
-import com.cisco.dft.sdk.vcs.common.util.Util;
 import com.cisco.dft.sdk.vcs.core.ClocData.Header;
 import com.cisco.dft.sdk.vcs.core.ClocData.LangStats;
 import com.cisco.dft.sdk.vcs.core.util.SortMethod;
+import com.cisco.dft.sdk.vcs.util.CodeSniffer;
+import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
+import com.cisco.dft.sdk.vcs.util.Util;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 

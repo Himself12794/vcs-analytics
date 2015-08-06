@@ -1,6 +1,7 @@
-package com.cisco.dft.sdk.vcs.common.util;
+package com.cisco.dft.sdk.vcs.util;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -114,8 +115,12 @@ public final class Util {
 	public static boolean nullLastOnly(final Object arg0, final Object arg1) {
 		return arg0 != null && arg1 == null;
 	}
+	
+	public static void printNTimes(final char value, final int n, final boolean lineBreak) {
+		System.out.print(getNTimes(value, n, lineBreak));
+	}
 
-	public static String printNTimes(final char value, final int n, final boolean lineBreak) {
+	public static String getNTimes(final char value, final int n, final boolean lineBreak) {
 		return valueWithFiller("", n, value) + (lineBreak ? "\n" : "");
 	}
 
@@ -197,6 +202,19 @@ public final class Util {
 	 */
 	public static String valueWithSpaces(final Object x) {
 		return valueWithFiller(x, DEFAULT_ALLOWED_NAME_SIZE, ' ');
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <T> T[] listToArray(List<T> list) {
+		Object[] array = new Object[list.size()];
+		
+		int i = 0;
+		for (T item : list) {
+			array[i] = item;
+			i++;
+		}
+		
+		return (T[]) array;
 	}
 
 }

@@ -1,14 +1,14 @@
 package com.cisco.dft.sdk.vcs.core;
 
-import static com.cisco.dft.sdk.vcs.common.util.Util.redirectLogError;
+import static com.cisco.dft.sdk.vcs.util.Util.redirectLogError;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.cisco.dft.sdk.vcs.common.util.CodeSniffer.Language;
-import com.cisco.dft.sdk.vcs.common.util.Util;
+import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
+import com.cisco.dft.sdk.vcs.util.Util;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ClocData {

@@ -12,12 +12,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 
-import com.cisco.dft.sdk.vcs.common.util.CodeSniffer.Language;
-import com.cisco.dft.sdk.vcs.common.util.CommandLineUtils;
-import com.cisco.dft.sdk.vcs.common.util.OSType;
-import com.cisco.dft.sdk.vcs.common.util.Util;
 import com.cisco.dft.sdk.vcs.core.ClocData.Header;
 import com.cisco.dft.sdk.vcs.core.ClocData.LangStats;
+import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
+import com.cisco.dft.sdk.vcs.util.CommandLineUtils;
+import com.cisco.dft.sdk.vcs.util.OSType;
+import com.cisco.dft.sdk.vcs.util.Util;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.google.common.collect.Maps;

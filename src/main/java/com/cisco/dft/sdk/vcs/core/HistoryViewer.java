@@ -2,9 +2,9 @@ package com.cisco.dft.sdk.vcs.core;
 
 import java.util.Date;
 
-import com.cisco.dft.sdk.vcs.common.util.CodeSniffer.Language;
-import com.cisco.dft.sdk.vcs.common.util.Util;
 import com.cisco.dft.sdk.vcs.core.ClocData.LangStats;
+import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
+import com.cisco.dft.sdk.vcs.util.Util;
 
 public class HistoryViewer {
 
@@ -177,7 +177,7 @@ public class HistoryViewer {
 		}
 
 		value.append("\t");
-		value.append(Util.printNTimes('-', 100, true));
+		value.append(Util.getNTimes('-', 100, true));
 
 		final String footer = Util.valueWithSpaces("SUM") + Util.valueWithSpaces(getFileCount())
 				+ Util.valueWithSpaces(getTotalCodeLines())

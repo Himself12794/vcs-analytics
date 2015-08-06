@@ -1,4 +1,4 @@
-package com.cisco.dft.sdk.vcs.common.util;
+package com.cisco.dft.sdk.vcs.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;

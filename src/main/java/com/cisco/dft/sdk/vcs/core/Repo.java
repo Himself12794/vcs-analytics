@@ -1,21 +1,11 @@
 package com.cisco.dft.sdk.vcs.core;
 
-import java.util.List;
 
 public abstract class Repo {
 
 	public static final String DEFAULT_DIRECTORY_BASE = "vcs-analytics/repositories/";
 
 	protected final RepoInfo repoInfo = new RepoInfo();
-
-	/**
-	 * Returns a list of the branches in this repository. This is vital so users
-	 * know which branches exist, so information for specific branches can be
-	 * accessed.
-	 *
-	 * @return
-	 */
-	public abstract List<String> getBranches();
 
 	/**
 	 * Gets all generated data for this repository. Make sure
@@ -40,6 +30,7 @@ public abstract class Repo {
 		if (value.endsWith(".git")) {
 			value = value.replace(".git", "");
 		}
+		
 		if (value.contains("/")) {
 			splitten = value.split("/");
 		} else if (value.contains("\\")) {

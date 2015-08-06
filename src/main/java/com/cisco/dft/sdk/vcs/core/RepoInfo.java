@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
-import com.cisco.dft.sdk.vcs.common.util.Util;
+import com.cisco.dft.sdk.vcs.util.Util;
 import com.google.common.collect.Maps;
 
 public class RepoInfo {
@@ -141,7 +141,7 @@ public class RepoInfo {
 
 		final StringBuilder value = new StringBuilder();
 
-		value.append(Util.printNTimes('+', length, true));
+		value.append(Util.getNTimes('+', length, true));
 		value.append("Report for repo: ");
 		value.append(getName());
 		value.append("\nTime of report: ");
@@ -155,14 +155,14 @@ public class RepoInfo {
 		}
 
 		value.append("\n");
-		value.append(Util.printNTimes('-', length, true));
+		value.append(Util.getNTimes('-', length, true));
 
 		for (final BranchInfo bi : branches.values()) {
 			value.append(bi.toString(showCommits));
-			value.append(Util.printNTimes('*', length, true));
+			value.append(Util.getNTimes('*', length, true));
 		}
 
-		value.append(Util.printNTimes('=', length, true));
+		value.append(Util.getNTimes('=', length, true));
 
 		return value.toString();
 

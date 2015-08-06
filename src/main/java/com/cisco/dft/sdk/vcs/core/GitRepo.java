@@ -32,8 +32,8 @@ import org.eclipse.jgit.treewalk.EmptyTreeIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.cisco.dft.sdk.vcs.common.util.Util;
 import com.cisco.dft.sdk.vcs.core.error.BranchNotFoundException;
+import com.cisco.dft.sdk.vcs.util.Util;
 import com.google.common.collect.Lists;
 
 /**
@@ -291,7 +291,6 @@ public final class GitRepo extends Repo {
 	 *
 	 * @return
 	 */
-	@Override
 	public List<String> getBranches() {
 
 		final List<String> branches = Lists.newArrayList();

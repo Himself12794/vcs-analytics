@@ -1,11 +1,8 @@
-package com.cisco.dft.sdk.vcs.common.util;
+package com.cisco.dft.sdk.vcs.util;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
@@ -22,9 +19,6 @@ import com.google.common.collect.Range;
  * @param <T>
  */
 public class DateLimitedDataContainer<T extends DateLimitedData> {
-
-	@SuppressWarnings("unused")
-	private static final Logger LOGGER = LoggerFactory.getLogger("DateLimiter");
 
 	protected final List<T> data;
 

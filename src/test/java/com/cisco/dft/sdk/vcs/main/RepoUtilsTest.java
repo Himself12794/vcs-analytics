@@ -17,10 +17,6 @@ import org.tmatesoft.svn.core.SVNException;
 
 import ch.qos.logback.classic.Level;
 
-import com.cisco.dft.sdk.vcs.common.util.CodeSniffer;
-import com.cisco.dft.sdk.vcs.common.util.CodeSniffer.Language;
-import com.cisco.dft.sdk.vcs.common.util.OSType;
-import com.cisco.dft.sdk.vcs.common.util.Util;
 import com.cisco.dft.sdk.vcs.core.AuthorCommit;
 import com.cisco.dft.sdk.vcs.core.AuthorInfo;
 import com.cisco.dft.sdk.vcs.core.AuthorInfoBuilder;
@@ -32,6 +28,10 @@ import com.cisco.dft.sdk.vcs.core.GitRepo;
 import com.cisco.dft.sdk.vcs.core.HistoryViewer;
 import com.cisco.dft.sdk.vcs.core.Repo;
 import com.cisco.dft.sdk.vcs.core.util.SortMethod;
+import com.cisco.dft.sdk.vcs.util.CodeSniffer;
+import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
+import com.cisco.dft.sdk.vcs.util.OSType;
+import com.cisco.dft.sdk.vcs.util.Util;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 

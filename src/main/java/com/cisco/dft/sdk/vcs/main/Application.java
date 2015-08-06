@@ -10,12 +10,12 @@ import org.tmatesoft.svn.core.SVNException;
 
 import ch.qos.logback.classic.Level;
 
-import com.cisco.dft.sdk.vcs.common.util.Util;
 import com.cisco.dft.sdk.vcs.core.AuthorInfoBuilder;
 import com.cisco.dft.sdk.vcs.core.BranchInfo;
 import com.cisco.dft.sdk.vcs.core.ClocService;
 import com.cisco.dft.sdk.vcs.core.GitRepo;
 import com.cisco.dft.sdk.vcs.core.SVNRepo;
+import com.cisco.dft.sdk.vcs.util.Util;
 
 /**
  * The application class. For total SDK abstraction, the library is still valid
@@ -26,7 +26,7 @@ import com.cisco.dft.sdk.vcs.core.SVNRepo;
  */
 public final class Application {
 
-	public static final String VERISION = "v1.1.0";
+	public static final String VERISION = "v1.1.1";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger("Application");
 
@@ -173,7 +173,7 @@ public final class Application {
 	/**
 	 * Prints the help message to stdout.
 	 */
-	public void help() {
+	void help() {
 		if (config.getUrl() == null) {
 			out.println(ProgramConfig.getUsage());
 		} else {
@@ -223,7 +223,7 @@ public final class Application {
 		return this;
 	}
 
-	public static ProgramConfig getConfiguration() {
+	static ProgramConfig getConfiguration() {
 		return APPLICATION.getConfig();
 	}
 
@@ -239,8 +239,6 @@ public final class Application {
 			err.println("An error occurred during application execution: " + e.getMessage());
 			LOGGER.debug("Error: ", e);
 		}
-
-		// TODO cloc analysis - full testing
 
 	}
 

@@ -5,8 +5,9 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-import com.cisco.dft.sdk.vcs.common.util.DateLimitedDataContainer;
 import com.cisco.dft.sdk.vcs.core.util.SortMethod;
+import com.cisco.dft.sdk.vcs.util.DateLimitedDataContainer;
+import com.cisco.dft.sdk.vcs.util.Util;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 
@@ -110,19 +111,32 @@ public class AuthorInfoBuilder {
 	/**
 	 * Limit author information returned to those who have committed within
 	 * given time frame.
+	 * <p>
+	 * See {@link Range} for information on how to use ranges.
 	 *
-	 * @param start
-	 *            the start date
-	 * @param end
-	 *            the end date
-	 * @param inclusive
-	 *            whether or not the range includes the endpoints
-	 * @return
+	 * @param dateRange
+	 *            the range to use
+	 * 
 	 * @return
 	 */
 	public AuthorInfoBuilder limitToDateRange(final Range<Date> dateRange) {
 		authorInfo.limitToDateRange(dateRange);
 		return this;
+	}
+
+	/**
+	 * Limit author information returned to those who have committed within
+	 * given time frame.
+	 *
+	 * @param start
+	 *            the start date
+	 * @param end
+	 *            the end date
+	 * 
+	 * @return
+	 */
+	public AuthorInfoBuilder limitToRange(final Date start, final Date end) {
+		return limitToDateRange(Util.getAppropriateRange(start, end));
 	}
 
 	/**
