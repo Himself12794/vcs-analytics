@@ -43,7 +43,8 @@ public final class ClocService {
 	public static final File SRC_DIR;
 
 	static {
-		SRC_DIR = new File(
+		SRC_DIR = 
+				new File(
 				ClocService
 				.class
 				.getClassLoader()

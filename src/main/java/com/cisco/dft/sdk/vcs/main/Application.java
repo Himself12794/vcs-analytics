@@ -101,7 +101,6 @@ public final class Application {
 	 *
 	 * @throws SVNException
 	 */
-	@SuppressWarnings("deprecation")
 	private void analyzeAsSVN() throws SVNException {
 
 		final SVNRepo repo = new SVNRepo(config.getUrl(), config.getBranch());
