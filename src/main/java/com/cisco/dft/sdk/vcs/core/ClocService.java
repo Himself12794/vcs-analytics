@@ -40,7 +40,7 @@ public final class ClocService {
 
 	private static final String CLOC_DIR = "cloc/";
 
-	public static final File SRC_DIR = new File(Util.class.getClassLoader().getResource(CLOC_DIR)
+	public static final File SRC_DIR = new File(ClocService.class.getClassLoader().getResource(CLOC_DIR)
 			.getPath());
 
 	public static final File BIN_DIR = new File(FileUtils.getTempDirectory(), "vcs-analytics/"

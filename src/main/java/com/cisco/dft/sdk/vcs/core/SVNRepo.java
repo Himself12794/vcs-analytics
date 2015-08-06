@@ -191,13 +191,8 @@ public class SVNRepo extends Repo {
 			final AuthorInfo ai = bi.getAuthorInfo(author);
 			final Collection<SVNLogEntryPath> logPath = leEntry.getChangedPaths().values();
 
-			//compareRevisions(s(rev), s(rev > 0 ? rev - 1L : rev),
-			//		pathsToFiles(logPath.toArray(new SVNLogEntryPath[logPath.size()])));
-
 			ai.add(new AuthorCommit(Long.toString(leEntry.getRevision()), leEntry.getDate(), 0, 0, 0, false, leEntry
 					.getMessage().replace("\n", " ")));
-
-			//Util.printNTimes('-', 50, true);
 		}
 	}
 
