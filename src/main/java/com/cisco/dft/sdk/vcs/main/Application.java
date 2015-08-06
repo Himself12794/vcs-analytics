@@ -24,6 +24,7 @@ import com.cisco.dft.sdk.vcs.util.Util;
  * @author phwhitin
  *
  */
+@SuppressWarnings("deprecation")
 public final class Application {
 
 	public static final String VERISION = "v1.1.1";
@@ -100,6 +101,7 @@ public final class Application {
 	 *
 	 * @throws SVNException
 	 */
+	@SuppressWarnings("deprecation")
 	private void analyzeAsSVN() throws SVNException {
 
 		final SVNRepo repo = new SVNRepo(config.getUrl(), config.getBranch());
