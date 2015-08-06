@@ -40,18 +40,6 @@ public final class ClocService {
 
 	private static final String CLOC_DIR = "cloc/";
 
-	public static final File SRC_DIR;
-
-	static {
-		SRC_DIR = 
-				new File(
-				ClocService
-				.class
-				.getClassLoader()
-				.getResource(CLOC_DIR)
-				.getPath());
-	}
-
 	public static final File BIN_DIR = new File(FileUtils.getTempDirectory(), "vcs-analytics/"
 			+ CLOC_DIR);
 
@@ -149,7 +137,7 @@ public final class ClocService {
 	 */
 	private static File getFileForOS(final boolean src) {
 
-		final File file = src ? SRC_DIR : BIN_DIR;
+		final File file = src ? getClassPathFile(CLOC_DIR): BIN_DIR;
 
 		switch (OSType.getOSType()) {
 			case WIN:
@@ -248,6 +236,10 @@ public final class ClocService {
 			LOGGER.info("Perl not detected");
 			return false;
 		}
+	}
+	
+	private static File getClassPathFile(String path) {
+		return new File(ClocService.class.getClassLoader().getResource(path).getPath());
 	}
 
 }
