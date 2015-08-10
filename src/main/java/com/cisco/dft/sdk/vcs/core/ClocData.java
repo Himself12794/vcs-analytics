@@ -167,9 +167,17 @@ public class ClocData {
 		public void setLinesPerSecond(final float linesPerSecond) {
 			this.linesPerSecond = linesPerSecond;
 		}
+		
+		public void incrementnFiles(final int nFiles) {
+			this.nFiles += nFiles;
+		}
 
 		public void setnFiles(final int nFiles) {
 			this.nFiles = nFiles;
+		}
+		
+		public void incrementnLines(final int nLines) {
+			this.nLines += nLines;
 		}
 
 		public void setnLines(final int nLines) {
@@ -219,6 +227,10 @@ public class ClocData {
 		public int getBlankLines() {
 			return blankLines;
 		}
+		
+		public void incrementCodeLines(final int codeLines) {
+			this.codeLines += codeLines;
+		}
 
 		public int getCodeLines() {
 			return codeLines;
@@ -251,7 +263,11 @@ public class ClocData {
 		public void setLanguage(final Language language) {
 			this.language = language;
 		}
-
+		
+		public void incrementnFiles(final int nFiles) {
+			this.nFiles += nFiles;
+		}
+		
 		public void setnFiles(final int nFiles) {
 			this.nFiles = nFiles;
 		}

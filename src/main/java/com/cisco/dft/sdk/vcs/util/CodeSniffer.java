@@ -1,9 +1,23 @@
 package com.cisco.dft.sdk.vcs.util;
 
+import static com.cisco.dft.sdk.vcs.util.FileExtensionMapping.FILE_EXTENSION_ASSOCIATIONS;
+
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.LineNumberReader;
+import java.util.Iterator;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.cisco.dft.sdk.vcs.core.ClocData;
+import com.cisco.dft.sdk.vcs.core.ClocData.Header;
+import com.cisco.dft.sdk.vcs.core.ClocData.LangStats;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 /**
@@ -14,39 +28,8 @@ import com.google.common.collect.Maps;
  *
  */
 public final class CodeSniffer {
-
-	private static final Map<String, Language> FILE_ASSOCIATIONS = Maps.newHashMap();
-
-	static {
-
-		final Map<String, Language> a = FILE_ASSOCIATIONS;
-
-		a.put("java", Language.JAVA);
-		a.put("cs", Language.CSHARP);
-		a.put("c", Language.C);
-		a.put("cc", Language.CPP);
-		a.put("cpp", Language.CPP);
-		a.put("cxx", Language.CPP);
-		a.put("h", Language.C);
-		a.put("hpp", Language.CPP);
-		a.put("hxx", Language.CPP);
-		a.put("js", Language.JAVASCRIPT);
-		a.put("jsp", Language.JSP);
-		a.put("py", Language.PYTHON);
-		a.put("pyw", Language.PYTHON);
-		a.put("lua", Language.LUA);
-		a.put("html", Language.HTML);
-		a.put("xhtml", Language.HTML);
-		a.put("shtml", Language.HTML);
-		a.put("php", Language.PHP);
-		a.put("php3", Language.PHP);
-		a.put("phpt", Language.PHP);
-		a.put("phtml", Language.PHP);
-		a.put("xml", Language.XML);
-		a.put("css", Language.CSS);
-		a.put("yml", Language.YAML);
-
-	}
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger("CodeSniffer");
 
 	private CodeSniffer() {
 	}
@@ -67,7 +50,7 @@ public final class CodeSniffer {
 
 		if (filed.length > 0) {
 
-			final Language lang = FILE_ASSOCIATIONS.get(filed[filed.length - 1]);
+			final Language lang = FILE_EXTENSION_ASSOCIATIONS.get(filed[filed.length - 1]);
 
 			return lang != null ? lang : Language.UNDEFINED;
 
@@ -75,6 +58,51 @@ public final class CodeSniffer {
 
 		return Language.UNDEFINED;
 
+	}
+
+	public static ClocData analyzeDirectory(File directory) {
+
+		Map<Language, LangStats> langCount = Maps.newHashMap();
+
+		Header header = new Header();
+
+		Iterator<File> files = FileUtils.iterateFiles(directory, FILE_EXTENSION_ASSOCIATIONS.keySet()
+				.toArray(new String[FILE_EXTENSION_ASSOCIATIONS.size()]), true);
+
+		for (File file : Lists.newArrayList(files)) {
+
+			if (file.isHidden()) {
+				continue;
+			}
+			
+			final int count = getLinesCount(file);
+			final Language lang = detectLanguage(file);
+
+			header.incrementnFiles(1);
+			header.incrementnLines(count);
+			
+			LangStats stats = Util.putIfAbsent(langCount, lang, new LangStats(lang));
+			stats.incrementnFiles(1);
+			stats.incrementCodeLines(count);
+
+		}
+
+		return new ClocData(header, langCount);
+
+	}
+	
+	private static int getLinesCount(File file) {
+		int count = 0;
+
+		try {
+			LineNumberReader lnr = new LineNumberReader(new FileReader(file));
+			lnr.skip(Long.MAX_VALUE);
+			count = lnr.getLineNumber() + 1;
+			lnr.close();
+		} catch (IOException e1) {
+			LOGGER.trace("Could not get line count", e1);
+		}
+		return count;
 	}
 
 	/**

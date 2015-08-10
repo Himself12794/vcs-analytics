@@ -25,7 +25,7 @@ public class ProgramConfig {
 
 	/** A debug test configuration */
 	static final ProgramConfig DEBUG = ProgramConfig.parseArgs("analyze", "-d",
-			"https://github.com/Himself12794/powersAPI.git", "--branch=master", "--nocommits");
+			"https://github.com/Himself12794/powersAPI.git", "-s", "--branch=develop");
 
 	/**
 	 * Just like {@link ProgramConfig.DEBUG}, but with debug logging off for
@@ -220,6 +220,10 @@ public class ProgramConfig {
 
 	public static ProgramConfig parseArgs(final String... args) {
 		return parseArgs(ArgParser.parse(args));
+	}
+	
+	public static ProgramConfig parseArgs(final String arg) {
+		return parseArgs(arg.split(" "));
 	}
 
 }

@@ -15,7 +15,6 @@ import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.diff.Edit;
-import org.eclipse.jgit.errors.RevisionSyntaxException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectReader;
@@ -297,7 +296,7 @@ public final class GitRepo extends Repo {
 
 		try {
 
-			for (final Ref ref : theRepo.lsRemote().call()) {
+			for (final Ref ref : theRepo.lsRemote().setCredentialsProvider(cp).call()) {
 
 				if (!ref.getName().equals(Constants.HEAD)
 						&& ref.getName().contains(Constants.R_HEADS)) {
@@ -328,9 +327,14 @@ public final class GitRepo extends Repo {
 
 		if (alternate != null && alternate.exists() && alternate.isDirectory()) { return alternate; }
 
+		String tmp = System.getenv("tmp");
+		String temp = System.getenv("temp");
+
+		File directory = tmp != null ? new File(tmp) : (temp != null ? new File(temp) : FileUtils
+				.getTempDirectory());
+
 		final UUID name = UUID.nameUUIDFromBytes(url.getBytes());
-		return new File(FileUtils.getTempDirectory(), GitRepo.DEFAULT_TEMP_CLONE_DIRECTORY
-				+ name.toString());
+		return new File(directory, GitRepo.DEFAULT_TEMP_CLONE_DIRECTORY + name.toString());
 
 	}
 
@@ -346,7 +350,7 @@ public final class GitRepo extends Repo {
 			rw.dispose();
 			rw.close();
 
-		} catch (RevisionSyntaxException | IOException | GitAPIException e) {
+		} catch (Exception e) {
 			LOGGER.error("Could not get most recent commit", e);
 		}
 
@@ -395,7 +399,9 @@ public final class GitRepo extends Repo {
 	}
 
 	/**
-	 * Syncs the repository with the remote, updating history if necessary.
+	 * Syncs the repository with the remote, updating history if necessary. This
+	 * will sync data for all branches. If you want to only sync data for a
+	 * single branch, use {@link GitRepo#sync(String)}.
 	 *
 	 * @return
 	 */

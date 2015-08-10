@@ -143,7 +143,7 @@ public class RepoUtilsTest {
 	public void testConfig() {
 
 		LOGGER.debug("Testing configuration");
-		assertTrue(!ProgramConfig.DEBUG.shouldShowCommits());
+		assertTrue(ProgramConfig.DEBUG.shouldShowCommits());
 		assertTrue(ProgramConfig.DEBUG.getStart() == null);
 		assertTrue(ProgramConfig.DEBUG.getEnd() == null);
 		assertTrue(ProgramConfig.TEST.getStart() != null);
@@ -200,6 +200,10 @@ public class RepoUtilsTest {
 				.getLangStats(Language.JAVA).getnFiles() == 23);
 		assertTrue(hv.getLangPercent(Language.JAVA) >= 0.5F);
 		assertTrue(hv.getDate().equals(arbitraryDate));
+		
+		LOGGER.info("Testing code sniffer over directory");
+		System.out.println(CodeSniffer.analyzeDirectory(reo.getDirectory()));
+		
 		reo.close();
 	}
 
@@ -231,4 +235,4 @@ public class RepoUtilsTest {
 
 	}
 
-};
+}
