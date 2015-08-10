@@ -5,8 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -14,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNLogEntry;
-import org.tmatesoft.svn.core.SVNLogEntryPath;
 import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
 import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory;
@@ -25,8 +23,11 @@ import org.tmatesoft.svn.core.wc.SVNDiffClient;
 import org.tmatesoft.svn.core.wc.SVNRevision;
 import org.tmatesoft.svn.core.wc.SVNUpdateClient;
 import org.tmatesoft.svn.core.wc.SVNWCUtil;
-import org.tmatesoft.svn.core.wc2.SvnDiff;
-import org.tmatesoft.svn.core.wc2.SvnTarget;
+
+import com.cisco.dft.sdk.vcs.util.CodeSniffer;
+import com.cisco.dft.sdk.vcs.util.Util;
+import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
+import com.google.common.collect.Maps;
 
 /**
  * SVN Repositories use directories, instead of references, for branches.
@@ -35,10 +36,9 @@ import org.tmatesoft.svn.core.wc2.SvnTarget;
  * @deprecated This is incomplete, and only provides cloc data, and number of
  *             commits by author.
  */
-@Deprecated
 public class SVNRepo extends Repo {
 	
-	private static final boolean INCOMPLETE = true;
+	private static final String INDEX = "Index: ";
 
 	public static final String TRUNK = "trunk";
 
@@ -85,68 +85,65 @@ public class SVNRepo extends Repo {
 
 		ourClientManager.setAuthenticationManager(authManager);
 
+		LOGGER.debug("exporting...");
+		
 		final SVNUpdateClient updateClient = ourClientManager.getUpdateClient();
 		updateClient.setIgnoreExternals(false);
 		updateClient.doExport(theRepo.getLocation(), theDirectory,
 				SVNRevision.create(latestRevision), SVNRevision.create(latestRevision), null, true,
 				SVNDepth.INFINITY);
+		
+		LOGGER.debug("exported");
 
 		sync(branch == null ? TRUNK : branch);
 
 	}
 
-	private void compareRevisions(final SVNRevision rev1, final SVNRevision rev2, final File... files) throws SVNException {
+	private Diff compareRevisions(final SVNRevision rev1, final SVNRevision rev2) throws SVNException {
+		
+		Diff diff = new Diff();
 
-		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-		for (File file : files) {
-			doDiff(rev1, rev2, baos, file);
-
+		try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+			
+			doDiff(rev1, rev2, baos);
+			
+			int filesChanged = 0;
 			int additions = 0;
 			int deletions = 0;
-
-			for (final String line : baos.toString().split("\n")) {
-				final Matcher m = Pattern.compile("@@(.*?)@@").matcher(line);
-				while (m.find()) {
-					System.out.println(m.group(0));
-					final String[] values = m.group(0).split(" ");
-
-					final String[] deletionIndent = values[1].split(",");
-					final int num0 = Math.abs(Integer.valueOf(deletionIndent[0]));
-					final int num1 = Integer.valueOf(deletionIndent[1]);
-					System.out.println("found -" + num0 + "," + num1);
-
-					final int linesDeleted = num0 + num1 + 1;
-					deletions += linesDeleted;
-
-					final String[] additionIndent = values[2].split(",");
-					final int num2 = Math.abs(Integer.valueOf(additionIndent[0]));
-					final int num3 = Integer.valueOf(additionIndent[1]);
-					System.out.println("found +" + num2 + "," + num3);
-
-					final int linesAdded = num3 + num2 + 1;
-					additions += linesAdded;
+			
+			String[] lines = baos.toString().split("\n");
+			
+			for (int i = 0; i < lines.length ; i++) {
+				
+				final String line = lines[i];
+				
+				if (line.startsWith("---")) { filesChanged++; }
+				else if (line.startsWith(INDEX)) {
+					Language lang = CodeSniffer.detectLanguage(line.replace(INDEX, ""));
+					Util.incrementInMap(diff.langStats, lang, 1);
 				}
-			}
+				else if (line.startsWith("+")) { additions++; }
+				else if (line.startsWith("-")) { deletions++; }
 
-			System.out.println("Additions: " + additions + ", deletions: " + deletions);
-			baos.reset();
-		}
+			}
+			
+			diff.additions = additions;
+			diff.deletions = deletions;
+			diff.changedFiles = filesChanged;
+			
+			return diff;
+			
+		} catch (IOException e) {
+			LOGGER.trace("Could not close stream", e);
+			return diff;
+		} 
 	}
 
-	private void doDiff(final SVNRevision rev1, final SVNRevision rev2, final OutputStream baos, final File file) throws SVNException {
+	private void doDiff(final SVNRevision rev1, final SVNRevision rev2, final OutputStream baos) throws SVNException {
+		
 		final SVNDiffClient diffs = new SVNDiffClient(authManager, null);
-		diffs.doDiff(file, rev1, file, rev2, SVNDepth.INFINITY, true, baos, null);
-		/*
-		 * for (final File file : files) { final SvnDiff diff =
-		 * diffs.getOperationsFactory().createDiff();
-		 * diff.setDiffGenerator(diffs.getDiffGenerator());
-		 * diff.setSources(SvnTarget.fromFile(file, rev1),
-		 * SvnTarget.fromFile(file, rev2)); diff.setDepth(SVNDepth.INFINITY);
-		 * diff.setIgnoreAncestry(true); diff.setOutput(baos);
-		 * diff.setApplicalbeChangelists(null); diff.setShowCopiesAsAdds(true);
-		 * diff.setUseGitDiffFormat(false); diff.run(); }
-		 */
+		diffs.doDiff(theRepo.getLocation(), rev1, rev1, rev2, SVNDepth.INFINITY, true, baos);
+		 
 	}
 
 	@Override
@@ -166,6 +163,8 @@ public class SVNRepo extends Repo {
 	 *             if the directory does not exist
 	 */
 	public void sync(final String branch) throws SVNException {
+		
+		LOGGER.info("Syncing data");
 
 		final String temp = TRUNK.equals(branch) ? TRUNK : "branches/" + branch;
 
@@ -179,8 +178,12 @@ public class SVNRepo extends Repo {
 
 	@SuppressWarnings({ "unchecked" })
 	private void updateAuthorInfo(final BranchInfo bi) throws SVNException {
+		
+		LOGGER.info("Getting author information");
 
 		final long startRevision = 0L;
+		
+		long currRev = 0L;
 
 		final String temp = bi.getBranch();
 
@@ -188,17 +191,20 @@ public class SVNRepo extends Repo {
 				startRevision, theRepo.getLatestRevision(), true, true);
 
 		for (final SVNLogEntry leEntry : logEntries) {
-
+			LOGGER.debug("Revision {}", leEntry.getRevision());
 			final long rev = leEntry.getRevision();
 			final String author = leEntry.getAuthor();
 			final AuthorInfo ai = bi.getAuthorInfo(author);
-			final SVNLogEntryPath[] logPath = leEntry.getChangedPaths().values()
-					.toArray(new SVNLogEntryPath[leEntry.getChangedPaths().values().size()]);
 
-			if (!INCOMPLETE) { compareRevisions(s(rev), s(rev > 1 ? rev - 1 : rev), pathsToFiles(logPath)); }
+			Diff diffs = compareRevisions(s(rev), s(rev - 1));
+			
+			currRev++;
+			LOGGER.debug("{}/{} entries processed", currRev, logEntries.size());
 
-			ai.add(new AuthorCommit(Long.toString(leEntry.getRevision()), leEntry.getDate(), 0, 0, 0, false, leEntry
+			ai.add(new AuthorCommit(Long.toString(leEntry.getRevision()), leEntry.getDate(), diffs.changedFiles, diffs.additions, diffs.deletions, false, leEntry
 					.getMessage().replace("\n", " ")));
+			
+			//bi.getData().
 		}
 	}
 
@@ -220,20 +226,17 @@ public class SVNRepo extends Repo {
 
 	}
 
-	private static File[] pathsToFiles(SVNLogEntryPath... paths) {
-		File[] files = new File[paths.length];
-
-		for (int i = 0; i < paths.length; i++) {
-
-			files[i] = new File(paths[i].getPath());
-
-		}
-
-		return files;
-	}
-
 	private static SVNRevision s(long rev) {
 		return SVNRevision.create(rev);
+	}
+	
+	private class Diff {
+		
+		private final Map<Language, Integer> langStats = Maps.newHashMap();
+		private int additions;
+		private int deletions;
+		private int changedFiles;
+		
 	}
 
 }

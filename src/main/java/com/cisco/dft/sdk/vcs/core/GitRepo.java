@@ -308,8 +308,7 @@ public final class GitRepo extends Repo {
 			}
 
 		} catch (final GitAPIException e) {
-			LOGGER.error("An error occured, could not get branches");
-			LOGGER.debug("Error occured", e);
+			LOGGER.error("An error occured, could not get branches", e);
 		}
 
 		return branches;

@@ -102,6 +102,8 @@ public final class Application {
 	 * @throws SVNException
 	 */
 	private void analyzeAsSVN() throws SVNException {
+		
+		LOGGER.debug("running as svn");
 
 		final SVNRepo repo = new SVNRepo(config.getUrl(), config.getBranch());
 

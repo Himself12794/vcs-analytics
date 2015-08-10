@@ -51,6 +51,15 @@ public class ClocData {
 
 		return this;
 	}
+	
+	void combine(ClocData cloc) {
+		
+		for (LangStats stat : cloc.languageStats.values()) {
+			LangStats stats = Util.putIfAbsent(languageStats, stat.language, new LangStats(stat.language));
+			stats.nFiles += stat.nFiles;
+		}
+		
+	}
 
 	void reset() {
 		header.reset();

@@ -25,7 +25,7 @@ public class ProgramConfig {
 
 	/** A debug test configuration */
 	static final ProgramConfig DEBUG = ProgramConfig.parseArgs("analyze", "-d",
-			"https://github.com/Himself12794/powersAPI.git", "-s", "--branch=develop");
+			"https://github.com/Himself12794/Heroes-Mod.git", "-s", "--branch=trunk");
 
 	/**
 	 * Just like {@link ProgramConfig.DEBUG}, but with debug logging off for

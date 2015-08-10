@@ -204,6 +204,16 @@ public final class Util {
 		return valueWithFiller(x, DEFAULT_ALLOWED_NAME_SIZE, ' ');
 	}
 	
+	public static <K> void incrementInMap(Map<K, Integer> map, K k, int v) {
+		
+		if (map.containsKey(k)) {
+			map.put(k, map.get(k) + v);
+		} else {
+			map.put(k, v);
+		}
+		
+	}
+	
 	@SuppressWarnings("unchecked")
 	public static <T> T[] listToArray(List<T> list) {
 		Object[] array = new Object[list.size()];
