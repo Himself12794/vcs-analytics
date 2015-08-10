@@ -61,6 +61,8 @@ public final class GitRepo extends Repo {
 	private final UsernamePasswordCredentialsProvider cp;
 
 	/**
+	 * Constructing like this assumes no authentication is required.
+	 * 
 	 * Links a remote repo with a local version so information can be pulled
 	 * from it. When a repo is created, a cached version is stored. This allows
 	 * for faster time to get user data for the repository if there is already a

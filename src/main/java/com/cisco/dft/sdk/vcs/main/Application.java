@@ -27,7 +27,7 @@ import com.cisco.dft.sdk.vcs.util.Util;
 @SuppressWarnings("deprecation")
 public final class Application {
 
-	public static final String VERISION = "v1.1.1";
+	public static final String VERISION = "v1.1.2";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger("Application");
 
