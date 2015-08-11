@@ -1,5 +1,6 @@
 package com.cisco.dft.sdk.vcs.main;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -12,7 +13,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tmatesoft.svn.core.SVNException;
 
 import ch.qos.logback.classic.Level;
 
@@ -26,6 +26,7 @@ import com.cisco.dft.sdk.vcs.core.CommitterInfo;
 import com.cisco.dft.sdk.vcs.core.GitRepo;
 import com.cisco.dft.sdk.vcs.core.HistoryViewer;
 import com.cisco.dft.sdk.vcs.core.Repo;
+import com.cisco.dft.sdk.vcs.core.SVNRepo;
 import com.cisco.dft.sdk.vcs.core.error.CommitterNotFoundException;
 import com.cisco.dft.sdk.vcs.core.util.SortMethod;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer;
@@ -38,6 +39,10 @@ import com.google.common.collect.Range;
 public class RepoUtilsTest {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger("UnitTesting");
+	
+	private static final String DEVELOP = "develop";
+	
+	private static final String MASTER = "master";
 
 	@Before
 	public void preConfig() {
@@ -59,16 +64,9 @@ public class RepoUtilsTest {
 		Application.setConfiguration(ProgramConfig.parseArgs("help", "analyze")).execute();
 
 		LOGGER.debug("Testing force run as SVN");
-		Application app = Application.setConfiguration(
+		Application.setConfiguration(
 				ProgramConfig.parseArgs("analyze", "https://github.com/Himself12794/powersAPI.git",
-						"-s", "-d"));
-		
-		try {
-			app.execute();
-			throw new Exception("Test should not have passed");
-		} catch (SVNException e) {
-			// No action needed
-		}
+						"-s", "-d", "--no-lang-stats", "--nostats")).execute();
 
 	}
 
@@ -80,7 +78,7 @@ public class RepoUtilsTest {
 
 		LOGGER.info("Testing author information gathering.");
 		final GitRepo reo = new GitRepo("https://github.com/pypa/sampleproject.git");
-		final AuthorInfoBuilder aib = reo.getRepoStatistics().getBranchInfoFor("master")
+		final AuthorInfoBuilder aib = reo.getRepoStatistics().getBranchInfoFor(MASTER)
 				.getAuthorStatistics();
 		final CommitterInfo ai = aib.lookupUser("Marcus Smith");
 		assertTrue(ai.getCommitCount() >= 26);
@@ -98,7 +96,7 @@ public class RepoUtilsTest {
 		assertTrue(aib.getInfo().get(0).getDeletions() >= aib.getInfo().get(1).getDeletions());
 
 		aib.sort(SortMethod.NAME);
-		assertTrue(aib.getInfo().get(0).getName().compareTo(aib.getInfo().get(1).getName()) < 0);
+		assertTrue(aib.getInfo().get(0).getCommitterName().compareTo(aib.getInfo().get(1).getCommitterName()) < 0);
 
 		LOGGER.info("Testing commit info accuracy");
 		final List<Commit> commits = ai.getCommits();
@@ -171,7 +169,7 @@ public class RepoUtilsTest {
 		GitRepo repo = new GitRepo("https://github.com/pypa/sampleproject.git");
 		repo = new GitRepo("https://github.com/pypa/sampleproject.git", false);
 		repo = new GitRepo("https://github.com/pypa/sampleproject.git", new UsernamePasswordCredentialsProvider("username", "password"));
-		repo = new GitRepo("https://github.com/pypa/sampleproject.git", new UsernamePasswordCredentialsProvider("username", "password"), "master", false, null);
+		repo = new GitRepo("https://github.com/pypa/sampleproject.git", new UsernamePasswordCredentialsProvider("username", "password"), MASTER, false, null);
 
 		repo.sync();
 		// System.out.println(repo);
@@ -181,24 +179,24 @@ public class RepoUtilsTest {
 	@Test
 	public void testRepoStatGathering() throws Exception {
 
-		final GitRepo reo = new GitRepo("https://github.com/Himself12794/powersAPI.git", "master", true);
+		final GitRepo reo = new GitRepo("https://github.com/Himself12794/powersAPI.git", MASTER, true);
 
-		final BranchInfo branch = reo.getRepoStatistics().getBranchInfoFor("master");
+		final BranchInfo branch = reo.getRepoStatistics().getBranchInfoFor(MASTER);
 
 		assertTrue(branch.getLangPercent(Language.JAVA) > 0.0F);
 		assertTrue(branch.getLangStats(Language.JAVA).getnFiles() > 0);
 		assertTrue(branch.getLangPercent(Language.CSHARP) == 0.0F);
 		assertTrue(branch.getLangStats(Language.CSHARP).getnFiles() == 0);
-		assertTrue(branch.getBranchName().equals("master"));
+		assertTrue(branch.getBranchName().equals(MASTER));
 		assertTrue(branch.getFileCount() > 10);
 		assertTrue(branch.getLineCount() > 200);
 
-		reo.sync("master");
+		reo.sync(MASTER);
 
 		final Date arbitraryDate = new Date(1434125085000L);
 
-		final HistoryViewer bi = reo.getRepoStatistics().getBranchInfoFor("master");
-		final HistoryViewer hv = reo.getRepoStatistics().getBranchInfoFor("master")
+		final HistoryViewer bi = reo.getRepoStatistics().getBranchInfoFor(MASTER);
+		final HistoryViewer hv = reo.getRepoStatistics().getBranchInfoFor(MASTER)
 				.getHistoryForDate(arbitraryDate);
 
 		System.out.println(bi);
@@ -209,7 +207,7 @@ public class RepoUtilsTest {
 		LOGGER.info("Uses CLOC statistics: " + String.valueOf(hv.usesCLOCStats()));
 		assertTrue(hv.usesCLOCStats() ? hv.getFileCount() == 23 : hv.getFileCount() == 37);
 		assertTrue(hv.usesCLOCStats() ? hv.getLineCount() == 2499 : hv.getLineCount() == 5342);
-		assertTrue("master".equals(hv.getBranchName()));
+		assertTrue(MASTER.equals(hv.getBranchName()));
 		assertTrue(hv.usesCLOCStats() ? hv.getLangStats(Language.JAVA).getnFiles() == 23 : hv
 				.getLangStats(Language.JAVA).getnFiles() == 23);
 		assertTrue(hv.getLangPercent(Language.JAVA) >= 0.5F);
@@ -247,6 +245,17 @@ public class RepoUtilsTest {
 		test3.equals(Repo.guessName("http://my-project"));
 		test3.equals(Repo.guessName("http:\\my-project"));
 
+	}
+	
+	@Test
+	public void testSVN() throws Exception {
+		
+		SVNRepo repo = new SVNRepo("https://github.com/Himself12794/Heroes-Mod", "branches/" + DEVELOP);
+		repo.sync("branches/bugfix/fix-broken-things", true, true);
+		
+		assertTrue(repo.getRepoStatistics().branchExists("branches/" + DEVELOP));
+		assertEquals("Wrong commit count", 6, repo.getRepoStatistics().getBranchInfoFor("branches/" + DEVELOP).getCommitCount());
+		
 	}
 
 }

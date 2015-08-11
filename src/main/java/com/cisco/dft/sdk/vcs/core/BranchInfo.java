@@ -73,13 +73,13 @@ public class BranchInfo extends HistoryViewer {
 
 	}
 
-	CommitterInfo getAuthorInfo(final String author, final String email) {
+	CommitterInfo getAuthorInfo(final String committer, final String committerEmail, final String author, final String authorEmail) {
 
 		CommitterInfo ai;
 
 		if (!authorInfo.containsKey(author)) {
 
-			ai = new CommitterInfo(author, email);
+			ai = new CommitterInfo(committer, committerEmail, author, authorEmail);
 			authorInfo.put(author, ai);
 
 		} else {

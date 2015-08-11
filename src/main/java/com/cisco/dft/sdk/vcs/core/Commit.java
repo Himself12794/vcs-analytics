@@ -102,7 +102,7 @@ public class Commit implements DateLimitedData {
 	@Override
 	public String toString() {
 		String value = "Id: " + id;
-		value += ", Timestamp: " + timestamp;
+		value += ", Timestamp: " + getTimestamp();
 		value += ", Changed Files: " + changedFiles;
 		value += ", Additions: " + additions;
 		value += ", Deletions: " + deletions;

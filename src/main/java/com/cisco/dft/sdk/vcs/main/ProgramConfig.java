@@ -25,7 +25,7 @@ public class ProgramConfig {
 
 	/** A debug test configuration */
 	static final ProgramConfig DEBUG = ProgramConfig.parseArgs("analyze", "-d",
-			"http://svn.svnkit.com/repos/svnkit/", "-s", "--branch=trunk", "--no-lang-stats");
+			"https://github.com/Himself12794/Heroes-Mod", "-s", "--branch=branches/develop");
 
 	/**
 	 * Just like {@link ProgramConfig.DEBUG}, but with debug logging off for

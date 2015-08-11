@@ -531,10 +531,12 @@ public final class GitRepo extends Repo {
 		RevCommit prev = null;
 
 		for (final RevCommit rc : walk) {
-			final String email = rc.getCommitterIdent().getEmailAddress();
-			final String author = rc.getCommitterIdent().getName();
+			final String committerEmail = rc.getCommitterIdent().getEmailAddress();
+			final String committer = rc.getCommitterIdent().getName();
+			final String authorEmail = rc.getAuthorIdent().getEmailAddress();
+			final String author = rc.getAuthorIdent().getName();
 			final Date timestamp = rc.getCommitterIdent().getWhen();
-			final CommitterInfo ai = bi.getAuthorInfo(author, email);
+			final CommitterInfo ai = bi.getAuthorInfo(committer, committerEmail, author, authorEmail);
 			final boolean isMergeCommit = rc.getParentCount() > 1;
 
 			int totalAdditions = 0;

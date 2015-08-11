@@ -19,23 +19,29 @@ import com.google.common.collect.Range;
  */
 public class CommitterInfo extends RecursiveDateLimitedDataContainer<Commit> {
 
-	private final String name;
+	private final String committer;
 	
-	private final String email;
+	private final String committerEmail;
+	
+	private final String author;
+	
+	private final String authorEmail;
 
 	private int additions, deletions;
 
 	private int limitedAdditions, limitedDeletions;
 
-	CommitterInfo(final String name, final String email) {
-		this(name, email, 0, 0, new ArrayList<Commit>());
+	CommitterInfo(final String name, final String email, final String author, final String authorEmail) {
+		this(name, email, author, authorEmail, 0, 0, new ArrayList<Commit>());
 	}
 
-	CommitterInfo(final String name, final String email, final int additions, final int deletions,
+	CommitterInfo(final String committer, final String committerEmail, final String author, final String authorEmail, final int additions, final int deletions,
 			final List<Commit> commits) {
 		super(commits);
-		this.name = name;
-		this.email = email;
+		this.committer = committer;
+		this.committerEmail = committerEmail;
+		this.author = author;
+		this.authorEmail = authorEmail;
 		this.additions = additions;
 		this.deletions = deletions;
 
@@ -53,7 +59,7 @@ public class CommitterInfo extends RecursiveDateLimitedDataContainer<Commit> {
 
 	@Override
 	public CommitterInfo copy() {
-		final CommitterInfo theCopy = new CommitterInfo(name, email, additions, deletions, data);
+		final CommitterInfo theCopy = new CommitterInfo(committer, committerEmail, author, authorEmail, additions, deletions, data);
 		theCopy.limitToDateRange(getDateRange());
 		return theCopy;
 	}
@@ -105,12 +111,20 @@ public class CommitterInfo extends RecursiveDateLimitedDataContainer<Commit> {
 		return isLimited() ? limitedDeletions : deletions;
 	}
 
-	public String getName() {
-		return name;
+	public String getCommitterName() {
+		return committer;
 	}
 	
-	public String getEmail() {
-		return email;
+	public String getCommitterEmail() {
+		return committerEmail;
+	}
+	
+	public String getAuthor() {
+		return author;
+	}
+
+	public String getAuthorEmail() {
+		return authorEmail;
 	}
 
 	@Override
@@ -146,8 +160,8 @@ public class CommitterInfo extends RecursiveDateLimitedDataContainer<Commit> {
 
 		final StringBuilder value = new StringBuilder();
 
-		value.append("Name: " + name + ", ");
-		value.append("Email: " + email + ", ");
+		value.append("Name: " + committer + ", ");
+		value.append("Email: " + committerEmail + ", ");
 		value.append("Commits: " + getCommitCount() + ", ");
 		value.append("Additions: " + getAdditions() + ", ");
 		value.append("Deletions: ");

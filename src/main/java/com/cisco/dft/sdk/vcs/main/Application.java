@@ -15,6 +15,7 @@ import com.cisco.dft.sdk.vcs.core.BranchInfo;
 import com.cisco.dft.sdk.vcs.core.ClocService;
 import com.cisco.dft.sdk.vcs.core.GitRepo;
 import com.cisco.dft.sdk.vcs.core.SVNRepo;
+import com.cisco.dft.sdk.vcs.core.error.BranchNotFoundException;
 import com.cisco.dft.sdk.vcs.util.Util;
 
 /**
@@ -28,7 +29,7 @@ import com.cisco.dft.sdk.vcs.util.Util;
 // TODO scrub unnecessary files from SVN information
 public final class Application {
 
-	public static final String VERISION = "v1.1.3";
+	public static final String VERISION = "v1.2.0-SNAPSHOT";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger("Application");
 
@@ -101,15 +102,16 @@ public final class Application {
 	 * Treats the url as a svn repo
 	 *
 	 * @throws SVNException
+	 * @throws BranchNotFoundException 
 	 */
-	private void analyzeAsSVN() throws SVNException {
+	private void analyzeAsSVN() throws SVNException, BranchNotFoundException {
 
 		LOGGER.debug("running as svn");
 
 		final SVNRepo repo = new SVNRepo(config.getUrl(), config.getBranch(), config.getUsername(), config
-				.getPassword(), config.shouldGetLangStats(), false);
+				.getPassword(), config.shouldGetLangStats(), config.shouldGenerateStats());
 		
-		repo.sync(config.getBranch(), config.shouldGetLangStats(), Util.getAppropriateRange(config.getStart(), config.getEnd()));
+		repo.sync(config.getBranch(), config.shouldGetLangStats(), config.shouldGenerateStats(), Util.getAppropriateRange(config.getStart(), config.getEnd()));
 
 		if (!(config.getStart() == null && config.getEnd() == null)) {
 

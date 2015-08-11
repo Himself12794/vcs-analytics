@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
+import com.cisco.dft.sdk.vcs.core.error.BranchNotFoundException;
 import com.cisco.dft.sdk.vcs.util.Util;
 import com.google.common.collect.Maps;
 
@@ -32,7 +33,13 @@ public class RepoInfo {
 	 * @return
 	 */
 	public boolean branchExists(final String branch) {
-		return branches.containsKey(branch);
+		
+		for (BranchInfo bi : branches.values()) {
+			if (bi.getBranch().equals(branch)) { return true; }
+		}
+		
+		return false;
+		
 	}
 
 	/**
@@ -75,15 +82,16 @@ public class RepoInfo {
 	 *            for which to get information
 	 * @return Information on the branch, or empty information if the branch
 	 *         does not exist. This is never null.
+	 * @throws BranchNotFoundException 
 	 */
-	public BranchInfo getBranchInfoFor(final String branch) {
+	public BranchInfo getBranchInfoFor(final String branch) throws BranchNotFoundException {
 
-		final String resolved = BranchInfo.branchNameResolver(branch);
+		final String resolved = (theRepo instanceof GitRepo) ? BranchInfo.branchNameResolver(branch) : branch;
 
 		if (branches.containsKey(resolved)) {
 			return branches.get(resolved);
 		} else {
-			return new BranchInfo(theRepo);
+			throw new BranchNotFoundException("Branch " + branch + " does not exist");
 		}
 
 	}

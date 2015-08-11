@@ -46,7 +46,7 @@ public class AuthorInfoBuilder {
 	private static final Comparator<CommitterInfo> SORTER_NAMES = new Comparator<CommitterInfo>() {
 		@Override
 		public int compare(final CommitterInfo p1, final CommitterInfo p2) {
-			return p1.getName().compareTo(p2.getName());
+			return p1.getCommitterName().compareTo(p2.getCommitterName());
 		}
 	};
 
@@ -159,7 +159,7 @@ public class AuthorInfoBuilder {
 		System.out.println(authorInfo.getData().size());
 		
 		for (final CommitterInfo ai : authorInfo.getData()) {
-			if (ai.getName().equals(user)) { 
+			if (ai.getCommitterName().equals(user)) { 
 				return ai;
 			}
 		}
@@ -170,7 +170,7 @@ public class AuthorInfoBuilder {
 	public CommitterInfo lookupUserByEmail(final String email) throws CommitterNotFoundException {
 		
 		for (final CommitterInfo ci : authorInfo.getData()) {
-			if (ci.getEmail().equals(email)) { return ci; }
+			if (ci.getCommitterEmail().equals(email)) { return ci; }
 		}
 		
 		throw new CommitterNotFoundException("Commiter with email " + email + " not found.");
