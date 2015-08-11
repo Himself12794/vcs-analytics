@@ -22,9 +22,10 @@ import com.cisco.dft.sdk.vcs.util.Util;
  * with this package totally removed.
  *
  * @author phwhitin
- *
  */
-@SuppressWarnings("deprecation")
+// TODO change around commit information
+// TODO SVN completion
+// TODO scrub unnecessary files from SVN information
 public final class Application {
 
 	public static final String VERISION = "v1.1.2";
@@ -105,7 +106,7 @@ public final class Application {
 		
 		LOGGER.debug("running as svn");
 
-		final SVNRepo repo = new SVNRepo(config.getUrl(), config.getBranch());
+		final SVNRepo repo = new SVNRepo(config.getUrl(), config.getBranch(), config.getUsername(), config.getPassword());
 
 		out.println(repo.getRepoStatistics());
 

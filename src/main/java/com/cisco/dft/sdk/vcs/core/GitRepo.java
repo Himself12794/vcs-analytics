@@ -531,8 +531,10 @@ public final class GitRepo extends Repo {
 		RevCommit prev = null;
 
 		for (final RevCommit rc : walk) {
-			final String author = rc.getAuthorIdent().getName();
-			final AuthorInfo ai = bi.getAuthorInfo(author);
+			final String email = rc.getCommitterIdent().getEmailAddress();
+			final String author = rc.getCommitterIdent().getName();
+			final Date timestamp = rc.getCommitterIdent().getWhen();
+			final CommitterInfo ai = bi.getAuthorInfo(author, email);
 			final boolean isMergeCommit = rc.getParentCount() > 1;
 
 			int totalAdditions = 0;
@@ -561,7 +563,7 @@ public final class GitRepo extends Repo {
 
 			ai.incrementAdditions(totalAdditions);
 			ai.incrementDeletions(totalDeletions);
-			ai.add(new AuthorCommit(rc.name(), new Date((long) rc.getCommitTime() * 1000), totalFilesAffected, totalAdditions, totalDeletions, isMergeCommit, rc
+			ai.add(new Commit(rc.name(), timestamp, totalFilesAffected, totalAdditions, totalDeletions, isMergeCommit, rc
 					.getShortMessage()));
 
 			prev = rc;

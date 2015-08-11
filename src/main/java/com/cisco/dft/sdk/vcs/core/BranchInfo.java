@@ -52,7 +52,7 @@ public class BranchInfo extends HistoryViewer {
 
 	private String mostRecentLoggedCommit;
 
-	private final Map<String, AuthorInfo> authorInfo;
+	private final Map<String, CommitterInfo> authorInfo;
 
 	BranchInfo(final Repo theRepo) {
 		this("Unknown", theRepo, "", new Date());
@@ -63,23 +63,23 @@ public class BranchInfo extends HistoryViewer {
 	}
 
 	private BranchInfo(final String branch, final Repo theRepo, final String id, final Date date) {
-		this(branch, theRepo, id, date, new HashMap<String, AuthorInfo>(), new ClocData());
+		this(branch, theRepo, id, date, new HashMap<String, CommitterInfo>(), new ClocData());
 	}
 
 	private BranchInfo(final String branch, final Repo theRepo, final String id, final Date date,
-			final Map<String, AuthorInfo> authorInfo, final ClocData data) {
+			final Map<String, CommitterInfo> authorInfo, final ClocData data) {
 		super(branch, theRepo, id, date, data);
 		this.authorInfo = authorInfo;
 
 	}
 
-	AuthorInfo getAuthorInfo(final String author) {
+	CommitterInfo getAuthorInfo(final String author, final String email) {
 
-		AuthorInfo ai;
+		CommitterInfo ai;
 
 		if (!authorInfo.containsKey(author)) {
 
-			ai = new AuthorInfo(author);
+			ai = new CommitterInfo(author, email);
 			authorInfo.put(author, ai);
 
 		} else {
@@ -107,7 +107,7 @@ public class BranchInfo extends HistoryViewer {
 	public int getCommitCount() {
 		int count = 0;
 
-		for (final AuthorInfo ai : authorInfo.values()) {
+		for (final CommitterInfo ai : authorInfo.values()) {
 			count += ai.getCommitCount();
 		}
 
@@ -177,15 +177,15 @@ public class BranchInfo extends HistoryViewer {
 
 		Date prev = new Date(0L);
 
-		AuthorCommit temp2 = new AuthorCommit();
+		Commit temp2 = new Commit();
 
-		for (final AuthorInfo ai : authorInfo.values()) {
+		for (final CommitterInfo ai : authorInfo.values()) {
 
 			ai.limitToDateRange(Range.closed(prev, date));
 
-			final List<AuthorCommit> acs = ai.getCommits();
+			final List<Commit> acs = ai.getCommits();
 
-			for (final AuthorCommit ac : acs) {
+			for (final Commit ac : acs) {
 
 				final Date date2 = ac.getTimestamp();
 				if (date2.after(prev) && date2.compareTo(date) < 1) {

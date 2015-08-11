@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
+import com.cisco.dft.sdk.vcs.core.error.CommitterNotFoundException;
 import com.cisco.dft.sdk.vcs.core.util.SortMethod;
 import com.cisco.dft.sdk.vcs.util.DateLimitedDataContainer;
 import com.cisco.dft.sdk.vcs.util.Util;
@@ -21,50 +22,50 @@ import com.google.common.collect.Range;
  */
 public class AuthorInfoBuilder {
 
-	private static final Comparator<AuthorInfo> SORTER_COMMITS = new Comparator<AuthorInfo>() {
+	private static final Comparator<CommitterInfo> SORTER_COMMITS = new Comparator<CommitterInfo>() {
 		@Override
-		public int compare(final AuthorInfo p1, final AuthorInfo p2) {
+		public int compare(final CommitterInfo p1, final CommitterInfo p2) {
 			return Long.compare(p2.getCommitCount(), p1.getCommitCount());
 		}
 	};
 
-	private static final Comparator<AuthorInfo> SORTER_ADDITIONS = new Comparator<AuthorInfo>() {
+	private static final Comparator<CommitterInfo> SORTER_ADDITIONS = new Comparator<CommitterInfo>() {
 		@Override
-		public int compare(final AuthorInfo p1, final AuthorInfo p2) {
+		public int compare(final CommitterInfo p1, final CommitterInfo p2) {
 			return Long.compare(p2.getAdditions(), p1.getAdditions());
 		}
 	};
 
-	private static final Comparator<AuthorInfo> SORTER_DELETIONS = new Comparator<AuthorInfo>() {
+	private static final Comparator<CommitterInfo> SORTER_DELETIONS = new Comparator<CommitterInfo>() {
 		@Override
-		public int compare(final AuthorInfo p1, final AuthorInfo p2) {
+		public int compare(final CommitterInfo p1, final CommitterInfo p2) {
 			return Long.compare(p2.getDeletions(), p1.getDeletions());
 		}
 	};
 
-	private static final Comparator<AuthorInfo> SORTER_NAMES = new Comparator<AuthorInfo>() {
+	private static final Comparator<CommitterInfo> SORTER_NAMES = new Comparator<CommitterInfo>() {
 		@Override
-		public int compare(final AuthorInfo p1, final AuthorInfo p2) {
+		public int compare(final CommitterInfo p1, final CommitterInfo p2) {
 			return p1.getName().compareTo(p2.getName());
 		}
 	};
 
 	private final String branch;
 
-	private final DateLimitedDataContainer<AuthorInfo> authorInfo;
+	private final DateLimitedDataContainer<CommitterInfo> authorInfo;
 
-	AuthorInfoBuilder(final List<AuthorInfo> infos) {
+	AuthorInfoBuilder(final List<CommitterInfo> infos) {
 		this(infos, "Could not detect");
 	}
 
-	AuthorInfoBuilder(final List<AuthorInfo> infos, final String branch) {
+	AuthorInfoBuilder(final List<CommitterInfo> infos, final String branch) {
 
-		final List<AuthorInfo> copiedList = Lists.newArrayList();
-		for (final AuthorInfo ai : infos) {
+		final List<CommitterInfo> copiedList = Lists.newArrayList();
+		for (final CommitterInfo ai : infos) {
 			copiedList.add(ai.copy());
 		}
 
-		authorInfo = new DateLimitedDataContainer<AuthorInfo>(copiedList);
+		authorInfo = new DateLimitedDataContainer<CommitterInfo>(copiedList);
 		this.branch = branch;
 	}
 
@@ -82,14 +83,14 @@ public class AuthorInfoBuilder {
 	 *
 	 * @return a list of AuthorInfo stored for the repo
 	 */
-	public List<AuthorInfo> getInfo() {
+	public List<CommitterInfo> getInfo() {
 		return Lists.newArrayList(authorInfo.getData());
 	}
 
 	public int getTotalCommitCount() {
 		int count = 0;
 
-		for (final AuthorInfo ai : authorInfo.getData()) {
+		for (final CommitterInfo ai : authorInfo.getData()) {
 			count += ai.getCommitCount();
 		}
 
@@ -151,14 +152,25 @@ public class AuthorInfoBuilder {
 	 * @param user
 	 * @return a copy of the AuthorInfo for this user if it exists, or an empty
 	 *         AuthorInfo object.
+	 * @throws CommitterNotFoundException 
 	 */
-	public AuthorInfo lookupUser(final String user) {
+	public CommitterInfo lookupUser(final String user) throws CommitterNotFoundException {
 
-		for (final AuthorInfo ai : authorInfo.getData()) {
+		for (final CommitterInfo ai : authorInfo.getData()) {
 			if (ai.getName().equals(user)) { return ai; }
 		}
 
-		return new AuthorInfo(user);
+		throw new CommitterNotFoundException("User " + user + " not found.");
+	}
+	
+	public CommitterInfo lookupUserByEmail(final String email) throws CommitterNotFoundException {
+		
+		for (final CommitterInfo ci : authorInfo.getData()) {
+			if (ci.getEmail().equals(email)) { return ci; }
+		}
+		
+		throw new CommitterNotFoundException("Commiter with email " + email + " not found.");
+		
 	}
 
 	/**
@@ -208,7 +220,7 @@ public class AuthorInfoBuilder {
 		value.append(getTotalCommitCount());
 		value.append("\n\n");
 
-		for (final AuthorInfo ai : authorInfo.getData()) {
+		for (final CommitterInfo ai : authorInfo.getData()) {
 			value.append(ai.toString());
 		}
 

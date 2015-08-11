@@ -33,8 +33,6 @@ import com.google.common.collect.Maps;
  * SVN Repositories use directories, instead of references, for branches.
  *
  * @author phwhitin
- * @deprecated This is incomplete, and only provides cloc data, and number of
- *             commits by author.
  */
 public class SVNRepo extends Repo {
 	
@@ -194,14 +192,14 @@ public class SVNRepo extends Repo {
 			LOGGER.debug("Revision {}", leEntry.getRevision());
 			final long rev = leEntry.getRevision();
 			final String author = leEntry.getAuthor();
-			final AuthorInfo ai = bi.getAuthorInfo(author);
+			final CommitterInfo ai = bi.getAuthorInfo(author, author);
 
 			Diff diffs = compareRevisions(s(rev), s(rev - 1));
 			
 			currRev++;
 			LOGGER.debug("{}/{} entries processed", currRev, logEntries.size());
 
-			ai.add(new AuthorCommit(Long.toString(leEntry.getRevision()), leEntry.getDate(), diffs.changedFiles, diffs.additions, diffs.deletions, false, leEntry
+			ai.add(new Commit(Long.toString(leEntry.getRevision()), leEntry.getDate(), diffs.changedFiles, diffs.additions, diffs.deletions, false, leEntry
 					.getMessage().replace("\n", " ")));
 			
 			//bi.getData().

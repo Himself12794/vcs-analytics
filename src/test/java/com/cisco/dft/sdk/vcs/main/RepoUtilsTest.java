@@ -17,8 +17,8 @@ import org.tmatesoft.svn.core.SVNException;
 
 import ch.qos.logback.classic.Level;
 
-import com.cisco.dft.sdk.vcs.core.AuthorCommit;
-import com.cisco.dft.sdk.vcs.core.AuthorInfo;
+import com.cisco.dft.sdk.vcs.core.Commit;
+import com.cisco.dft.sdk.vcs.core.CommitterInfo;
 import com.cisco.dft.sdk.vcs.core.AuthorInfoBuilder;
 import com.cisco.dft.sdk.vcs.core.BranchInfo;
 import com.cisco.dft.sdk.vcs.core.ClocData;
@@ -78,7 +78,7 @@ public class RepoUtilsTest {
 		final GitRepo reo = new GitRepo("https://github.com/pypa/sampleproject.git");
 		final AuthorInfoBuilder aib = reo.getRepoStatistics().getBranchInfoFor("master")
 				.getAuthorStatistics();
-		final AuthorInfo ai = aib.lookupUser("Marcus Smith");
+		final CommitterInfo ai = aib.lookupUser("Marcus Smith");
 		assertTrue(ai.getCommitCount() >= 26);
 		assertTrue(ai.getAdditions() >= 106);
 		assertTrue(ai.getDeletions() >= 86);
@@ -97,8 +97,8 @@ public class RepoUtilsTest {
 		assertTrue(aib.getInfo().get(0).getName().compareTo(aib.getInfo().get(1).getName()) < 0);
 
 		LOGGER.info("Testing commit info accuracy");
-		final List<AuthorCommit> commits = ai.getCommits();
-		final AuthorCommit ac = ai.getCommitById("f9b9131491db5110f4dbc839f40b94b0f28fcf85");
+		final List<Commit> commits = ai.getCommits();
+		final Commit ac = ai.getCommitById("f9b9131491db5110f4dbc839f40b94b0f28fcf85");
 
 		assertTrue(ac.getAdditions() == 19);
 		assertTrue(ac.getDeletions() == 9);

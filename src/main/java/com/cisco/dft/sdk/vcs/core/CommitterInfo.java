@@ -17,31 +17,34 @@ import com.google.common.collect.Range;
  * @author phwhitin
  *
  */
-public class AuthorInfo extends RecursiveDateLimitedDataContainer<AuthorCommit> {
+public class CommitterInfo extends RecursiveDateLimitedDataContainer<Commit> {
 
 	private final String name;
+	
+	private final String email;
 
 	private int additions, deletions;
 
 	private int limitedAdditions, limitedDeletions;
 
-	AuthorInfo(final String name) {
-		this(name, 0, 0, new ArrayList<AuthorCommit>());
+	CommitterInfo(final String name, final String email) {
+		this(name, email, 0, 0, new ArrayList<Commit>());
 	}
 
-	AuthorInfo(final String name, final int additions, final int deletions,
-			final List<AuthorCommit> commits) {
+	CommitterInfo(final String name, final String email, final int additions, final int deletions,
+			final List<Commit> commits) {
 		super(commits);
 		this.name = name;
+		this.email = email;
 		this.additions = additions;
 		this.deletions = deletions;
 
 	}
 
 	@Override
-	public boolean add(final AuthorCommit ac) {
+	public boolean add(final Commit ac) {
 
-		for (final AuthorCommit a : data) {
+		for (final Commit a : data) {
 			if (a.getTimestamp().equals(ac.getTimestamp())) { return false; }
 		}
 
@@ -49,8 +52,8 @@ public class AuthorInfo extends RecursiveDateLimitedDataContainer<AuthorCommit> 
 	}
 
 	@Override
-	public AuthorInfo copy() {
-		final AuthorInfo theCopy = new AuthorInfo(name, additions, deletions, data);
+	public CommitterInfo copy() {
+		final CommitterInfo theCopy = new CommitterInfo(name, email, additions, deletions, data);
 		theCopy.limitToDateRange(getDateRange());
 		return theCopy;
 	}
@@ -59,9 +62,9 @@ public class AuthorInfo extends RecursiveDateLimitedDataContainer<AuthorCommit> 
 		return isLimited() ? limitedAdditions : additions;
 	}
 
-	public AuthorCommit getCommitById(final String id) {
+	public Commit getCommitById(final String id) {
 
-		for (final AuthorCommit ac : data) {
+		for (final Commit ac : data) {
 			if (ac.getId().equals(id)) { return ac; }
 		}
 
@@ -74,19 +77,19 @@ public class AuthorInfo extends RecursiveDateLimitedDataContainer<AuthorCommit> 
 
 	/**
 	 * Gets a list of commits this author has made. Use
-	 * {@link AuthorInfo#limitToDateRange(Date, Date, boolean)} to set the
+	 * {@link CommitterInfo#limitToDateRange(Date, Date, boolean)} to set the
 	 * range.
 	 *
 	 * @return list of author commits
 	 */
-	public List<AuthorCommit> getCommits() {
+	public List<Commit> getCommits() {
 
-		final List<AuthorCommit> toUse = getData();
+		final List<Commit> toUse = getData();
 
-		final Comparator<AuthorCommit> sorter = new Comparator<AuthorCommit>() {
+		final Comparator<Commit> sorter = new Comparator<Commit>() {
 
 			@Override
-			public int compare(final AuthorCommit p1, final AuthorCommit p2) {
+			public int compare(final Commit p1, final Commit p2) {
 
 				return p2.getTimestamp().compareTo(p1.getTimestamp());
 			}
@@ -105,9 +108,13 @@ public class AuthorInfo extends RecursiveDateLimitedDataContainer<AuthorCommit> 
 	public String getName() {
 		return name;
 	}
+	
+	public String getEmail() {
+		return email;
+	}
 
 	@Override
-	public AuthorInfo includeAll() {
+	public CommitterInfo includeAll() {
 		super.includeAll();
 		limitedAdditions = 0;
 		limitedDeletions = 0;
@@ -128,7 +135,7 @@ public class AuthorInfo extends RecursiveDateLimitedDataContainer<AuthorCommit> 
 		includeAll();
 		super.limitToDateRange(dateRange);
 
-		for (final AuthorCommit ac : limitedData) {
+		for (final Commit ac : limitedData) {
 			limitedAdditions += ac.getAdditions();
 			limitedDeletions += ac.getDeletions();
 		}
@@ -140,13 +147,14 @@ public class AuthorInfo extends RecursiveDateLimitedDataContainer<AuthorCommit> 
 		final StringBuilder value = new StringBuilder();
 
 		value.append("Name: " + name + ", ");
+		value.append("Email: " + email + ", ");
 		value.append("Commits: " + getCommitCount() + ", ");
 		value.append("Additions: " + getAdditions() + ", ");
 		value.append("Deletions: ");
 		value.append(getDeletions());
 		value.append("\n");
 
-		for (final AuthorCommit ac : getCommits()) {
+		for (final Commit ac : getCommits()) {
 			value.append(" - " + ac.toString() + "\n\n");
 		}
 

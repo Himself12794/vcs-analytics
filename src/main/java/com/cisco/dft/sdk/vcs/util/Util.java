@@ -1,7 +1,6 @@
 package com.cisco.dft.sdk.vcs.util;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -35,7 +34,7 @@ public final class Util {
 	 */
 	public static Range<Date> getAppropriateRange(final Date start, final Date end) {
 
-		if (!nullBoth(start, end)) {
+		if (nonNullBoth(start, end)) {
 			return nonNullComparison(start, end);
 		} else if (nullFirstOnly(start, end)) {
 			return Range.atMost(end);
@@ -104,8 +103,8 @@ public final class Util {
 
 	}
 
-	public static boolean nullBoth(final Object arg0, final Object arg1) {
-		return arg0 == null && arg1 == null;
+	public static boolean nonNullBoth(final Object arg0, final Object arg1) {
+		return arg0 != null && arg1 != null;
 	}
 
 	public static boolean nullFirstOnly(final Object arg0, final Object arg1) {
@@ -212,19 +211,6 @@ public final class Util {
 			map.put(k, v);
 		}
 		
-	}
-	
-	@SuppressWarnings("unchecked")
-	public static <T> T[] listToArray(List<T> list) {
-		Object[] array = new Object[list.size()];
-		
-		int i = 0;
-		for (T item : list) {
-			array[i] = item;
-			i++;
-		}
-		
-		return (T[]) array;
 	}
 
 }

@@ -11,7 +11,7 @@ import com.google.common.collect.Range;
  * @author phwhitin
  *
  */
-public class AuthorCommit implements DateLimitedData {
+public class Commit implements DateLimitedData {
 
 	private final String id;
 
@@ -27,11 +27,11 @@ public class AuthorCommit implements DateLimitedData {
 
 	private final String message;
 
-	public AuthorCommit() {
+	public Commit() {
 		this("", new Date(0L), 0, 0, 0, false, "");
 	}
 
-	public AuthorCommit(final String id, final Date timestamp, final int changedFiles,
+	public Commit(final String id, final Date timestamp, final int changedFiles,
 			final int additions, final int deletions, final boolean isMergeCommit,
 			final String message) {
 
