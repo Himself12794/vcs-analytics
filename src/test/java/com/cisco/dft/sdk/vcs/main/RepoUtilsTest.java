@@ -7,7 +7,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,16 +16,17 @@ import org.tmatesoft.svn.core.SVNException;
 
 import ch.qos.logback.classic.Level;
 
-import com.cisco.dft.sdk.vcs.core.Commit;
-import com.cisco.dft.sdk.vcs.core.CommitterInfo;
 import com.cisco.dft.sdk.vcs.core.AuthorInfoBuilder;
 import com.cisco.dft.sdk.vcs.core.BranchInfo;
 import com.cisco.dft.sdk.vcs.core.ClocData;
 import com.cisco.dft.sdk.vcs.core.ClocData.Header;
 import com.cisco.dft.sdk.vcs.core.ClocData.LangStats;
+import com.cisco.dft.sdk.vcs.core.Commit;
+import com.cisco.dft.sdk.vcs.core.CommitterInfo;
 import com.cisco.dft.sdk.vcs.core.GitRepo;
 import com.cisco.dft.sdk.vcs.core.HistoryViewer;
 import com.cisco.dft.sdk.vcs.core.Repo;
+import com.cisco.dft.sdk.vcs.core.error.CommitterNotFoundException;
 import com.cisco.dft.sdk.vcs.core.util.SortMethod;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
@@ -45,7 +45,7 @@ public class RepoUtilsTest {
 	}
 
 	@Test
-	public void testApp() throws GitAPIException, SVNException {
+	public void testApp() throws Exception {
 
 		LOGGER.debug("Testing init feature. (will log errors if system does not allow execute permissions)");
 		Application.setConfiguration(ProgramConfig.INIT).execute();
@@ -53,18 +53,22 @@ public class RepoUtilsTest {
 		LOGGER.debug("Testing analyze.");
 		Application.setConfiguration(ProgramConfig.TEST).execute();
 
-		LOGGER.debug("Testing debug.");
-		Application.setConfiguration(ProgramConfig.DEBUG).execute();
-
 		LOGGER.debug("Testing help feature");
 		Application.setConfiguration(ProgramConfig.HELP).execute();
 
 		Application.setConfiguration(ProgramConfig.parseArgs("help", "analyze")).execute();
 
 		LOGGER.debug("Testing force run as SVN");
-		Application.setConfiguration(
+		Application app = Application.setConfiguration(
 				ProgramConfig.parseArgs("analyze", "https://github.com/Himself12794/powersAPI.git",
-						"-s", "-d")).execute();
+						"-s", "-d"));
+		
+		try {
+			app.execute();
+			throw new Exception("Test should not have passed");
+		} catch (SVNException e) {
+			// No action needed
+		}
 
 	}
 
@@ -106,7 +110,17 @@ public class RepoUtilsTest {
 		assertTrue(ac.getMessage().equals("Merge pull request #29 from RichardBronosky/master"));
 		assertTrue(ac.isMergeCommit());
 		assertTrue(ac.getChangedFiles() == 1);
-		assertTrue(aib.lookupUser("Unknown").getDeletions() == 0);
+		
+		boolean success = false;
+		
+		try {
+			aib.lookupUser("Unknown");
+			success = false;
+		} catch (Exception e) {
+			success = true;
+		} finally {
+			assertTrue(success);
+		}
 
 		LOGGER.info("Testing date range limiting.");
 		assertTrue(aib.getInfo().size() >= 13);
@@ -115,12 +129,12 @@ public class RepoUtilsTest {
 
 		aib.limitToDateRange(Range.closed(start, end));
 		assertTrue(aib.getInfo().size() == 4);
-		assertTrue(aib.lookupUser("Matt Iversen").getCommitCount() == 0);
-		System.out.println(aib);
-
-		aib.limitToDateRange(Range.open(start, end));
-		assertTrue(aib.getInfo().size() == 4);
-		assertTrue(aib.lookupUser("Matt Iversen").getCommitCount() == 0);
+		try {
+			assertTrue(aib.lookupUser("Matt Iversen").getCommitCount() == 0);
+			assertTrue(false);
+		} catch (CommitterNotFoundException cnfe) {
+			assertTrue(true);
+		}
 		System.out.println(aib);
 
 		reo.close();

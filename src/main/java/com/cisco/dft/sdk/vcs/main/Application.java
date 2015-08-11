@@ -28,7 +28,7 @@ import com.cisco.dft.sdk.vcs.util.Util;
 // TODO scrub unnecessary files from SVN information
 public final class Application {
 
-	public static final String VERISION = "v1.1.2";
+	public static final String VERISION = "v1.1.3";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger("Application");
 
@@ -103,10 +103,11 @@ public final class Application {
 	 * @throws SVNException
 	 */
 	private void analyzeAsSVN() throws SVNException {
-		
+
 		LOGGER.debug("running as svn");
 
-		final SVNRepo repo = new SVNRepo(config.getUrl(), config.getBranch(), config.getUsername(), config.getPassword());
+		final SVNRepo repo = new SVNRepo(config.getUrl(), config.getBranch(), config.getUsername(), config
+				.getPassword(), config.shouldGenerateStats(), config.shouldGenerateStats());
 
 		out.println(repo.getRepoStatistics());
 

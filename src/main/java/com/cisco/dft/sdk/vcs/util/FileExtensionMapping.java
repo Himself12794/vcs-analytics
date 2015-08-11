@@ -6,6 +6,8 @@ import java.util.Map;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
 
 public abstract class FileExtensionMapping {
+	
+	private FileExtensionMapping(){}
 
 	static final Map<String, Language> FILE_EXTENSION_ASSOCIATIONS = new HashMap<String, Language>(); 
 			

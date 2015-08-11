@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
@@ -28,6 +29,7 @@ import com.cisco.dft.sdk.vcs.util.CodeSniffer;
 import com.cisco.dft.sdk.vcs.util.Util;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Range;
 
 /**
  * SVN Repositories use directories, instead of references, for branches.
@@ -53,20 +55,22 @@ public class SVNRepo extends Repo {
 	protected final SVNRepository theRepo;
 
 	private final ISVNAuthenticationManager authManager;
+	
+	private final SVNUpdateClient updateClient;
 
 	@SuppressWarnings("unused")
 	private final String url;
 
 	public SVNRepo(final String url) throws SVNException {
-		this(url, null, "username", "password");
+		this(url, null, "username", "password", true, true);
 	}
 
 	public SVNRepo(final String url, final String branch) throws SVNException {
-		this(url, branch, "username", "password");
+		this(url, branch, "username", "password", true, true);
 	}
 
 	public SVNRepo(final String url, final String branch, final String username,
-			final String password) throws SVNException {
+			final String password, boolean langStats, boolean doStats) throws SVNException {
 
 		DAVRepositoryFactory.setup();
 
@@ -82,18 +86,25 @@ public class SVNRepo extends Repo {
 		final long latestRevision = theRepo.getLatestRevision();
 
 		ourClientManager.setAuthenticationManager(authManager);
-
-		LOGGER.debug("exporting...");
 		
-		final SVNUpdateClient updateClient = ourClientManager.getUpdateClient();
+		updateClient = ourClientManager.getUpdateClient();
 		updateClient.setIgnoreExternals(false);
-		updateClient.doExport(theRepo.getLocation(), theDirectory,
-				SVNRevision.create(latestRevision), SVNRevision.create(latestRevision), null, true,
-				SVNDepth.INFINITY);
 		
+		// Allows us to not have to re-export the entire directory
+		if (langStats) {
+			if (theDirectory.exists()) {
+				LOGGER.info("Found cached version of repo, updating");
+				updateClient.doUpdate(theDirectory, SVNRevision.HEAD, SVNDepth.INFINITY, true, true);
+			} else {
+				LOGGER.info("Exporting repo to perform language analysis, this may take some time.");
+				updateClient.doExport(theRepo.getLocation(), theDirectory,
+						SVNRevision.create(latestRevision), SVNRevision.create(latestRevision), null, true,
+						SVNDepth.INFINITY);
+			}
+		}
 		LOGGER.debug("exported");
 
-		sync(branch == null ? TRUNK : branch);
+		if (doStats) { sync(branch == null ? TRUNK : branch, langStats); }
 
 	}
 
@@ -143,11 +154,15 @@ public class SVNRepo extends Repo {
 		diffs.doDiff(theRepo.getLocation(), rev1, rev1, rev2, SVNDepth.INFINITY, true, baos);
 		 
 	}
-
+	
 	@Override
 	public void sync() {
+		sync(true);
+	}
+
+	public void sync(final boolean doLangStats) {
 		try {
-			sync(TRUNK);
+			sync(TRUNK, doLangStats);
 		} catch (final Exception e) {
 			LOGGER.debug("Directory " + TRUNK + " does not exist", e);
 		}
@@ -160,7 +175,12 @@ public class SVNRepo extends Repo {
 	 * @throws SVNException
 	 *             if the directory does not exist
 	 */
-	public void sync(final String branch) throws SVNException {
+	public void sync(final String branch, final boolean doLangStats) throws SVNException {
+		Range<Date> range = Range.all();
+		sync(branch, doLangStats, range);
+	}
+	
+	public void sync(final String branch, final boolean doLangStats, final Range<Date> range) throws SVNException {
 		
 		LOGGER.info("Syncing data");
 
@@ -169,24 +189,25 @@ public class SVNRepo extends Repo {
 		final BranchInfo bi = repoInfo.getBranchInfo(temp);
 		bi.resetInfo();
 
-		updateRepoInfo(bi);
-		updateAuthorInfo(bi);
-
+		updateRepoInfo(bi, doLangStats);
+		updateAuthorInfo(bi, range);
+		
 	}
 
 	@SuppressWarnings({ "unchecked" })
-	private void updateAuthorInfo(final BranchInfo bi) throws SVNException {
+	private void updateAuthorInfo(final BranchInfo bi, Range<Date> range) throws SVNException {
 		
 		LOGGER.info("Getting author information");
-
-		final long startRevision = 0L;
+		
+		final SVNRevision start = range.hasLowerBound() ? SVNRevision.create(range.lowerEndpoint()) : SVNRevision.create(0L);
+		final SVNRevision end = range.hasUpperBound() ? SVNRevision.create(range.upperEndpoint()) : SVNRevision.HEAD;
 		
 		long currRev = 0L;
 
 		final String temp = bi.getBranch();
 
 		final Collection<SVNLogEntry> logEntries = theRepo.log(new String[] { temp }, null,
-				startRevision, theRepo.getLatestRevision(), true, true);
+				start.getNumber(), end.getNumber(), true, true);
 
 		for (final SVNLogEntry leEntry : logEntries) {
 			LOGGER.debug("Revision {}", leEntry.getRevision());
@@ -206,9 +227,14 @@ public class SVNRepo extends Repo {
 		}
 	}
 
-	private void updateRepoInfo(final BranchInfo bi) throws SVNException {
+	private void updateRepoInfo(final BranchInfo bi, final boolean update) throws SVNException {
 
 		final String branch = bi.getBranch();
+		
+		if (update) {
+			LOGGER.info("Updating repo.");
+			updateClient.doUpdate(theDirectory, SVNRevision.HEAD, SVNDepth.INFINITY, true, true);
+		}
 
 		if (ClocService.canGetCLOCStats()) {
 
@@ -228,7 +254,7 @@ public class SVNRepo extends Repo {
 		return SVNRevision.create(rev);
 	}
 	
-	private class Diff {
+	private static class Diff {
 		
 		private final Map<Language, Integer> langStats = Maps.newHashMap();
 		private int additions;

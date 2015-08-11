@@ -31,6 +31,8 @@ import com.google.common.collect.Maps;
 public final class ClocService {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ClocService.class.getSimpleName());
+	
+	private static final String[] args = {"", "--quiet", "--progress-rate=0", "--yaml", "--skip-win-hidden", ""};
 
 	private static boolean init = false;
 
@@ -62,16 +64,18 @@ public final class ClocService {
 	public static String getCLOCDataAsYaml(final File file) throws IOException {
 
 		if (!canGetCLOCStats()) { throw new IOException("Cannot run cloc"); }
+		
+		args[args.length - 1] = file.getAbsolutePath();
 
 		if (clocInstalled) {
 			LOGGER.debug("Cloc already exists, using that instead. Running on directory "
 					+ file.getAbsolutePath());
-			return CommandLineUtils.executeCommand("cloc", "--yaml", file.getAbsolutePath());
+			return CommandLineUtils.executeCommand("cloc", args);
 		} else if (perlInstalled) {
-			return CommandLineUtils.executeCommand("perl", CLOC_PL, "--yaml", "--skip-win-hidden");
+			args[0] = CLOC_PL;
+			return CommandLineUtils.executeCommand("perl", args);
 		} else {
-			return CommandLineUtils.executeCommand(getFileForOS(false).getPath(), "--yaml",
-					"--skip-win-hidden", file.getAbsolutePath());
+			return CommandLineUtils.executeCommand(getFileForOS(false).getPath(), args);
 		}
 
 	}
@@ -93,7 +97,7 @@ public final class ClocService {
 		final String yamlStr = getCLOCDataAsYaml(file);
 
 		final Map<Language, LangStats> langStats = Maps.newHashMap();
-
+		
 		Header header = new Header();
 
 		final Iterable<Object> yaml = new Yaml().loadAll(yamlStr);

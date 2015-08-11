@@ -155,11 +155,15 @@ public class AuthorInfoBuilder {
 	 * @throws CommitterNotFoundException 
 	 */
 	public CommitterInfo lookupUser(final String user) throws CommitterNotFoundException {
-
+		
+		System.out.println(authorInfo.getData().size());
+		
 		for (final CommitterInfo ai : authorInfo.getData()) {
-			if (ai.getName().equals(user)) { return ai; }
+			if (ai.getName().equals(user)) { 
+				return ai;
+			}
 		}
-
+		
 		throw new CommitterNotFoundException("User " + user + " not found.");
 	}
 	

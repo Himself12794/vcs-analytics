@@ -25,8 +25,7 @@ public class ProgramConfig {
 
 	/** A debug test configuration */
 	static final ProgramConfig DEBUG = ProgramConfig.parseArgs("analyze", "-d",
-			"https://repo-svn.cisco.com/svn/CiscoMain//CiscoServices/TS/Q2O/Applications/QOT",
-			"-s", "--branch=trunk", "--username=dftscm.gen", "--password=ciscoitdt");
+			"https://repo-svn.cisco.com/svn/CiscoMain//CiscoServices/TS/Q2O/Applications/QOT", "-s", "--branch=trunk", "--username=phwhitin", "--password=Smokestack120794");
 
 	/**
 	 * Just like {@link ProgramConfig.DEBUG}, but with debug logging off for
@@ -222,7 +221,7 @@ public class ProgramConfig {
 	public static ProgramConfig parseArgs(final String... args) {
 		return parseArgs(ArgParser.parse(args));
 	}
-
+	
 	public static ProgramConfig parseArgs(final String arg) {
 		return parseArgs(arg.split(" "));
 	}

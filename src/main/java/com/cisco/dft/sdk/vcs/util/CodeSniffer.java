@@ -96,8 +96,9 @@ public final class CodeSniffer {
 
 		try {
 			LineNumberReader lnr = new LineNumberReader(new FileReader(file));
-			lnr.skip(Long.MAX_VALUE);
-			count = lnr.getLineNumber() + 1;
+			long skipped = lnr.skip(Long.MAX_VALUE);
+			
+			count = skipped > 0 ? lnr.getLineNumber() + 1 : 0;
 			lnr.close();
 		} catch (IOException e1) {
 			LOGGER.trace("Could not get line count", e1);
@@ -143,7 +144,7 @@ public final class CodeSniffer {
 		C, CPP, CSS, ABAP, ACTIONSCRIPT, ADA, ADSO_IDSM, AMPLE, ANT, APEX_TRIGGER, ARDUINO_SKETCH,
 		ASP, ASPdotNET, ASSEMBLY, AUTOHOTKEY, AWK,
 		/** BASH */
-		BOURNE_AGAIN_SHELL, /** SH */
+		BOURNE_AGAIN_SHELL, BOURNE_SHELL,/** SH */
 		BOURNE_AGAIN, C_SHELL, CSHARP, C_CPP_HEADER, CCS, CLOJURE, CLOJURESCRIPT, CMAKE, COBOL,
 		COFFEESCRIPT, COLDFUSION, COLDFUSION_CFSSCRIPT, CUDA, CYTHON, D_DTRACE, DAL, DART, DIFF,
 		DITA, DOS_BATCH, DTD, ECPP, ELIXER, ERB, ERLANG, EXPECT, FSHARP, FOCUS, FORTRAN_77,
