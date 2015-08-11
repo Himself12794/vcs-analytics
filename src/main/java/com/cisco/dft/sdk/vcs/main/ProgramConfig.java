@@ -25,7 +25,7 @@ public class ProgramConfig {
 
 	/** A debug test configuration */
 	static final ProgramConfig DEBUG = ProgramConfig.parseArgs("analyze", "-d",
-			"https://repo-svn.cisco.com/svn/CiscoMain//CiscoServices/TS/Q2O/Applications/QOT", "-s", "--branch=trunk", "--username=phwhitin", "--password=Smokestack120794");
+			"http://svn.svnkit.com/repos/svnkit/", "-s", "--branch=trunk", "--no-lang-stats");
 
 	/**
 	 * Just like {@link ProgramConfig.DEBUG}, but with debug logging off for
@@ -33,7 +33,7 @@ public class ProgramConfig {
 	 */
 	static final ProgramConfig TEST = ProgramConfig.parseArgs("analyze",
 			"https://github.com/Himself12794/powersAPI.git", "--branch=master",
-			"--start=1234567891000", "--end=1234867891000");
+			"--start=1234567891000", "--end=1234867891000", "--no-lang-stats");
 
 	static final ProgramConfig DEFAULT = HELP;
 
@@ -50,6 +50,8 @@ public class ProgramConfig {
 	private final boolean shouldGenerateStats;
 
 	private final boolean useCloc;
+	
+	private boolean shouldGenerateLangStats;
 
 	private boolean debug;
 
@@ -75,6 +77,10 @@ public class ProgramConfig {
 		this.password = password;
 		shouldGenerateStats = generateStats;
 		this.useCloc = useCloc;
+	}
+	
+	public boolean shouldGetLangStats() {
+		return shouldGenerateLangStats;
 	}
 
 	public Action getAction() {
@@ -197,6 +203,7 @@ public class ProgramConfig {
 		final String username = parser.getString("username", "");
 		final String password = parser.getString("password", "");
 		final boolean generateStats = !parser.getBoolean("nostats");
+		final boolean generateLangStats = !parser.getBoolean("no-lang-stats");
 		final boolean useCloc = !parser.getBoolean("builtin-analysis");
 		final boolean version = parser.getBoolean("v");
 		final boolean debug = parser.getBoolean("d");
@@ -214,7 +221,8 @@ public class ProgramConfig {
 		config.noCommits = noCommits;
 		config.forceGit = forceGit;
 		config.forceSvn = forceSvn;
-
+		config.shouldGenerateLangStats = generateLangStats;
+		
 		return config;
 	}
 

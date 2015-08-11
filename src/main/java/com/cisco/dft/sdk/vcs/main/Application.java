@@ -107,9 +107,21 @@ public final class Application {
 		LOGGER.debug("running as svn");
 
 		final SVNRepo repo = new SVNRepo(config.getUrl(), config.getBranch(), config.getUsername(), config
-				.getPassword(), config.shouldGenerateStats(), config.shouldGenerateStats());
+				.getPassword(), config.shouldGetLangStats(), false);
+		
+		repo.sync(config.getBranch(), config.shouldGetLangStats(), Util.getAppropriateRange(config.getStart(), config.getEnd()));
 
-		out.println(repo.getRepoStatistics());
+		if (!(config.getStart() == null && config.getEnd() == null)) {
+
+			if (config.getBranch() != null) {
+				printLimitedRange(repo.getRepoStatistics().getBranchInfoFor(config.getBranch()));
+			} else {
+				printLimitedRange(repo.getRepoStatistics().getBranchInfos());
+			}
+
+		} else {
+			out.println(repo.getRepoStatistics().toString(config.shouldShowCommits()));
+		}
 
 	}
 

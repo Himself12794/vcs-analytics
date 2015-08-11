@@ -3,6 +3,7 @@ package com.cisco.dft.sdk.vcs.core;
 import java.util.Date;
 
 import com.cisco.dft.sdk.vcs.util.DateLimitedData;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Range;
 
 /**
@@ -15,17 +16,20 @@ public class Commit implements DateLimitedData {
 
 	private final String id;
 
-	private final Date timestamp;
+	private final long timestamp;
 
 	private final int changedFiles;
 
 	private final int additions;
 
 	private final int deletions;
-
+	
+	@JsonProperty("mergeCommit")
 	private final boolean isMergeCommit;
 
 	private final String message;
+	
+	private String committer;
 
 	public Commit() {
 		this("", new Date(0L), 0, 0, 0, false, "");
@@ -36,13 +40,21 @@ public class Commit implements DateLimitedData {
 			final String message) {
 
 		this.id = id;
-		this.timestamp = (Date) timestamp.clone();
+		this.timestamp = timestamp.getTime();
 		this.changedFiles = changedFiles;
 		this.additions = additions;
 		this.deletions = deletions;
 		this.isMergeCommit = isMergeCommit;
 		this.message = message;
 
+	}
+	
+	void setCommitter(final String name) {
+		committer = name;
+	}
+	
+	public String getCommitter() {
+		return committer;
 	}
 
 	public int getAdditions() {
@@ -70,22 +82,21 @@ public class Commit implements DateLimitedData {
 		return message;
 	}
 
-	/**
-	 * Unix-time. (in seconds)
-	 *
-	 * @return
-	 */
 	public Date getTimestamp() {
-		return (Date) timestamp.clone();
+		return new Date(timestamp);
 	}
 
 	@Override
 	public boolean isInDateRange(final Range<Date> dateRange) {
-		return dateRange.contains(timestamp);
+		return dateRange.contains(getTimestamp());
 	}
 
 	public boolean isMergeCommit() {
 		return isMergeCommit;
+	}
+	
+	public boolean isTheSame(Commit other) {
+		return this.id.equals(other.id) && this.timestamp == other.timestamp;
 	}
 
 	@Override
