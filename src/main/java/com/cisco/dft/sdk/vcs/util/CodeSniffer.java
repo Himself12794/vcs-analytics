@@ -28,7 +28,7 @@ import com.google.common.collect.Maps;
  *
  */
 public final class CodeSniffer {
-	
+
 	private static final Logger LOGGER = LoggerFactory.getLogger("CodeSniffer");
 
 	private CodeSniffer() {
@@ -60,14 +60,14 @@ public final class CodeSniffer {
 
 	}
 
-	public static ClocData analyzeDirectory(File directory) {
+	public static ClocData analyzeDirectory(final File directory) {
 
 		Map<Language, LangStats> langCount = Maps.newHashMap();
 
 		Header header = new Header();
 
-		Iterator<File> files = FileUtils.iterateFiles(directory, FILE_EXTENSION_ASSOCIATIONS.keySet()
-				.toArray(new String[FILE_EXTENSION_ASSOCIATIONS.size()]), true);
+		Iterator<File> files = FileUtils.iterateFiles(directory, FILE_EXTENSION_ASSOCIATIONS
+				.keySet().toArray(new String[FILE_EXTENSION_ASSOCIATIONS.size()]), true);
 
 		for (File file : Lists.newArrayList(files)) {
 
@@ -75,29 +75,26 @@ public final class CodeSniffer {
 				continue;
 			}
 			
-			final int count = getLinesCount(file);
 			final Language lang = detectLanguage(file);
 
 			header.incrementnFiles(1);
-			header.incrementnLines(count);
-			
+
 			LangStats stats = Util.putIfAbsent(langCount, lang, new LangStats(lang));
 			stats.incrementnFiles(1);
-			stats.incrementCodeLines(count);
 
 		}
 
 		return new ClocData(header, langCount);
 
 	}
-	
-	private static int getLinesCount(File file) {
+
+	public static int getLinesCount(File file) {
 		int count = 0;
 
 		try {
 			LineNumberReader lnr = new LineNumberReader(new FileReader(file));
 			long skipped = lnr.skip(Long.MAX_VALUE);
-			
+
 			count = skipped > 0 ? lnr.getLineNumber() + 1 : 0;
 			lnr.close();
 		} catch (IOException e1) {
@@ -144,7 +141,7 @@ public final class CodeSniffer {
 		C, CPP, CSS, ABAP, ACTIONSCRIPT, ADA, ADSO_IDSM, AMPLE, ANT, APEX_TRIGGER, ARDUINO_SKETCH,
 		ASP, ASPdotNET, ASSEMBLY, AUTOHOTKEY, AWK,
 		/** BASH */
-		BOURNE_AGAIN_SHELL, BOURNE_SHELL,/** SH */
+		BOURNE_AGAIN_SHELL, BOURNE_SHELL, /** SH */
 		BOURNE_AGAIN, C_SHELL, CSHARP, C_CPP_HEADER, CCS, CLOJURE, CLOJURESCRIPT, CMAKE, COBOL,
 		COFFEESCRIPT, COLDFUSION, COLDFUSION_CFSSCRIPT, CUDA, CYTHON, D_DTRACE, DAL, DART, DIFF,
 		DITA, DOS_BATCH, DTD, ECPP, ELIXER, ERB, ERLANG, EXPECT, FSHARP, FOCUS, FORTRAN_77,
@@ -185,7 +182,7 @@ public final class CodeSniffer {
 			try {
 				return Language.valueOf(value);
 			} catch (final Exception e) {
-				Util.redirectLogError("Error occured in mapping", e);
+				LOGGER.debug("Error occured in mapping", e);
 				return Language.UNDEFINED;
 			}
 

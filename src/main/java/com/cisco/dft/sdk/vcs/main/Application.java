@@ -7,6 +7,7 @@ import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tmatesoft.svn.core.SVNException;
+import org.tmatesoft.svn.core.wc.SVNRevision;
 
 import ch.qos.logback.classic.Level;
 
@@ -29,7 +30,7 @@ import com.cisco.dft.sdk.vcs.util.Util;
 // TODO scrub unnecessary files from SVN information
 public final class Application {
 
-	public static final String VERISION = "v1.2.0-SNAPSHOT";
+	public static final String VERISION = "v1.2.0";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger("Application");
 
@@ -109,9 +110,9 @@ public final class Application {
 		LOGGER.debug("running as svn");
 
 		final SVNRepo repo = new SVNRepo(config.getUrl(), config.getBranch(), config.getUsername(), config
-				.getPassword(), config.shouldGetLangStats(), config.shouldGenerateStats());
+				.getPassword(), false, false);
 		
-		repo.sync(config.getBranch(), config.shouldGetLangStats(), config.shouldGenerateStats(), Util.getAppropriateRange(config.getStart(), config.getEnd()));
+		repo.sync(config.getBranch(), config.shouldGetLangStats(), config.shouldGenerateStats(), SVNRevision.create(14L), SVNRevision.HEAD);
 
 		if (!(config.getStart() == null && config.getEnd() == null)) {
 

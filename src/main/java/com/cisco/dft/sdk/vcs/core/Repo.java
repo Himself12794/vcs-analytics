@@ -1,11 +1,17 @@
 package com.cisco.dft.sdk.vcs.core;
 
+import java.io.File;
+
+import com.cisco.dft.sdk.vcs.core.util.CommitLogger;
+
 
 public abstract class Repo {
 
 	public static final String DEFAULT_DIRECTORY_BASE = "vcs-analytics/repositories/";
 
 	protected final RepoInfo repoInfo = new RepoInfo();
+	
+	protected File theDirectory;
 
 	/**
 	 * Gets all generated data for this repository. Make sure
@@ -38,6 +44,14 @@ public abstract class Repo {
 		}
 
 		return splitten[splitten.length - 1];
+	}
+	
+	protected CommitLogger getCommitLogger() {
+		return new CommitLogger(theDirectory);
+	}
+	
+	public String toString() {
+		return repoInfo.toString();
 	}
 
 }

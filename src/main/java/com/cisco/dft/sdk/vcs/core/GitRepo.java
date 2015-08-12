@@ -54,8 +54,6 @@ public final class GitRepo extends Repo {
 
 	private final RepoInfo repoInfo = new RepoInfo();
 
-	private final File theDirectory;
-
 	Git theRepo;
 
 	private final UsernamePasswordCredentialsProvider cp;
@@ -334,7 +332,7 @@ public final class GitRepo extends Repo {
 		File directory = tmp != null ? new File(tmp) : (temp != null ? new File(temp) : FileUtils
 				.getTempDirectory());
 
-		final UUID name = UUID.nameUUIDFromBytes(url.getBytes());
+		final UUID name = UUID.nameUUIDFromBytes(url.toLowerCase().getBytes());
 		return new File(directory, GitRepo.DEFAULT_TEMP_CLONE_DIRECTORY + name.toString());
 
 	}
@@ -503,11 +501,6 @@ public final class GitRepo extends Repo {
 			sync(branch, true, true);
 		}
 
-	}
-
-	@Override
-	public String toString() {
-		return repoInfo.toString();
 	}
 
 	private void updateAuthorInfo(final String branch, final DiffFormatter df) throws GitAPIException, IOException {

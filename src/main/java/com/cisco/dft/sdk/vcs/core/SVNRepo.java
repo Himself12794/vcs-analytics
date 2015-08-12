@@ -5,9 +5,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -26,14 +23,8 @@ import org.tmatesoft.svn.core.wc.SVNRevision;
 import org.tmatesoft.svn.core.wc.SVNUpdateClient;
 import org.tmatesoft.svn.core.wc.SVNWCUtil;
 
+import com.cisco.dft.sdk.vcs.core.util.CommitLogger;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer;
-import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
-import com.cisco.dft.sdk.vcs.util.Util;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Range;
 
 /**
  * SVN Repositories use directories, instead of references, for branches.
@@ -41,12 +32,6 @@ import com.google.common.collect.Range;
  * @author phwhitin
  */
 public class SVNRepo extends Repo {
-
-	private static final String LOG_FILE_PATH = "logs/";
-	
-	private static final String LOG_FILE_BASE = "-commitLog.json";
-
-	private static final String INDEX = "Index: ";
 
 	public static final String TRUNK = "trunk";
 
@@ -57,26 +42,35 @@ public class SVNRepo extends Repo {
 	 * repository locally so metrics can be pulled from it.
 	 */
 	private static final String DEFAULT_TEMP_CLONE_DIRECTORY = DEFAULT_DIRECTORY_BASE + "svn/";
+	
+	private static final String DEFAULT_FILE_PATH = "files/";
 
-	private final File theDirectory;
+	private static final String DEFAULT_USERNAME = "username";
 
-	private String branch;
+	private static final String DEFAULT_PASSWORD = "password";
 
-	protected final SVNRepository theRepo;
+	private static final boolean AUTOSYNC = true;
 
 	private final ISVNAuthenticationManager authManager;
 
 	private final SVNUpdateClient updateClient;
 
-	@SuppressWarnings("unused")
-	private final String url;
+	private final CommitLogger commitLogger;
+
+	private String branch;
+
+	final SVNRepository theRepo;
 
 	public SVNRepo(final String url) throws SVNException {
-		this(url, null, "username", "password", true, true);
+		this(url, null, DEFAULT_USERNAME, DEFAULT_PASSWORD, AUTOSYNC, AUTOSYNC);
 	}
 
 	public SVNRepo(final String url, final String branch) throws SVNException {
-		this(url, branch, "username", "password", true, true);
+		this(url, branch, DEFAULT_USERNAME, DEFAULT_PASSWORD, AUTOSYNC, AUTOSYNC);
+	}
+
+	public SVNRepo(final String url, final String branch, final boolean autoSync) throws SVNException {
+		this(url, branch, DEFAULT_USERNAME, DEFAULT_PASSWORD, autoSync, autoSync);
 	}
 
 	public SVNRepo(final String url, final String branch, final String username,
@@ -85,7 +79,6 @@ public class SVNRepo extends Repo {
 		DAVRepositoryFactory.setup();
 
 		this.branch = branch == null ? TRUNK : branch;
-		this.url = url;
 		theRepo = SVNRepositoryFactory.create(SVNURL.parseURIEncoded(url));
 		authManager = SVNWCUtil.createDefaultAuthenticationManager(username, password);
 		theRepo.setAuthenticationManager(authManager);
@@ -99,23 +92,26 @@ public class SVNRepo extends Repo {
 
 		updateClient = ourClientManager.getUpdateClient();
 		updateClient.setIgnoreExternals(false);
+		commitLogger = getCommitLogger();
 
-		sync(branch, langStats, doStats);
-
+		if (langStats && doStats) {
+			sync(branch, langStats, doStats);
+		}
 
 	}
 
 	private void checkoutBranch(final String branch) throws SVNException {
 
-		final File exportPath = new File(theDirectory, "/files");
+		final File exportPath = new File(theDirectory, DEFAULT_FILE_PATH);
 
 		FileUtils.deleteQuietly(exportPath);
 		final SVNURL newUrl = theRepo.getLocation().appendPath(branch, true);
+
 		LOGGER.info("Exporting repo to perform language analysis, this may take some time.");
 		LOGGER.debug("Exporting from url {} to {}", newUrl.getPath(), exportPath.getAbsolutePath());
 		updateClient.doExport(newUrl, exportPath, SVNRevision.HEAD, SVNRevision.HEAD, null, true,
 				SVNDepth.INFINITY);
-		LOGGER.debug("exported");
+		LOGGER.info("Exported complete.");
 
 	}
 
@@ -137,9 +133,6 @@ public class SVNRepo extends Repo {
 
 				if (line.startsWith("---")) {
 					filesChanged++;
-				} else if (line.startsWith(INDEX)) {
-					final Language lang = CodeSniffer.detectLanguage(line.replace(INDEX, ""));
-					Util.incrementInMap(diff.langStats, lang, 1);
 				} else if (line.startsWith("+")) {
 					additions++;
 				} else if (line.startsWith("-")) {
@@ -173,11 +166,13 @@ public class SVNRepo extends Repo {
 	}
 
 	public void sync(final boolean doLangStats) {
+
 		try {
 			sync(TRUNK, doLangStats, true);
 		} catch (final Exception e) {
 			LOGGER.debug("Directory " + TRUNK + " does not exist", e);
 		}
+
 	}
 
 	/**
@@ -188,14 +183,11 @@ public class SVNRepo extends Repo {
 	 *             if the directory does not exist
 	 */
 	public void sync(final String branch, final boolean doLangStats, final boolean doStats) throws SVNException {
-		final Range<Date> range = Range.all();
-		sync(branch, doLangStats, doStats, range);
+		sync(branch, doLangStats, doStats, s(0), SVNRevision.HEAD);
 	}
 
-	public void sync(final String branch, final boolean doLangStats, final boolean doStats, final Range<Date> range) throws SVNException {
+	public void sync(final String branch, final boolean doLangStats, final boolean doStats, SVNRevision endA, SVNRevision endB) throws SVNException {
 
-		LOGGER.info("Syncing data");
-		
 		this.branch = branch;
 
 		final String temp = branch == null ? TRUNK : branch;
@@ -203,23 +195,24 @@ public class SVNRepo extends Repo {
 		final BranchInfo bi = repoInfo.getBranchInfo(temp);
 		bi.resetInfo();
 
-		updateRepoInfo(bi, doLangStats);
-		if (doStats) { updateAuthorInfo(bi, range); }
+		if (doLangStats) {
+			updateRepoInfo(bi, doLangStats);
+		}
+		
+		if (doStats) {
+			updateAuthorInfo(bi, endA, endB);
+		}
 
 	}
 
 	@SuppressWarnings({ "unchecked" })
-	private void updateAuthorInfo(final BranchInfo bi, final Range<Date> range) throws SVNException {
+	private void updateAuthorInfo(final BranchInfo bi, final SVNRevision endA, final SVNRevision endB) throws SVNException {
 
-		LOGGER.info("Getting author information");
+		LOGGER.info("Getting author information for branch {}", bi.getBranch());
 
-		final SVNRevision start = range.hasLowerBound() ? SVNRevision.create(range.lowerEndpoint())
-				: SVNRevision.create(0L);
-		final SVNRevision end = range.hasUpperBound() ? SVNRevision.create(range.upperEndpoint())
-				: SVNRevision.HEAD;
+		final SVNRevision start = endA == null ? s(0L) : endA;
+		final SVNRevision end = endB == null ? SVNRevision.HEAD : endB;
 
-		CommitLog log = getLogForBranch(bi.getBranchName());
-		
 		long currRev = 0L;
 
 		final String temp = bi.getBranch();
@@ -233,20 +226,27 @@ public class SVNRepo extends Repo {
 			final long rev = leEntry.getRevision();
 			final String author = leEntry.getAuthor();
 			final CommitterInfo ai = bi.getAuthorInfo(author, "", author, "");
-			Commit commit = log.getCommit(rev);
+			Commit commit = commitLogger.getCommit(rev);
 
 			if (commit != null) {
 				LOGGER.debug("Commit rev {} already exists in log file, skipping.", commit.getId());
 			} else {
+
 				LOGGER.debug("Calculating differences...");
 				final Diff diffs = compareRevisions(s(rev), s(rev - 1));
-				LOGGER.debug("Differences calculated with {} additions, {} deletions, and {} files changed", diffs.additions, diffs.deletions, diffs.changedFiles);
+
+				LOGGER.debug(
+						"Differences calculated with {} additions, {} deletions, and {} files changed",
+						diffs.additions, diffs.deletions, diffs.changedFiles);
+
 				commit = new Commit(Long.toString(leEntry.getRevision()), leEntry.getDate(), diffs.changedFiles, diffs.additions, diffs.deletions, false, leEntry
 						.getMessage().replace("\n", " "));
+
 				commit.setCommitter(ai.getCommitterName());
-				log.addCommitToJsonLog(commit);
+				commitLogger.addCommitToJsonLog(commit);
 
 			}
+
 			currRev++;
 			LOGGER.debug("{}/{} entries processed", currRev, logEntries.size());
 			ai.incrementAdditions(commit.getAdditions());
@@ -258,27 +258,36 @@ public class SVNRepo extends Repo {
 	private void updateRepoInfo(final BranchInfo bi, final boolean update) throws SVNException {
 
 		final String branch = bi.getBranch();
+		final File exportPath = new File(theDirectory, DEFAULT_FILE_PATH);
+		
+		// Checks out the branch for analysis
+		checkoutBranch(branch);
 
-		final File exportPath = new File(theDirectory, "/files");
-
-		if (update) {
-			checkoutBranch(branch);
-		}
-
+		ClocData data;
+		
+		LOGGER.info("Getting language statistics for branch {}", branch);
+		
 		if (ClocService.canGetCLOCStats()) {
 
 			try {
-				final ClocData data = ClocService.getClocStatistics(exportPath);
-				bi.getData().imprint(data);
-				bi.usesCLOCStats = true;
+				data = ClocService.getClocStatistics(exportPath);
 			} catch (final IOException e) {
+
+				data = CodeSniffer.analyzeDirectory(exportPath);
 				LOGGER.debug("Cloc stat gathering failed", e);
+
 			}
 
+		} else {
+			data = CodeSniffer.analyzeDirectory(exportPath);
 		}
 
+		bi.getData().imprint(data);
+		bi.usesCLOCStats = true;
+
+
 	}
-	
+
 	/**
 	 * The current "branch" that exists in temp.
 	 * 
@@ -294,101 +303,10 @@ public class SVNRepo extends Repo {
 
 	private static class Diff {
 
-		private final Map<Language, Integer> langStats = Maps.newHashMap();
 		private int additions;
 		private int deletions;
 		private int changedFiles;
 
-	}
-	
-	private CommitLog getLogForBranch(String branch) {
-		return new CommitLog(branch);
-	}
-	
-	private final class CommitLog {
-		
-		private final File logFile;
-		
-		private boolean isInit;
-		
-		private CommitLog(String branch) {
-			logFile = new File(theDirectory, LOG_FILE_PATH + branch.replace('/', '-').replace('\\', '-') + LOG_FILE_BASE);
-			try {
-				FileUtils.forceMkdir(new File(theDirectory, LOG_FILE_PATH));
-				if (!logFile.exists()) {
-					logFile.createNewFile();
-				}
-				isInit = true;
-			} catch (IOException e) {
-				isInit = false;
-			}
-			LOGGER.debug("Got log " + logFile);
-		}
-
-		private void addCommitToJsonLog(final Commit commit) {
-
-			if (!isInit) { return; }
-			
-			final ObjectMapper mapper = new ObjectMapper();
-
-			final List<Commit> commits = getLoggedCommits();
-
-			for (final Commit c : commits) {
-				if (c.isTheSame(commit)) { return; }
-			}
-
-			commits.add(commit);
-
-			try {
-				mapper.writeValue(logFile, commits);
-			} catch (final Exception e) {
-				LOGGER.debug("Error occurred during saving to log file", e);
-			}
-		}
-
-		private Commit getCommit(final long id) {
-
-			if (!isInit) { return null; }
-
-			for (final Commit commit : getLoggedCommits()) {
-				if (commit.getId().equals(String.valueOf(id))) { return commit; }
-			}
-
-			return null;
-
-		}
-
-		private List<Commit> getLoggedCommits() {
-
-			final ObjectMapper mapper = new ObjectMapper();
-			final TypeReference<List<Commit>> ref = new TypeReference<List<Commit>>() {
-			};
-			List<Commit> commits = Lists.newArrayList();
-
-			if (!isInit) { return commits; }
-
-			try {
-				commits = mapper.readValue(logFile, ref);
-			} catch (final Exception e) {
-				LOGGER.trace("Doesn't exist yet", e);
-			}
-
-			return commits;
-
-		}
-
-		@SuppressWarnings("unused")
-		private SVNRevision getMostRecentRevFromLog() {
-			long mostRecent = 0L;
-			for (final Commit commit : getLoggedCommits()) {
-				final long curr = Long.valueOf(commit.getId());
-				if (curr > mostRecent) {
-					mostRecent = curr;
-				}
-			}
-			return s(mostRecent);
-		}
-		
 	}
 
 }

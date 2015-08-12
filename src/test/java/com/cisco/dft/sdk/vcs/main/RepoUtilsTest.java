@@ -253,6 +253,8 @@ public class RepoUtilsTest {
 		SVNRepo repo = new SVNRepo("https://github.com/Himself12794/Heroes-Mod", "branches/" + DEVELOP);
 		repo.sync("branches/bugfix/fix-broken-things", true, true);
 		
+		System.out.println(repo);
+		
 		assertTrue(repo.getRepoStatistics().branchExists("branches/" + DEVELOP));
 		assertEquals("Wrong commit count", 6, repo.getRepoStatistics().getBranchInfoFor("branches/" + DEVELOP).getCommitCount());
 		

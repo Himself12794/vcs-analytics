@@ -91,7 +91,7 @@ public class RepoInfo {
 		if (branches.containsKey(resolved)) {
 			return branches.get(resolved);
 		} else {
-			throw new BranchNotFoundException("Branch " + branch + " does not exist");
+			throw new BranchNotFoundException("Branch " + branch + " does not exist, or has not been synced");
 		}
 
 	}
