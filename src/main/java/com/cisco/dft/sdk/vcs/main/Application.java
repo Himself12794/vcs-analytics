@@ -7,7 +7,6 @@ import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tmatesoft.svn.core.SVNException;
-import org.tmatesoft.svn.core.wc.SVNRevision;
 
 import ch.qos.logback.classic.Level;
 
@@ -25,8 +24,6 @@ import com.cisco.dft.sdk.vcs.util.Util;
  *
  * @author phwhitin
  */
-// TODO change around commit information
-// TODO SVN completion
 // TODO scrub unnecessary files from SVN information
 public final class Application {
 
@@ -112,7 +109,7 @@ public final class Application {
 		final SVNRepo repo = new SVNRepo(config.getUrl(), config.getBranch(), config.getUsername(), config
 				.getPassword(), false, false);
 		
-		repo.sync(config.getBranch(), config.shouldGetLangStats(), config.shouldGenerateStats(), SVNRevision.create(14L), SVNRevision.HEAD);
+		repo.sync(config.getBranch(), config.shouldGetLangStats(), config.shouldGenerateStats(), config.getRevA(), config.getRevB());
 
 		if (!(config.getStart() == null && config.getEnd() == null)) {
 
@@ -152,15 +149,15 @@ public final class Application {
 	 */
 	void execute() throws GitAPIException, SVNException {
 
+		if (config.shouldShowVersion()) {
+			out.println(VERISION);
+		}
+
 		if (config.isDebugEnabled()) {
 			Util.setLoggingLevel(Level.DEBUG);
 		}
 
 		LOGGER.debug("Executing with params: " + config.toString());
-
-		if (config.shouldShowVersion()) {
-			out.println(VERISION);
-		}
 
 		if (!config.getAction().isValid(config)) {
 			out.println(config.getAction().getUsage());
@@ -252,7 +249,9 @@ public final class Application {
 	}
 
 	public static void main(final String[] args) throws GitAPIException {
-
+		
+		Util.setLoggingLevel(Level.INFO);
+		
 		try {
 			APPLICATION.setConfig(ProgramConfig.parseArgs(args)).execute();
 		} catch (final Exception e) {

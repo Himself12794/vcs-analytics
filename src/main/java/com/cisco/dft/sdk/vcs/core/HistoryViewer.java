@@ -6,6 +6,12 @@ import com.cisco.dft.sdk.vcs.core.ClocData.LangStats;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
 import com.cisco.dft.sdk.vcs.util.Util;
 
+/**
+ * Class used as base.
+ * 
+ * @author phwhitin
+ *
+ */
 public class HistoryViewer {
 
 	protected final Repo theRepo;

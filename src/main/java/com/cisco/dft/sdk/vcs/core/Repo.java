@@ -4,7 +4,12 @@ import java.io.File;
 
 import com.cisco.dft.sdk.vcs.core.util.CommitLogger;
 
-
+/**
+ * Abstract base class used by all repos.
+ * 
+ * @author phwhitin
+ *
+ */
 public abstract class Repo {
 
 	public static final String DEFAULT_DIRECTORY_BASE = "vcs-analytics/repositories/";

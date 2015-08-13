@@ -6,6 +6,11 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tmatesoft.svn.core.wc.SVNRevision;
+
+import ch.qos.logback.classic.Level;
+
+import com.cisco.dft.sdk.vcs.util.Util;
 
 /**
  * Simple pojo used to define Application config and context.
@@ -16,6 +21,10 @@ import org.slf4j.LoggerFactory;
 public class ProgramConfig {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger("ProgamConfig");
+	
+	static {
+		Util.setLoggingLevel(Level.INFO);
+	}
 
 	/** Pre-set config for an INIT action. Useful for testing */
 	static final ProgramConfig INIT = ProgramConfig.parseArgs("init", "--nostats",
@@ -62,6 +71,10 @@ public class ProgramConfig {
 	private boolean forceGit;
 
 	private boolean forceSvn;
+	
+	private SVNRevision revA;
+	
+	private SVNRevision revB;
 
 	private Date start;
 
@@ -79,6 +92,14 @@ public class ProgramConfig {
 		this.useCloc = useCloc;
 	}
 	
+	public SVNRevision getRevA() {
+		return revA;
+	}
+
+	public SVNRevision getRevB() {
+		return revB;
+	}
+
 	public boolean shouldGetLangStats() {
 		return shouldGenerateLangStats;
 	}
@@ -167,27 +188,19 @@ public class ProgramConfig {
 	}
 
 	public static String getUsage() {
-		final String value = "This application runs an analysis on remote repositories and prints the results.\n"
-				+ "\nCommands:"
-				+ "\n  analyze <url> - Gives statistics for a Git repository"
-				+ "\n      --branch=<branch> (Limits statistics to specified branch)"
-				+ "\n      --nostatistics (Indicates to just clone the repo)"
-				+ "\n      --builtin-analysis (Indicates to use builtin stat analysis)"
-				+ "\n      --username=<username> (Used for access to private repos)"
-				+ "\n      --password=<password> (Used for access to private repos)"
-				+ "\n      --start=<epoch-time> (Format: YYYY-MM-DDTHH:MM:SS+HH:MM)"
-				+ "\n      --end=<epoch-time> (Format: YYYY-MM-DDTHH:MM:SS+HH:MM)"
-				+ "\n      --nocommits (Indicates that only language information should be shown)"
-				+ "\n      -s (forces the application to treat the url as a SVN repo"
-				+ "\n      -g (forces the application to treat the url as a Git repo"
-				+ "\n"
-				+ "\n  help  - Shows help"
-				+ "\n"
-				+ "\n  init  - Extracts CLOC resources"
-				+ "\n"
-				+ "\n  debug - runs the program with some debug data"
-				+ "\n  -d    - Enable debug logging" + "\n  -v    - Shows version\n";
-		return value;
+		final StringBuilder value = new StringBuilder("This application runs an analysis on remote repositories and prints the results.\n");
+		value.append("\nCommands:");
+		
+		for (Action action : Action.values()) {
+			value.append(action.getUsage());
+			value.append("\n");
+		}
+			
+		value.append("\nUniversal options");
+		value.append("\n  -d    - Enable debug logging");
+		value.append("\n  -v    - Shows version");
+		value.append("\n");
+		return value.toString();
 	}
 
 	public static ProgramConfig parseArgs(final ArgParser parser) {
@@ -210,6 +223,8 @@ public class ProgramConfig {
 		final boolean noCommits = parser.getBoolean("nocommits");
 		final boolean forceGit = parser.getBoolean("forceGit") || parser.getBoolean("g");
 		final boolean forceSvn = parser.getBoolean("forceSvn") || parser.getBoolean("s");
+		final SVNRevision revA = SVNRevision.create(Util.ifNullDefault(parser.getLong("rev-a"), 0L));
+		final SVNRevision revB = SVNRevision.create(Util.ifNullDefault(parser.getLong("rev-b"), -1L));
 		final Date end = getDate(parser.getString("end"));
 		final Date start = getDate(parser.getString("start"));
 
@@ -222,6 +237,8 @@ public class ProgramConfig {
 		config.forceGit = forceGit;
 		config.forceSvn = forceSvn;
 		config.shouldGenerateLangStats = generateLangStats;
+		config.revA = revA;
+		config.revB = revB;
 		
 		return config;
 	}

@@ -39,10 +39,11 @@ public class CommitLogger {
 				logFile.createNewFile();
 			}
 			isInit = true;
+			LOGGER.debug("Got log " + logFile);
 		} catch (IOException e) {
 			isInit = false;
+			LOGGER.debug("Log acquision for file {} failed", logFile);
 		}
-		LOGGER.debug("Got log " + logFile);
 	}
 
 	public void addCommitToJsonLog(final Commit commit) {

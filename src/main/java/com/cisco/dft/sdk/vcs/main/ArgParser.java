@@ -156,7 +156,7 @@ public final class ArgParser {
 
 	/**
 	 * Trys to get the mapped value as a long. If it does not exist or is not a
-	 * long, returns 0
+	 * long, returns null
 	 *
 	 * @param key
 	 * @return

@@ -7,6 +7,12 @@ import java.io.InputStreamReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Utilities used to call commands.
+ * 
+ * @author phwhitin
+ *
+ */
 public final class CommandLineUtils {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CommandLineUtils.class);

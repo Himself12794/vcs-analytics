@@ -60,13 +60,14 @@ public class RepoUtilsTest {
 
 		LOGGER.debug("Testing help feature");
 		Application.setConfiguration(ProgramConfig.HELP).execute();
-
+		
+		LOGGER.debug("Testing help with option");
 		Application.setConfiguration(ProgramConfig.parseArgs("help", "analyze")).execute();
 
 		LOGGER.debug("Testing force run as SVN");
 		Application.setConfiguration(
 				ProgramConfig.parseArgs("analyze", "https://github.com/Himself12794/powersAPI.git",
-						"-s", "-d", "--no-lang-stats", "--nostats")).execute();
+						"-s", "-d", "--nostats")).execute();
 
 	}
 

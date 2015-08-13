@@ -27,7 +27,13 @@ import com.cisco.dft.sdk.vcs.core.util.CommitLogger;
 import com.cisco.dft.sdk.vcs.util.CodeSniffer;
 
 /**
- * SVN Repositories use directories, instead of references, for branches.
+ * SVN Repositories use directories, instead of references, for branches. Unlike
+ * a GitRepo, you must manually synchronize for each branch since there's no
+ * telling which directories are considered branches.
+ * <p>
+ * SVN repos also store information differently, and any branch information only
+ * holds revisions that affected that branch, since revisions affect the repo as
+ * a whole, not just specific branches.
  *
  * @author phwhitin
  */
@@ -42,7 +48,7 @@ public class SVNRepo extends Repo {
 	 * repository locally so metrics can be pulled from it.
 	 */
 	private static final String DEFAULT_TEMP_CLONE_DIRECTORY = DEFAULT_DIRECTORY_BASE + "svn/";
-	
+
 	private static final String DEFAULT_FILE_PATH = "files/";
 
 	private static final String DEFAULT_USERNAME = "username";
@@ -57,28 +63,73 @@ public class SVNRepo extends Repo {
 
 	private final CommitLogger commitLogger;
 
-	private String branch;
+	private String currBranch;
 
 	final SVNRepository theRepo;
 
+	/**
+	 * Initializes a repo with the given url. Doesn't attempt any verification,
+	 * and automatically sync information for trunk if successful.
+	 *
+	 * @param url
+	 * @throws SVNException
+	 */
 	public SVNRepo(final String url) throws SVNException {
 		this(url, null, DEFAULT_USERNAME, DEFAULT_PASSWORD, AUTOSYNC, AUTOSYNC);
 	}
 
+	/**
+	 * Behaves just like {@link SVNRepo#SVNRepo(String)} except uses the
+	 * specified path instead.
+	 *
+	 * @param url
+	 * @param branch
+	 * @throws SVNException
+	 */
 	public SVNRepo(final String url, final String branch) throws SVNException {
 		this(url, branch, DEFAULT_USERNAME, DEFAULT_PASSWORD, AUTOSYNC, AUTOSYNC);
 	}
 
+	/**
+	 * Behaves just like {@link SVNRepo#SVNRepo(String, String)}, but with the
+	 * option to not synchronize automatically.
+	 *
+	 * @param url
+	 * @param branch
+	 * @param autoSync
+	 * @throws SVNException
+	 */
 	public SVNRepo(final String url, final String branch, final boolean autoSync) throws SVNException {
 		this(url, branch, DEFAULT_USERNAME, DEFAULT_PASSWORD, autoSync, autoSync);
 	}
 
+	/**
+	 * Initializes a SVN repo with the given url, then runs diagnostics on the
+	 * given branch, according to the {@code langStats} and {@code doStats}.
+	 *
+	 * Uses given username and password to authenticate.
+	 *
+	 * @param url
+	 *            location of the repo
+	 * @param branch
+	 *            initial branch on which to run diagnostics
+	 * @param username
+	 *            for authentication
+	 * @param password
+	 *            for authentication
+	 * @param langStats
+	 *            if the repo should generate langStats
+	 * @param doStats
+	 *            if the repo should generate author statistics
+	 * @throws SVNException
+	 *             if an error occurs in initialization
+	 */
 	public SVNRepo(final String url, final String branch, final String username,
 			final String password, final boolean langStats, final boolean doStats) throws SVNException {
 
 		DAVRepositoryFactory.setup();
 
-		this.branch = branch == null ? TRUNK : branch;
+		currBranch = branch == null ? TRUNK : branch;
 		theRepo = SVNRepositoryFactory.create(SVNURL.parseURIEncoded(url));
 		authManager = SVNWCUtil.createDefaultAuthenticationManager(username, password);
 		theRepo.setAuthenticationManager(authManager);
@@ -111,7 +162,7 @@ public class SVNRepo extends Repo {
 		LOGGER.debug("Exporting from url {} to {}", newUrl.getPath(), exportPath.getAbsolutePath());
 		updateClient.doExport(newUrl, exportPath, SVNRevision.HEAD, SVNRevision.HEAD, null, true,
 				SVNDepth.INFINITY);
-		LOGGER.info("Exported complete.");
+		LOGGER.info("Export complete.");
 
 	}
 
@@ -133,6 +184,9 @@ public class SVNRepo extends Repo {
 
 				if (line.startsWith("---")) {
 					filesChanged++;
+				} else if (line.startsWith("+++")) {
+					// No action needed, this just ensures that the next
+					// statement doesn't count this as an addition
 				} else if (line.startsWith("+")) {
 					additions++;
 				} else if (line.startsWith("-")) {
@@ -160,23 +214,45 @@ public class SVNRepo extends Repo {
 
 	}
 
-	@Override
-	public void sync() {
-		sync(true);
-	}
-
-	public void sync(final boolean doLangStats) {
-
-		try {
-			sync(TRUNK, doLangStats, true);
-		} catch (final Exception e) {
-			LOGGER.debug("Directory " + TRUNK + " does not exist", e);
-		}
-
+	/**
+	 * The current "branch" that exists in temp.
+	 *
+	 * @return
+	 */
+	public String getBranch() {
+		return currBranch;
 	}
 
 	/**
-	 * Adds information about the specified branch.
+	 * Synchronizes information for the directory trunk. Performs all
+	 * diagnostics.
+	 * 
+	 * @throws SVNException
+	 *
+	 */
+	@Override
+	public void sync() {
+		try {
+			sync(true);
+		} catch (Exception e) {
+			LOGGER.debug("Error occured in synchronization.", e);
+		}
+	}
+
+	/**
+	 * Syncs for trunk, but with the option to not generate language statistics.
+	 *
+	 * @param doLangStats
+	 * @throws SVNException
+	 */
+	public void sync(final boolean doLangStats) throws SVNException {
+		sync(TRUNK, doLangStats, true);
+	}
+
+	/**
+	 * Adds information about the specified branch, with the option to disable
+	 * either types of information gathering. This is useful if you only want
+	 * specific information.
 	 *
 	 * @param branch
 	 * @throws SVNException
@@ -186,9 +262,21 @@ public class SVNRepo extends Repo {
 		sync(branch, doLangStats, doStats, s(0), SVNRevision.HEAD);
 	}
 
-	public void sync(final String branch, final boolean doLangStats, final boolean doStats, SVNRevision endA, SVNRevision endB) throws SVNException {
+	/**
+	 * Works like {@link SVNRepo#sync(String, boolean, boolean)}, except
+	 * synchronization of author information can be limited to specific revision
+	 * ranges.
+	 *
+	 * @param branch
+	 * @param doLangStats
+	 * @param doStats
+	 * @param endA
+	 * @param endB
+	 * @throws SVNException
+	 */
+	public void sync(final String branch, final boolean doLangStats, final boolean doStats, final SVNRevision endA, final SVNRevision endB) throws SVNException {
 
-		this.branch = branch;
+		currBranch = branch;
 
 		final String temp = branch == null ? TRUNK : branch;
 
@@ -198,7 +286,7 @@ public class SVNRepo extends Repo {
 		if (doLangStats) {
 			updateRepoInfo(bi, doLangStats);
 		}
-		
+
 		if (doStats) {
 			updateAuthorInfo(bi, endA, endB);
 		}
@@ -220,6 +308,8 @@ public class SVNRepo extends Repo {
 		final Collection<SVNLogEntry> logEntries = theRepo.log(new String[] { temp }, null,
 				start.getNumber(), end.getNumber(), true, true);
 
+		LOGGER.info("Analyzing {} entries.", logEntries.size());
+
 		for (final SVNLogEntry leEntry : logEntries) {
 
 			LOGGER.debug("Revision {}", leEntry.getRevision());
@@ -233,7 +323,7 @@ public class SVNRepo extends Repo {
 			} else {
 
 				LOGGER.debug("Calculating differences...");
-				final Diff diffs = compareRevisions(s(rev), s(rev - 1));
+				final Diff diffs = compareRevisions(s(rev - 1), s(rev));
 
 				LOGGER.debug(
 						"Differences calculated with {} additions, {} deletions, and {} files changed",
@@ -259,14 +349,14 @@ public class SVNRepo extends Repo {
 
 		final String branch = bi.getBranch();
 		final File exportPath = new File(theDirectory, DEFAULT_FILE_PATH);
-		
+
 		// Checks out the branch for analysis
 		checkoutBranch(branch);
 
 		ClocData data;
-		
+
 		LOGGER.info("Getting language statistics for branch {}", branch);
-		
+
 		if (ClocService.canGetCLOCStats()) {
 
 			try {
@@ -285,22 +375,18 @@ public class SVNRepo extends Repo {
 		bi.getData().imprint(data);
 		bi.usesCLOCStats = true;
 
-
-	}
-
-	/**
-	 * The current "branch" that exists in temp.
-	 * 
-	 * @return
-	 */
-	public String getBranch() {
-		return branch;
 	}
 
 	private static SVNRevision s(final long rev) {
 		return SVNRevision.create(rev);
 	}
 
+	/**
+	 * Utility wrapper for difference information.
+	 *
+	 * @author phwhitin
+	 *
+	 */
 	private static class Diff {
 
 		private int additions;

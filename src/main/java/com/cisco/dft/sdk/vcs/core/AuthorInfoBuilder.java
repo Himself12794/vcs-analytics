@@ -156,8 +156,6 @@ public class AuthorInfoBuilder {
 	 */
 	public CommitterInfo lookupUser(final String user) throws CommitterNotFoundException {
 		
-		System.out.println(authorInfo.getData().size());
-		
 		for (final CommitterInfo ai : authorInfo.getData()) {
 			if (ai.getCommitterName().equals(user)) { 
 				return ai;
@@ -167,6 +165,13 @@ public class AuthorInfoBuilder {
 		throw new CommitterNotFoundException("User " + user + " not found.");
 	}
 	
+	/**
+	 * Looks up the user by email. If more than one user exists with the same email, it gives the first one.
+	 * 
+	 * @param email
+	 * @return
+	 * @throws CommitterNotFoundException
+	 */
 	public CommitterInfo lookupUserByEmail(final String email) throws CommitterNotFoundException {
 		
 		for (final CommitterInfo ci : authorInfo.getData()) {

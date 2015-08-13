@@ -10,6 +10,12 @@ import com.cisco.dft.sdk.vcs.core.error.BranchNotFoundException;
 import com.cisco.dft.sdk.vcs.util.Util;
 import com.google.common.collect.Maps;
 
+/**
+ * Data object that holds all information for a repo.
+ * 
+ * @author phwhitin
+ *
+ */
 public class RepoInfo {
 
 	private String name;
@@ -33,13 +39,13 @@ public class RepoInfo {
 	 * @return
 	 */
 	public boolean branchExists(final String branch) {
-		
+
 		for (BranchInfo bi : branches.values()) {
 			if (bi.getBranch().equals(branch)) { return true; }
 		}
-		
+
 		return false;
-		
+
 	}
 
 	/**
@@ -76,22 +82,25 @@ public class RepoInfo {
 
 	/**
 	 * Get the information for a specific branch. To find what branches the repo
-	 * has, use {@link RepoInfo#getBranches()}
+	 * has, use {@link RepoInfo#getBranches()}. The "branch" is the path in the
+	 * repository, so a branch could possibly be "branches/develop."
 	 *
 	 * @param branch
 	 *            for which to get information
 	 * @return Information on the branch, or empty information if the branch
 	 *         does not exist. This is never null.
-	 * @throws BranchNotFoundException 
+	 * @throws BranchNotFoundException
 	 */
 	public BranchInfo getBranchInfoFor(final String branch) throws BranchNotFoundException {
 
-		final String resolved = (theRepo instanceof GitRepo) ? BranchInfo.branchNameResolver(branch) : branch;
+		final String resolved = (theRepo instanceof GitRepo) ? BranchInfo
+				.branchNameResolver(branch) : branch;
 
 		if (branches.containsKey(resolved)) {
 			return branches.get(resolved);
 		} else {
-			throw new BranchNotFoundException("Branch " + branch + " does not exist, or has not been synced");
+			throw new BranchNotFoundException("Branch " + branch
+					+ " does not exist, or has not been synced");
 		}
 
 	}

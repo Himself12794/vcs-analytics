@@ -5,6 +5,12 @@ import java.util.Map;
 
 import com.cisco.dft.sdk.vcs.util.CodeSniffer.Language;
 
+/**
+ * Mapping extensions to languages.
+ * 
+ * @author phwhitin
+ *
+ */
 public abstract class FileExtensionMapping {
 	
 	private FileExtensionMapping(){}
