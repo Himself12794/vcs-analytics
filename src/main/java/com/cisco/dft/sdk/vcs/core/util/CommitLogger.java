@@ -43,6 +43,7 @@ public class CommitLogger {
 		} catch (IOException e) {
 			isInit = false;
 			LOGGER.debug("Log acquision for file {} failed", logFile);
+			LOGGER.trace("Error is", e);
 		}
 	}
 

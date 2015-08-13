@@ -46,6 +46,18 @@ public final class CodeSniffer {
 	 */
 	public static Language detectLanguage(final String file) {
 
+		// Checking this first for files that may include the name as well as
+		// the extension, such as pom.xml
+		final String[] temp = file.split("\\\\");
+
+		if (temp.length > 0) {
+
+			final Language lang = FILE_EXTENSION_ASSOCIATIONS.get(temp[temp.length - 1]);
+
+			if (lang != null) { return lang; }
+
+		}
+
 		final String[] filed = file.split("\\.");
 
 		if (filed.length > 0) {
@@ -74,7 +86,7 @@ public final class CodeSniffer {
 			if (file.isHidden()) {
 				continue;
 			}
-			
+
 			final Language lang = detectLanguage(file);
 
 			header.incrementnFiles(1);
@@ -159,7 +171,7 @@ public final class CodeSniffer {
 		VISUAL_BASIC, VISUAL_FOX_PRO, VISUALFORCE_COMPONENT, VISUALFORCE_PAGE,
 		WINDOWS_MESSAGE_FILE, WINDOWS_MODULE_DEFINITION, WINDOWS_RESOURCE_FILE, WIX_INCLUDE,
 		WIX_SOURCE, WIX_STRING_LOCALIZATION, XAML, XBASE, XBASE_HEADER, XML, XQUERY, XSD, XSLT,
-		YACC, YAML, UNDEFINED;
+		YACC, YAML, UNDEFINED, TEAMCENTER_MTH;
 
 		@Override
 		public String toString() {
@@ -186,6 +198,10 @@ public final class CodeSniffer {
 				return Language.UNDEFINED;
 			}
 
+		}
+
+		public boolean isUndefined() {
+			return this == UNDEFINED;
 		}
 
 	}

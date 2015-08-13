@@ -179,14 +179,13 @@ public class SVNRepo extends Repo {
 			int deletions = 0;
 
 			final String[] lines = baos.toString().split("\n");
-
+			
 			for (final String line : lines) {
-
+				
 				if (line.startsWith("---")) {
 					filesChanged++;
 				} else if (line.startsWith("+++")) {
-					// No action needed, this just ensures that the next
-					// statement doesn't count this as an addition
+					continue;
 				} else if (line.startsWith("+")) {
 					additions++;
 				} else if (line.startsWith("-")) {

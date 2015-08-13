@@ -148,6 +148,7 @@ public class RepoUtilsTest {
 		assertTrue(CodeSniffer.detectLanguage("Test.java") == Language.JAVA);
 		assertTrue(CodeSniffer.detectLanguage("Test.none") == Language.UNDEFINED);
 		assertTrue(CodeSniffer.detectLanguage("") == Language.UNDEFINED);
+		assertEquals("Should have been a pom.xml", CodeSniffer.detectLanguage("pom.xml"), Language.MAVEN);
 		LOGGER.debug("OS Type: " + OSType.getOSType().name());
 
 	}
