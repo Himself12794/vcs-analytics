@@ -27,7 +27,7 @@ import com.cisco.dft.sdk.vcs.util.Util;
 // TODO scrub unnecessary files from SVN information
 public final class Application {
 
-	public static final String VERISION = "v1.2.0";
+	public static final String VERISION = "v1.2.1";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger("Application");
 

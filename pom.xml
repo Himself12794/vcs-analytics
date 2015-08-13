@@ -5,7 +5,7 @@
 
 	<groupId>it.cits.itarchitecture</groupId>
 	<artifactId>source-code-vcs-analytics-sdk</artifactId>
-	<version>1.2.0</version>
+	<version>1.2.1</version>
 	<name>source-code-analytics-sdk</name>
 	<description>Source Code Analytics SDK</description>
 
