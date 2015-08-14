@@ -12,7 +12,7 @@ TRACE -	Designates finer-grained informational events than the DEBUG.
 <configuration>
 
     <!-- Enter your app name here instead of <seed-api-sb> -->
-    <property name="APP_NAME" value="vcs-tools" />
+    <property name="APP_NAME" value="vcs-analytics" />
 
 	<!-- Regular file appender -->
 	<appender name="fileAppender" class="ch.qos.logback.core.FileAppender">

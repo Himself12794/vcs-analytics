@@ -109,9 +109,6 @@ public final class Application {
 		final SVNRepo repo = new SVNRepo(config.getUrl(), config.getBranch(), config.getUsername(), config
 				.getPassword(), false, false);
 		
-		if (config.shouldSvnSkipNonSourceCodeFiles()) { LOGGER.debug("Including only source files in diff comparison"); }
-		repo.setSkipNonSourceCodeFiles(config.shouldSvnSkipNonSourceCodeFiles());
-		
 		repo.sync(config.getBranch(), config.shouldGetLangStats(), config.shouldGenerateStats(), config.getRevA(), config.getRevB());
 
 		if (!(config.getStart() == null && config.getEnd() == null)) {

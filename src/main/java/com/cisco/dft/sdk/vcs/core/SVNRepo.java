@@ -56,9 +56,6 @@ public class SVNRepo extends Repo {
 	private static final String DEFAULT_PASSWORD = "password";
 
 	private static final boolean AUTOSYNC = true;
-
-	private boolean ignoreNonSourceCodeFiles = false;
-
 	private final ISVNAuthenticationManager authManager;
 
 	private final SVNUpdateClient updateClient;
@@ -181,34 +178,13 @@ public class SVNRepo extends Repo {
 			int deletions = 0;
 
 			final String[] lines = baos.toString().split("\n");
-
-			boolean shouldSkip = false;
-
+			
 			for (final String line : lines) {
-
-				if (ignoreNonSourceCodeFiles) {
-
-					if (line.startsWith("Index: ")) {
-
-						if (CodeSniffer.detectLanguage(line.replace("\r", "").replace("\n", ""))
-								.isUndefined()) {
-							LOGGER.debug("Skipping file {}", line);
-							shouldSkip = true;
-						} else {
-							shouldSkip = false;
-						}
-
-					}
-
-					if (shouldSkip) {
-						continue;
-					}
-				}
 
 				if (line.startsWith("---")) {
 					filesChanged++;
 				} else if (line.startsWith("+++")) {
-					continue;
+					// No action needed
 				} else if (line.startsWith("+")) {
 					additions++;
 				} else if (line.startsWith("-")) {
@@ -228,7 +204,7 @@ public class SVNRepo extends Repo {
 			return diff;
 		}
 	}
-
+	
 	/**
 	 * This disables reading and writing to cache of log entries, forcing diff
 	 * comparison for each entry.
@@ -253,17 +229,6 @@ public class SVNRepo extends Repo {
 	 */
 	public String getBranch() {
 		return currBranch;
-	}
-
-	/**
-	 * Indicates that synchronization of log entry differences should skip file
-	 * extensions that cloc does not recognize.
-	 * 
-	 * @param value
-	 */
-	public void setSkipNonSourceCodeFiles(final boolean value) {
-		ignoreNonSourceCodeFiles = value;
-		setLogEntryCacheDisabled(value);
 	}
 
 	/**
