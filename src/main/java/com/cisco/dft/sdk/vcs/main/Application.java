@@ -29,7 +29,7 @@ public final class Application {
 
 	public static final String VERISION = "v1.2.3";
 
-	private static final Logger LOGGER = LoggerFactory.getLogger("Application");
+	private static final Logger LOGGER = LoggerFactory.getLogger(Application.class.getSimpleName());
 
 	private static final PrintStream out = System.out;
 
@@ -104,7 +104,7 @@ public final class Application {
 	 */
 	private void analyzeAsSVN() throws SVNException, BranchNotFoundException {
 
-		LOGGER.debug("running as svn");
+		if (config.shouldForceSvn()) { LOGGER.debug("Force running as SVN"); }
 
 		final SVNRepo repo = new SVNRepo(config.getUrl(), config.getBranch(), config.getUsername(), config
 				.getPassword(), false, false);
@@ -268,8 +268,7 @@ public final class Application {
 	}
 
 	static Application setConfiguration(final ProgramConfig config) {
-		getInstance().setConfig(config);
-		return getInstance();
+		return getInstance().setConfig(config);
 	}
 
 }

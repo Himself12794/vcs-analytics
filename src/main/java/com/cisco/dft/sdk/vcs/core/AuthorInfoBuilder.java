@@ -154,7 +154,7 @@ public class AuthorInfoBuilder {
 	 *         AuthorInfo object.
 	 * @throws CommitterNotFoundException 
 	 */
-	public CommitterInfo lookupUser(final String user) throws CommitterNotFoundException {
+	public CommitterInfo lookupCommitter(final String user) throws CommitterNotFoundException {
 		
 		for (final CommitterInfo ai : authorInfo.getData()) {
 			if (ai.getCommitterName().equals(user)) { 
@@ -162,7 +162,7 @@ public class AuthorInfoBuilder {
 			}
 		}
 		
-		throw new CommitterNotFoundException("User " + user + " not found.");
+		throw new CommitterNotFoundException("Committer " + user + " not found.");
 	}
 	
 	/**
@@ -178,7 +178,7 @@ public class AuthorInfoBuilder {
 			if (ci.getCommitterEmail().equals(email)) { return ci; }
 		}
 		
-		throw new CommitterNotFoundException("Commiter with email " + email + " not found.");
+		throw new CommitterNotFoundException("Committer with email " + email + " not found.");
 		
 	}
 

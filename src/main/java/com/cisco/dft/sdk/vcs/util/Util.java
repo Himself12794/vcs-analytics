@@ -1,5 +1,7 @@
 package com.cisco.dft.sdk.vcs.util;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.Date;
 import java.util.Map;
 
@@ -211,6 +213,32 @@ public final class Util {
 			map.put(k, v);
 		}
 		
+	}
+
+	public static <T> String toString(final T t) {
+
+		final Class<?> clazz = t.getClass();
+
+		final StringBuilder value = new StringBuilder(clazz.getSimpleName());
+		value.append("[");
+
+		for (final Field field : clazz.getDeclaredFields()) {
+			if (Modifier.isStatic(field.getModifiers())) {
+				continue;
+			}
+			try {
+				field.setAccessible(true);
+				value.append(field.getName() + "=" + field.get(t) + ", ");
+				field.setAccessible(false);
+			} catch (final Exception e) {
+				redirectLogError("An unexpected error occured in value mapping", e);
+			}
+		}
+
+		value.append("]");
+
+		return value.toString();
+
 	}
 
 }

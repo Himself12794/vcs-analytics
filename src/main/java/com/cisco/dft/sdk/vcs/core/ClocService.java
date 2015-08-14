@@ -31,8 +31,9 @@ import com.google.common.collect.Maps;
 public final class ClocService {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ClocService.class.getSimpleName());
-	
-	private static final String[] args = {"", "--quiet", "--progress-rate=0", "--yaml", "--skip-win-hidden", ""};
+
+	private static final String[] ARGS = { "", "--quiet", "--progress-rate=0", "--yaml",
+			"--skip-win-hidden", "" };
 
 	private static boolean init = false;
 
@@ -64,18 +65,17 @@ public final class ClocService {
 	public static String getCLOCDataAsYaml(final File file) throws IOException {
 
 		if (!canGetCLOCStats()) { throw new IOException("Cannot run cloc"); }
-		
-		args[args.length - 1] = file.getAbsolutePath();
+
+		ARGS[ARGS.length - 1] = file.getAbsolutePath();
 
 		if (clocInstalled) {
-			LOGGER.debug("Cloc already exists, using that instead. Running on directory "
-					+ file.getAbsolutePath());
-			return CommandLineUtils.executeCommand("cloc", args);
+			LOGGER.debug("Running CLOC on directory {}", file);
+			return CommandLineUtils.executeCommand("cloc", ARGS);
 		} else if (perlInstalled) {
-			args[0] = CLOC_PL;
-			return CommandLineUtils.executeCommand("perl", args);
+			ARGS[0] = CLOC_PL;
+			return CommandLineUtils.executeCommand("perl", ARGS);
 		} else {
-			return CommandLineUtils.executeCommand(getFileForOS(false).getPath(), args);
+			return CommandLineUtils.executeCommand(getFileForOS(false).getPath(), ARGS);
 		}
 
 	}
@@ -92,12 +92,10 @@ public final class ClocService {
 
 		if (!canGetCLOCStats()) { throw new IOException("Cannot run CLOC"); }
 
-		LOGGER.debug("Getting cloc statistics for directory " + file.getAbsolutePath());
-
 		final String yamlStr = getCLOCDataAsYaml(file);
 
 		final Map<Language, LangStats> langStats = Maps.newHashMap();
-		
+
 		Header header = new Header();
 
 		final Iterable<Object> yaml = new Yaml().loadAll(yamlStr);
@@ -141,7 +139,7 @@ public final class ClocService {
 	 */
 	private static File getFileForOS(final boolean src) {
 
-		final File file = src ? getClassPathFile(CLOC_DIR): BIN_DIR;
+		final File file = src ? getClassPathFile(CLOC_DIR) : BIN_DIR;
 
 		switch (OSType.getOSType()) {
 			case WIN:
@@ -199,9 +197,9 @@ public final class ClocService {
 					init = true;
 
 				} catch (final IOException e) {
-					LOGGER.trace("cloc initialization failed", e);
-					LOGGER.warn("cloc initialization failed");
-					LOGGER.info("Install perl and/or cloc onto your system to use cloc statistics");
+					LOGGER.warn("CLOC initialization failed");
+					LOGGER.trace("", e);
+					LOGGER.info("You must enable execute permissions for this program, or manually install CLOC for its integration to work.");
 					init = false;
 				}
 			}
@@ -212,13 +210,13 @@ public final class ClocService {
 	public static boolean isClocInstalled() {
 
 		try {
-			LOGGER.debug("Cloc version "
+			LOGGER.debug("CLOC version "
 					+ CommandLineUtils.executeCommand("cloc", "-version").replace("\n", " ")
-					+ "detected on system.");
+					+ "detected.");
 			return true;
 		} catch (final IOException e) {
-			LOGGER.trace("Cloc not detected", e);
-			LOGGER.debug("Cloc not detected");
+			LOGGER.debug("CLOC not detected");
+			LOGGER.trace("", e);
 			return false;
 		}
 
@@ -236,12 +234,12 @@ public final class ClocService {
 			CommandLineUtils.executeCommand("perl", "-v");
 			return true;
 		} catch (final IOException e) {
-			LOGGER.trace("An error occured in perl detection", e);
-			LOGGER.info("Perl not detected");
+			LOGGER.debug("Perl not detected");
+			LOGGER.trace("", e);
 			return false;
 		}
 	}
-	
+
 	private static File getClassPathFile(String path) {
 		return new File(ClocService.class.getClassLoader().getResource(path).getPath());
 	}

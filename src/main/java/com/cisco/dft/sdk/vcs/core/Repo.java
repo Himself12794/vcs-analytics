@@ -36,7 +36,7 @@ public abstract class Repo {
 
 	public static String guessName(final String url) {
 		String value = url;
-		String[] splitten = { "Unkown" };
+		String[] splitten = { "Unknown" };
 
 		if (value.endsWith(".git")) {
 			value = value.replace(".git", "");

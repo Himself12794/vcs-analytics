@@ -81,7 +81,7 @@ public class RepoUtilsTest {
 		final GitRepo reo = new GitRepo("https://github.com/pypa/sampleproject.git");
 		final AuthorInfoBuilder aib = reo.getRepoStatistics().getBranchInfoFor(MASTER)
 				.getAuthorStatistics();
-		final CommitterInfo ai = aib.lookupUser("Marcus Smith");
+		final CommitterInfo ai = aib.lookupCommitter("Marcus Smith");
 		assertTrue(ai.getCommitCount() >= 26);
 		assertTrue(ai.getAdditions() >= 106);
 		assertTrue(ai.getDeletions() >= 86);
@@ -113,7 +113,7 @@ public class RepoUtilsTest {
 		boolean success = false;
 		
 		try {
-			aib.lookupUser("Unknown");
+			aib.lookupCommitter("Unknown");
 			success = false;
 		} catch (Exception e) {
 			success = true;
@@ -123,13 +123,13 @@ public class RepoUtilsTest {
 
 		LOGGER.info("Testing date range limiting.");
 		assertTrue(aib.getInfo().size() >= 13);
-		assertTrue(aib.lookupUser("Matt Iversen").getCommitCount() >= 1);
+		assertTrue(aib.lookupCommitter("Matt Iversen").getCommitCount() >= 1);
 		System.out.println(aib);
 
 		aib.limitToDateRange(Range.closed(start, end));
 		assertTrue(aib.getInfo().size() == 4);
 		try {
-			assertTrue(aib.lookupUser("Matt Iversen").getCommitCount() == 0);
+			assertTrue(aib.lookupCommitter("Matt Iversen").getCommitCount() == 0);
 			assertTrue(false);
 		} catch (CommitterNotFoundException cnfe) {
 			assertTrue(true);

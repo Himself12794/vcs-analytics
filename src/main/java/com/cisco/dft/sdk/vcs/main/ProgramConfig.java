@@ -168,11 +168,7 @@ public class ProgramConfig {
 
 	@Override
 	public String toString() {
-		final String value = "Action=" + action.name() + ",Url=" + url + ",Branch=" + branch
-				+ ",GenerateStats=" + shouldGenerateStats + ",UseCloc=" + useCloc + ",Start="
-				+ (start == null ? "first-commit" : start) + ",End="
-				+ (end == null ? "last-commit" : end) + ",Debug=" + debug;
-		return value;
+		return Util.toString(this);
 	}
 
 	private static Date getDate(final String date) {
@@ -231,7 +227,7 @@ public class ProgramConfig {
 		final boolean forceSvn = parser.getBoolean("forceSvn") || parser.getBoolean("s");
 		final boolean svnNonSourceSkip = parser.getBoolean("svn-source-only");
 		final SVNRevision revA = SVNRevision.create(Util.ifNullDefault(parser.getLong("rev-a"), 0L));
-		final SVNRevision revB = SVNRevision.create(Util.ifNullDefault(parser.getLong("rev-b"), -1L));
+		final SVNRevision revB = parser.getLong("rev-b") != null ? SVNRevision.create(parser.getLong("rev-b")) : SVNRevision.HEAD;
 		final Date end = getDate(parser.getString("end"));
 		final Date start = getDate(parser.getString("start"));
 
