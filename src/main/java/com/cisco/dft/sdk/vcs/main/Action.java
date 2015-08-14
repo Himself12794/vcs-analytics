@@ -16,6 +16,7 @@ public enum Action {
 			+ "\n    --rev-a=<SVN revision> (SVN only, reads information after this rev)"
 			+ "\n    --rev-b=<SVN revision> (SVN only, reads information before this rev)"
 			+ "\n    --nocommits (Indicates that only language information should be shown)"
+			+ "\n    --svn-source-only (SVN only, skips files that cloc does not consider source code)"
 			+ "\n    -s (forces the application to treat the url as a SVN repo)"
 			+ "\n    -g (forces the application to treat the url as a Git repo)\n", new Predicate<ProgramConfig>() {
 

@@ -99,4 +99,8 @@ public class CommitLogger {
 
 	}
 	
+	public void setDisabled(boolean value) {
+		isInit = !value;
+	}
+	
 }

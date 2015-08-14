@@ -61,9 +61,9 @@ public final class CodeSniffer {
 		final String[] filed = file.split("\\.");
 
 		if (filed.length > 0) {
-
+			
 			final Language lang = FILE_EXTENSION_ASSOCIATIONS.get(filed[filed.length - 1]);
-
+			
 			return lang != null ? lang : Language.UNDEFINED;
 
 		}

@@ -57,6 +57,8 @@ public class SVNRepo extends Repo {
 
 	private static final boolean AUTOSYNC = true;
 
+	private boolean ignoreNonSourceCodeFiles = false;
+
 	private final ISVNAuthenticationManager authManager;
 
 	private final SVNUpdateClient updateClient;
@@ -179,9 +181,30 @@ public class SVNRepo extends Repo {
 			int deletions = 0;
 
 			final String[] lines = baos.toString().split("\n");
-			
+
+			boolean shouldSkip = false;
+
 			for (final String line : lines) {
-				
+
+				if (ignoreNonSourceCodeFiles) {
+
+					if (line.startsWith("Index: ")) {
+
+						if (CodeSniffer.detectLanguage(line.replace("\r", "").replace("\n", ""))
+								.isUndefined()) {
+							LOGGER.debug("Skipping file {}", line);
+							shouldSkip = true;
+						} else {
+							shouldSkip = false;
+						}
+
+					}
+
+					if (shouldSkip) {
+						continue;
+					}
+				}
+
 				if (line.startsWith("---")) {
 					filesChanged++;
 				} else if (line.startsWith("+++")) {
@@ -206,6 +229,16 @@ public class SVNRepo extends Repo {
 		}
 	}
 
+	/**
+	 * This disables reading and writing to cache of log entries, forcing diff
+	 * comparison for each entry.
+	 * 
+	 * @param value
+	 */
+	public void setLogEntryCacheDisabled(boolean value) {
+		commitLogger.setDisabled(value);
+	}
+
 	private void doDiff(final SVNRevision rev1, final SVNRevision rev2, final OutputStream baos) throws SVNException {
 
 		final SVNDiffClient diffs = new SVNDiffClient(authManager, null);
@@ -223,17 +256,29 @@ public class SVNRepo extends Repo {
 	}
 
 	/**
+	 * Indicates that synchronization of log entry differences should skip file
+	 * extensions that cloc does not recognize.
+	 * 
+	 * @param value
+	 */
+	public void setSkipNonSourceCodeFiles(final boolean value) {
+		ignoreNonSourceCodeFiles = value;
+		setLogEntryCacheDisabled(value);
+	}
+
+	/**
 	 * Synchronizes information for the directory trunk. Performs all
 	 * diagnostics.
-	 * 
+	 *
 	 * @throws SVNException
 	 *
 	 */
+	// TODO make sync into a command object
 	@Override
 	public void sync() {
 		try {
 			sync(true);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			LOGGER.debug("Error occured in synchronization.", e);
 		}
 	}

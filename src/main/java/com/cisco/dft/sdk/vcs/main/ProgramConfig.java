@@ -72,6 +72,8 @@ public class ProgramConfig {
 
 	private boolean forceSvn;
 	
+	private boolean svnSkipNonSourceCodeFiles;
+	
 	private SVNRevision revA;
 	
 	private SVNRevision revB;
@@ -92,6 +94,10 @@ public class ProgramConfig {
 		this.useCloc = useCloc;
 	}
 	
+	public boolean shouldSvnSkipNonSourceCodeFiles() {
+		return svnSkipNonSourceCodeFiles;
+	}
+
 	public SVNRevision getRevA() {
 		return revA;
 	}
@@ -223,6 +229,7 @@ public class ProgramConfig {
 		final boolean noCommits = parser.getBoolean("nocommits");
 		final boolean forceGit = parser.getBoolean("forceGit") || parser.getBoolean("g");
 		final boolean forceSvn = parser.getBoolean("forceSvn") || parser.getBoolean("s");
+		final boolean svnNonSourceSkip = parser.getBoolean("svn-source-only");
 		final SVNRevision revA = SVNRevision.create(Util.ifNullDefault(parser.getLong("rev-a"), 0L));
 		final SVNRevision revB = SVNRevision.create(Util.ifNullDefault(parser.getLong("rev-b"), -1L));
 		final Date end = getDate(parser.getString("end"));
@@ -237,6 +244,7 @@ public class ProgramConfig {
 		config.forceGit = forceGit;
 		config.forceSvn = forceSvn;
 		config.shouldGenerateLangStats = generateLangStats;
+		config.svnSkipNonSourceCodeFiles = svnNonSourceSkip;
 		config.revA = revA;
 		config.revB = revB;
 		

@@ -27,7 +27,7 @@ import com.cisco.dft.sdk.vcs.util.Util;
 // TODO scrub unnecessary files from SVN information
 public final class Application {
 
-	public static final String VERISION = "v1.2.2";
+	public static final String VERISION = "v1.2.3";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger("Application");
 
@@ -108,6 +108,9 @@ public final class Application {
 
 		final SVNRepo repo = new SVNRepo(config.getUrl(), config.getBranch(), config.getUsername(), config
 				.getPassword(), false, false);
+		
+		if (config.shouldSvnSkipNonSourceCodeFiles()) { LOGGER.debug("Including only source files in diff comparison"); }
+		repo.setSkipNonSourceCodeFiles(config.shouldSvnSkipNonSourceCodeFiles());
 		
 		repo.sync(config.getBranch(), config.shouldGetLangStats(), config.shouldGenerateStats(), config.getRevA(), config.getRevB());
 
