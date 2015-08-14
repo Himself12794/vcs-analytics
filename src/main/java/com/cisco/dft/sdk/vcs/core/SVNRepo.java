@@ -360,6 +360,7 @@ public class SVNRepo extends Repo {
 
 			try {
 				data = ClocService.getClocStatistics(exportPath);
+				bi.usesCLOCStats = true;
 			} catch (final IOException e) {
 
 				data = CodeSniffer.analyzeDirectory(exportPath);
@@ -369,10 +370,10 @@ public class SVNRepo extends Repo {
 
 		} else {
 			data = CodeSniffer.analyzeDirectory(exportPath);
+			bi.usesCLOCStats = false;
 		}
 
 		bi.getData().imprint(data);
-		bi.usesCLOCStats = true;
 
 	}
 
