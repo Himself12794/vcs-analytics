@@ -52,7 +52,7 @@ public final class Application {
 
 		} else {
 
-			init();
+			ClocService.init();
 
 			if (config.shouldForceGit()) {
 				analyzeAsGit();
@@ -211,6 +211,12 @@ public final class Application {
 	 */
 	private void init() {
 		ClocService.init();
+		
+		if (ClocService.canGetCLOCStats()) {
+			out.println("CLOC service available.");
+		} else {
+			out.println("CLOC service unavailable");
+		}
 	}
 
 	private void printLimitedRange(final BranchInfo... bis) {
