@@ -4,7 +4,7 @@ import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Range;
-import com.pwhiting.sdk.vcs.util.DateLimitedData;
+import com.pwhiting.util.DateLimitedData;
 
 /**
  * Used to store information about a commit made by author.

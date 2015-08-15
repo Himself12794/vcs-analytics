@@ -8,7 +8,7 @@ import java.util.TimeZone;
 
 import com.google.common.collect.Maps;
 import com.pwhiting.sdk.vcs.core.error.BranchNotFoundException;
-import com.pwhiting.sdk.vcs.util.Util;
+import com.pwhiting.util.Util;
 
 /**
  * Data object that holds all information for a repo.

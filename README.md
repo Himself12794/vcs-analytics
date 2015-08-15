@@ -7,7 +7,7 @@ The binary with dependencies can be found on the releases page.
 
 Here are the commands:
 
-  analyze <url> - Gives statistics for a Git or SVN repository
+  analyze <<url>> - Gives statistics for a Git or SVN repository
     --branch=<branch> (Limits statistics to specified branch)
     --nostatistics (Indicates to just clone the repo)
     --builtin-analysis (Indicates to use builtin stat analysis)

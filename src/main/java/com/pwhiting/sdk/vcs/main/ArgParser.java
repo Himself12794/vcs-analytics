@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.pwhiting.sdk.vcs.util.Util;
+import com.pwhiting.util.Util;
 
 /**
  * An argument parser. The first argument is interpreted as an action, unless it

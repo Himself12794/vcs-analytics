@@ -9,8 +9,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.pwhiting.sdk.vcs.core.error.CommitterNotFoundException;
 import com.pwhiting.sdk.vcs.core.util.SortMethod;
-import com.pwhiting.sdk.vcs.util.DateLimitedDataContainer;
-import com.pwhiting.sdk.vcs.util.Util;
+import com.pwhiting.util.DateLimitedDataContainer;
+import com.pwhiting.util.Util;
 
 /**
  * Utility object for organizing printed author output and looking up specific

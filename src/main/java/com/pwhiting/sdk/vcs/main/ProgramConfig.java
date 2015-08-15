@@ -10,7 +10,7 @@ import org.tmatesoft.svn.core.wc.SVNRevision;
 
 import ch.qos.logback.classic.Level;
 
-import com.pwhiting.sdk.vcs.util.Util;
+import com.pwhiting.util.Util;
 
 /**
  * Simple pojo used to define Application config and context.
