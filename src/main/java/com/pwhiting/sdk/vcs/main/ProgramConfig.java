@@ -2,15 +2,10 @@ package com.pwhiting.sdk.vcs.main;
 
 import java.util.Date;
 
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.tmatesoft.svn.core.wc.SVNRevision;
 
+import com.pwhiting.util.ArgParser;
 import com.pwhiting.util.Util;
-
-import ch.qos.logback.classic.Level;
 
 /**
  * Simple pojo used to define Application config and context.
@@ -19,12 +14,8 @@ import ch.qos.logback.classic.Level;
  *
  */
 public class ProgramConfig {
-
-	private static final Logger LOGGER = LoggerFactory.getLogger("ProgamConfig");
 	
-	static {
-		Util.setLoggingLevel(Level.INFO);
-	}
+	static final ProgramConfigMapper MAPPER = new ProgramConfigMapper();
 
 	/** Pre-set config for an INIT action. Useful for testing */
 	static final ProgramConfig INIT = ProgramConfig.parseArgs("init", "--nostats",
@@ -60,27 +51,27 @@ public class ProgramConfig {
 
 	private final boolean useCloc;
 	
-	private boolean shouldGenerateLangStats;
+	boolean shouldGenerateLangStats;
 
-	private boolean debug;
+	boolean debug;
 
-	private boolean showVersion;
+	boolean showVersion;
 
-	private boolean noCommits;
+	boolean noCommits;
 
-	private boolean forceGit;
+	boolean forceGit;
 
-	private boolean forceSvn;
+	boolean forceSvn;
 	
-	private boolean svnSkipNonSourceCodeFiles;
+    boolean svnSkipNonSourceCodeFiles;
 	
-	private SVNRevision revA;
+	SVNRevision revA;
 	
-	private SVNRevision revB;
+	SVNRevision revB;
 
-	private Date start;
+	Date start;
 
-	private Date end;
+	Date end;
 
 	ProgramConfig(final Action action, final String url, final String branch,
 			final String username, final String password, final boolean generateStats,
@@ -171,24 +162,6 @@ public class ProgramConfig {
 		return Util.toString(this);
 	}
 
-	private static Date getDate(final String date) {
-
-		try {
-			return DateTime.parse(date).toDateTime(DateTimeZone.getDefault()).toDate();
-		} catch (final Exception iae) {
-			LOGGER.trace("Could not read start input as a DateTime object", iae);
-		}
-
-		try {
-			return new Date(Long.parseLong(date));
-		} catch (final NumberFormatException nfe) {
-			// No action needed
-		}
-
-		return null;
-
-	}
-
 	public static String getUsage() {
 		final StringBuilder value = new StringBuilder("This application runs an analysis on remote repositories and prints the results.\n");
 		value.append("\nCommands:");
@@ -205,50 +178,8 @@ public class ProgramConfig {
 		return value.toString();
 	}
 
-	public static ProgramConfig parseArgs(final ArgParser parser) {
-
-		Action action = parser.getActionAsEnum(Action.class);
-
-		if (action == null) {
-			action = Action.HELP;
-		}
-
-		final String url = parser.getActionParameterByIndex(0);
-		final String branch = parser.getString("branch");
-		final String username = parser.getString("username", "");
-		final String password = parser.getString("password", "");
-		final boolean generateStats = !parser.getBoolean("nostats");
-		final boolean generateLangStats = !parser.getBoolean("no-lang-stats");
-		final boolean useCloc = !parser.getBoolean("builtin-analysis");
-		final boolean version = parser.getBoolean("v");
-		final boolean debug = parser.getBoolean("d");
-		final boolean noCommits = parser.getBoolean("nocommits");
-		final boolean forceGit = parser.getBoolean("forceGit") || parser.getBoolean("g");
-		final boolean forceSvn = parser.getBoolean("forceSvn") || parser.getBoolean("s");
-		final boolean svnNonSourceSkip = parser.getBoolean("svn-source-only");
-		final SVNRevision revA = SVNRevision.create(Util.ifNullDefault(parser.getLong("rev-a"), 0L));
-		final SVNRevision revB = parser.getLong("rev-b") != null ? SVNRevision.create(parser.getLong("rev-b")) : SVNRevision.HEAD;
-		final Date end = getDate(parser.getString("end"));
-		final Date start = getDate(parser.getString("start"));
-
-		final ProgramConfig config = new ProgramConfig(action, url, branch, username, password, generateStats, useCloc);
-		config.end = end;
-		config.start = start;
-		config.debug = debug;
-		config.showVersion = version;
-		config.noCommits = noCommits;
-		config.forceGit = forceGit;
-		config.forceSvn = forceSvn;
-		config.shouldGenerateLangStats = generateLangStats;
-		config.svnSkipNonSourceCodeFiles = svnNonSourceSkip;
-		config.revA = revA;
-		config.revB = revB;
-		
-		return config;
-	}
-
 	public static ProgramConfig parseArgs(final String... args) {
-		return parseArgs(ArgParser.parse(args));
+		return ArgParser.parseArgs(MAPPER, args);
 	}
 	
 	public static ProgramConfig parseArgs(final String arg) {
