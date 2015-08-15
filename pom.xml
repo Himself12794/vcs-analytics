@@ -3,10 +3,10 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>it.cits.itarchitecture</groupId>
-	<artifactId>source-code-vcs-analytics-sdk</artifactId>
+	<groupId>com.pwhiting</groupId>
+	<artifactId>vcs-analytics-sdk</artifactId>
 	<version>1.2.3</version>
-	<name>source-code-analytics-sdk</name>
+	<name>vcs-analytics-sdk</name>
 	<description>Source Code Analytics SDK</description>
 
 	<url>http://maven.apache.org</url>
@@ -95,7 +95,7 @@
 	                  <archive>
 	                      <manifest>
 	                          <addClasspath>true</addClasspath>
-	                          <mainClass>com.cisco.dft.sdk.vcs.main.Application</mainClass>
+	                          <mainClass>com.pwhiting.sdk.vcs.main.Application</mainClass>
 	                      </manifest>
 	                  </archive>
 	                  <descriptorRefs>
@@ -121,7 +121,7 @@
 		          	<target>1.7</target>
 					<archive>
 						<manifest>
-							<mainClass>com.cisco.dft.sdk.vcs.main.Application</mainClass>
+							<mainClass>com.pwhiting.sdk.vcs.main.Application</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
