@@ -2,10 +2,10 @@ package com.pwhiting.sdk.vcs.core;
 
 import java.util.Date;
 
-import com.pwhiting.util.ClocData;
-import com.pwhiting.util.ClocData.LangStats;
-import com.pwhiting.util.CodeSniffer.Language;
 import com.pwhiting.util.Util;
+import com.pwhiting.util.lang.ClocData;
+import com.pwhiting.util.lang.ClocData.LangStats;
+import com.pwhiting.util.lang.CodeSniffer.Language;
 
 /**
  * Class used as base.
@@ -82,7 +82,7 @@ public class HistoryViewer {
 	 * @return
 	 */
 	public LangStats[] getLangStatistics() {
-		final com.pwhiting.util.ClocData.LangStats[] oldOne = data.getLanguageStats();
+		final com.pwhiting.util.lang.ClocData.LangStats[] oldOne = data.getLanguageStats();
 		final LangStats[] newOne = new LangStats[oldOne.length];
 
 		for (int i = 0; i < newOne.length; i++) {

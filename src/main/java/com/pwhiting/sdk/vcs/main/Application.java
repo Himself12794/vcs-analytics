@@ -15,8 +15,8 @@ import com.pwhiting.sdk.vcs.core.BranchInfo;
 import com.pwhiting.sdk.vcs.core.GitRepo;
 import com.pwhiting.sdk.vcs.core.SVNRepo;
 import com.pwhiting.sdk.vcs.core.error.BranchNotFoundException;
-import com.pwhiting.util.ClocService;
 import com.pwhiting.util.Util;
+import com.pwhiting.util.lang.ClocService;
 
 /**
  * The application class. For total SDK abstraction, the library is still valid

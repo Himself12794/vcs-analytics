@@ -266,9 +266,9 @@ public final class Util {
 		return value;
 	}
 
-	public static List<Byte[]> byteArraySplit(byte[] value, byte[] pattern) {
+	public static List<byte[]> byteArraySplit(byte[] value, byte[] pattern) {
 
-		List<Byte[]> split = Lists.newArrayList();
+		List<byte[]> split = Lists.newArrayList();
 
 		if (value.length >= pattern.length) {
 
@@ -282,15 +282,15 @@ public final class Util {
 
 				if (Arrays.equals(pattern, selection)) {
 					i += charLength - 1;
-					split.add(arrayConversion(Arrays.copyOfRange(value,
-							lastSplit, i - charLength + 1)));
+					split.add(Arrays.copyOfRange(value,
+							lastSplit, i - charLength + 1));
 					lastSplit = i + 1;
 				}
 
 			}
 
-			split.add(arrayConversion(Arrays.copyOfRange(value, lastSplit,
-					value.length)));
+			split.add(Arrays.copyOfRange(value, lastSplit,
+					value.length));
 		}
 
 		return split;

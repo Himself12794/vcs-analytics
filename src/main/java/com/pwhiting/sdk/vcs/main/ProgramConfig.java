@@ -8,9 +8,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tmatesoft.svn.core.wc.SVNRevision;
 
-import ch.qos.logback.classic.Level;
-
 import com.pwhiting.util.Util;
+
+import ch.qos.logback.classic.Level;
 
 /**
  * Simple pojo used to define Application config and context.

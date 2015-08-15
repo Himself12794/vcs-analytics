@@ -28,13 +28,13 @@ import com.pwhiting.sdk.vcs.core.Repo;
 import com.pwhiting.sdk.vcs.core.SVNRepo;
 import com.pwhiting.sdk.vcs.core.error.CommitterNotFoundException;
 import com.pwhiting.sdk.vcs.core.util.SortMethod;
-import com.pwhiting.util.ClocData;
-import com.pwhiting.util.ClocData.Header;
-import com.pwhiting.util.ClocData.LangStats;
-import com.pwhiting.util.CodeSniffer;
-import com.pwhiting.util.CodeSniffer.Language;
 import com.pwhiting.util.OSType;
 import com.pwhiting.util.Util;
+import com.pwhiting.util.lang.ClocData;
+import com.pwhiting.util.lang.ClocData.Header;
+import com.pwhiting.util.lang.ClocData.LangStats;
+import com.pwhiting.util.lang.CodeSniffer;
+import com.pwhiting.util.lang.CodeSniffer.Language;
 
 public class RepoUtilsTest {
 

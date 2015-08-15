@@ -33,13 +33,13 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.pwhiting.sdk.vcs.core.util.SortMethod;
-import com.pwhiting.util.ClocData;
-import com.pwhiting.util.ClocData.Header;
-import com.pwhiting.util.ClocData.LangStats;
-import com.pwhiting.util.ClocService;
-import com.pwhiting.util.CodeSniffer;
-import com.pwhiting.util.CodeSniffer.Language;
 import com.pwhiting.util.Util;
+import com.pwhiting.util.lang.ClocData;
+import com.pwhiting.util.lang.ClocData.Header;
+import com.pwhiting.util.lang.ClocData.LangStats;
+import com.pwhiting.util.lang.ClocService;
+import com.pwhiting.util.lang.CodeSniffer;
+import com.pwhiting.util.lang.CodeSniffer.Language;
 
 /**
  * Class used to hold information about a specific branch in a repository. Also
