@@ -196,6 +196,7 @@ public final class ClocService {
 			} else if (type.isUnix()) {
 				init = installUnix();
 				if (!init) { init = installGeneric(); }
+				else { clocInstalled = true; }
 			} else {
 				init = installGeneric();
 			}
