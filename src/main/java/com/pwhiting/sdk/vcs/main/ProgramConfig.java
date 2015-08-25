@@ -63,7 +63,7 @@ public class ProgramConfig {
 
 	boolean forceSvn;
 	
-    boolean svnSkipNonSourceCodeFiles;
+    boolean svnIgnoreCache;
 	
 	SVNRevision revA;
 	
@@ -85,8 +85,8 @@ public class ProgramConfig {
 		this.useCloc = useCloc;
 	}
 	
-	public boolean shouldSvnSkipNonSourceCodeFiles() {
-		return svnSkipNonSourceCodeFiles;
+	public boolean shouldSvnIgnoreCache() {
+		return svnIgnoreCache;
 	}
 
 	public SVNRevision getRevA() {

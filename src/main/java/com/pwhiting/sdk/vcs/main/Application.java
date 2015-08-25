@@ -109,6 +109,8 @@ public final class Application {
 		final SVNRepo repo = new SVNRepo(config.getUrl(), config.getBranch(), config.getUsername(), config
 				.getPassword(), false, false);
 		
+		repo.setLogEntryCacheDisabled(config.svnIgnoreCache);
+		
 		repo.sync(config.getBranch(), config.shouldGetLangStats(), config.shouldGenerateStats(), config.getRevA(), config.getRevB());
 
 		if (!(config.getStart() == null && config.getEnd() == null)) {

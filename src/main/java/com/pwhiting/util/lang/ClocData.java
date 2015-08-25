@@ -1,5 +1,7 @@
 package com.pwhiting.util.lang;
 
+import static com.pwhiting.util.Util.redirectLogError;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
@@ -102,7 +104,7 @@ public class ClocData {
 				value.append(field.getName() + "=" + field.get(t) + ", ");
 				field.setAccessible(false);
 			} catch (final Exception e) {
-				Util.redirectLogError("An unexpected error occured in value mapping", e);
+				redirectLogError("An unexpected error occured in value mapping", e);
 			}
 		}
 

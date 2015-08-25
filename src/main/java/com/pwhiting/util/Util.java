@@ -254,16 +254,17 @@ public final class Util {
 
 		return value;
 	}
-
-	public static byte[] arrayConversion(Byte[] array) {
-
-		byte[] value = new byte[array.length];
-
-		for (int i = 0; i < value.length; i++) {
-			value[i] = array[i];
+	
+	public static boolean byteArrayStartsWith(byte[] value, byte[] pattern) {
+		
+		boolean status = false;
+		
+		if (value.length >= pattern.length) {
+			status = Arrays.equals(Arrays.copyOfRange(value, 0, pattern.length), pattern);
 		}
-
-		return value;
+		
+		return status;
+		
 	}
 
 	public static List<byte[]> byteArraySplit(byte[] value, byte[] pattern) {

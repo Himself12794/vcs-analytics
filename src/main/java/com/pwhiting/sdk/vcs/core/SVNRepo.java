@@ -320,7 +320,7 @@ public class SVNRepo extends Repo {
 				start.getNumber(), end.getNumber(), true, true);
 
 		LOGGER.info("Analyzing {} entries.", logEntries.size());
-
+		
 		for (final SVNLogEntry leEntry : logEntries) {
 
 			LOGGER.debug("Revision {}", leEntry.getRevision());

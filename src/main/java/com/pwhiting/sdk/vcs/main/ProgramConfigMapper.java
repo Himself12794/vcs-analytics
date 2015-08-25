@@ -43,7 +43,7 @@ public class ProgramConfigMapper implements ArgMapper<ProgramConfig> {
 		final boolean noCommits = parser.getBoolean("nocommits");
 		final boolean forceGit = parser.getBoolean("forceGit") || parser.getBoolean("g");
 		final boolean forceSvn = parser.getBoolean("forceSvn") || parser.getBoolean("s");
-		final boolean svnNonSourceSkip = parser.getBoolean("svn-source-only");
+		final boolean svnNonSourceSkip = parser.getBoolean("ignore-cache");
 		final SVNRevision revA = SVNRevision.create(Util.ifNullDefault(parser.getLong("rev-a"), 0L));
 		final SVNRevision revB = parser.getLong("rev-b") != null ? SVNRevision.create(parser.getLong("rev-b")) : SVNRevision.HEAD;
 		final Date end = getDate(parser.getString("end"));
@@ -58,7 +58,7 @@ public class ProgramConfigMapper implements ArgMapper<ProgramConfig> {
 		config.forceGit = forceGit;
 		config.forceSvn = forceSvn;
 		config.shouldGenerateLangStats = generateLangStats;
-		config.svnSkipNonSourceCodeFiles = svnNonSourceSkip;
+		config.svnIgnoreCache = svnNonSourceSkip;
 		config.revA = revA;
 		config.revB = revB;
 		
