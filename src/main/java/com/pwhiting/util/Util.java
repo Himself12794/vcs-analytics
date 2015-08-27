@@ -1,8 +1,10 @@
-package com.pwhiting.sdk.vcs.util;
+package com.pwhiting.util;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -10,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Level;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 
 /**
@@ -238,6 +241,60 @@ public final class Util {
 		value.append("]");
 
 		return value.toString();
+
+	}
+
+	public static Byte[] arrayConversion(byte[] array) {
+
+		Byte[] value = new Byte[array.length];
+
+		for (int i = 0; i < value.length; i++) {
+			value[i] = array[i];
+		}
+
+		return value;
+	}
+	
+	public static boolean byteArrayStartsWith(byte[] value, byte[] pattern) {
+		
+		boolean status = false;
+		
+		if (value.length >= pattern.length) {
+			status = Arrays.equals(Arrays.copyOfRange(value, 0, pattern.length), pattern);
+		}
+		
+		return status;
+		
+	}
+
+	public static List<byte[]> byteArraySplit(byte[] value, byte[] pattern) {
+
+		List<byte[]> split = Lists.newArrayList();
+
+		if (value.length >= pattern.length) {
+
+			int charLength = pattern.length;
+
+			int lastSplit = 0;
+
+			for (int i = 0; i < value.length - pattern.length; i++) {
+
+				byte[] selection = Arrays.copyOfRange(value, i, i + charLength);
+
+				if (Arrays.equals(pattern, selection)) {
+					i += charLength - 1;
+					split.add(Arrays.copyOfRange(value,
+							lastSplit, i - charLength + 1));
+					lastSplit = i + 1;
+				}
+
+			}
+
+			split.add(Arrays.copyOfRange(value, lastSplit,
+					value.length));
+		}
+
+		return split;
 
 	}
 

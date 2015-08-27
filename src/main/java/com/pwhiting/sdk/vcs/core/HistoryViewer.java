@@ -2,9 +2,10 @@ package com.pwhiting.sdk.vcs.core;
 
 import java.util.Date;
 
-import com.pwhiting.sdk.vcs.core.ClocData.LangStats;
-import com.pwhiting.sdk.vcs.util.Util;
-import com.pwhiting.sdk.vcs.util.CodeSniffer.Language;
+import com.pwhiting.util.Util;
+import com.pwhiting.util.lang.ClocData;
+import com.pwhiting.util.lang.ClocData.LangStats;
+import com.pwhiting.util.lang.CodeSniffer.Language;
 
 /**
  * Class used as base.
@@ -72,7 +73,7 @@ public class HistoryViewer {
 	}
 
 	public float getLangPercent(final Language lang) {
-		return (float) getLangStats(lang).getnFiles() / (float) data.getHeader().getnFiles();
+		return (float) data.getLangStats(lang).getnFiles() / (float) data.getHeader().getnFiles();
 	}
 
 	/**
@@ -81,7 +82,7 @@ public class HistoryViewer {
 	 * @return
 	 */
 	public LangStats[] getLangStatistics() {
-		final LangStats[] oldOne = data.getLanguageStats();
+		final com.pwhiting.util.lang.ClocData.LangStats[] oldOne = data.getLanguageStats();
 		final LangStats[] newOne = new LangStats[oldOne.length];
 
 		for (int i = 0; i < newOne.length; i++) {
@@ -90,17 +91,6 @@ public class HistoryViewer {
 
 		return newOne;
 
-	}
-
-	/**
-	 * Get number of files that use the specified language.
-	 *
-	 * @param lang
-	 * @return count
-	 */
-	public LangStats getLangStats(final Language lang) {
-		return data.getLanguageStatsMutable().containsKey(lang) ? data.getLanguageStatsMutable()
-				.get(lang).copy() : new LangStats(lang);
 	}
 
 	public String getLastCommitId() {
@@ -199,6 +189,10 @@ public class HistoryViewer {
 
 	public boolean usesCLOCStats() {
 		return usesCLOCStats;
+	}
+
+	public LangStats getLangStats(Language lang) {
+		return data.getLangStats(lang);
 	}
 
 }

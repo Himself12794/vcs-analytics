@@ -1,4 +1,4 @@
-package com.pwhiting.sdk.vcs.util;
+package com.pwhiting.util;
 
 /**
  * Borrowed from Mekong.com. Detects OS type.

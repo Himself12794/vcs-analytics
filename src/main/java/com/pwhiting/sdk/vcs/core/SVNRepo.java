@@ -24,7 +24,9 @@ import org.tmatesoft.svn.core.wc.SVNUpdateClient;
 import org.tmatesoft.svn.core.wc.SVNWCUtil;
 
 import com.pwhiting.sdk.vcs.core.util.CommitLogger;
-import com.pwhiting.sdk.vcs.util.CodeSniffer;
+import com.pwhiting.util.lang.ClocData;
+import com.pwhiting.util.lang.ClocService;
+import com.pwhiting.util.lang.CodeSniffer;
 
 /**
  * SVN Repositories use directories, instead of references, for branches. Unlike
@@ -318,7 +320,7 @@ public class SVNRepo extends Repo {
 				start.getNumber(), end.getNumber(), true, true);
 
 		LOGGER.info("Analyzing {} entries.", logEntries.size());
-
+		
 		for (final SVNLogEntry leEntry : logEntries) {
 
 			LOGGER.debug("Revision {}", leEntry.getRevision());

@@ -12,11 +12,11 @@ import ch.qos.logback.classic.Level;
 
 import com.pwhiting.sdk.vcs.core.AuthorInfoBuilder;
 import com.pwhiting.sdk.vcs.core.BranchInfo;
-import com.pwhiting.sdk.vcs.core.ClocService;
 import com.pwhiting.sdk.vcs.core.GitRepo;
 import com.pwhiting.sdk.vcs.core.SVNRepo;
 import com.pwhiting.sdk.vcs.core.error.BranchNotFoundException;
-import com.pwhiting.sdk.vcs.util.Util;
+import com.pwhiting.util.Util;
+import com.pwhiting.util.lang.ClocService;
 
 /**
  * The application class. For total SDK abstraction, the library is still valid
@@ -108,6 +108,8 @@ public final class Application {
 
 		final SVNRepo repo = new SVNRepo(config.getUrl(), config.getBranch(), config.getUsername(), config
 				.getPassword(), false, false);
+		
+		repo.setLogEntryCacheDisabled(config.svnIgnoreCache);
 		
 		repo.sync(config.getBranch(), config.shouldGetLangStats(), config.shouldGenerateStats(), config.getRevA(), config.getRevB());
 

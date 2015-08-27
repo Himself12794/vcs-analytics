@@ -1,4 +1,4 @@
-package com.pwhiting.sdk.vcs.main;
+package com.pwhiting.util;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.pwhiting.sdk.vcs.util.Util;
 
 /**
  * An argument parser. The first argument is interpreted as an action, unless it
@@ -231,6 +230,14 @@ public final class ArgParser {
 	 */
 	public String getString(final String key, final String defaultV) {
 		return Util.ifNullDefault(getString(key), defaultV);
+	}
+	
+	public <T> T parseArgs(ArgMapper<T> mapper) {
+		return mapper.mapArguments(this);
+	}
+	
+	public static <T> T parseArgs(ArgMapper<T> mapper, String...args) {
+		return mapper.mapArguments(ArgParser.parse(args));
 	}
 
 	private static boolean isFlag(final String value) {

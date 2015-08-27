@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.pwhiting.sdk.vcs.core.error.BranchNotFoundException;
-import com.pwhiting.sdk.vcs.util.Util;
+import com.pwhiting.util.Util;
 
 /**
  * Used to get information about different authors who have committed to a

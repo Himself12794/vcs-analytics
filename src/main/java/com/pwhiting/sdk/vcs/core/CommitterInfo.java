@@ -9,7 +9,7 @@ import java.util.List;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.pwhiting.sdk.vcs.core.error.CommitNotFoundException;
-import com.pwhiting.sdk.vcs.util.DateLimitedDataContainer.RecursiveDateLimitedDataContainer;
+import com.pwhiting.util.DateLimitedDataContainer.RecursiveDateLimitedDataContainer;
 
 /**
  * Wrapper class used for author data pulled from the repository.

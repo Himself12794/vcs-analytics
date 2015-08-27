@@ -1,4 +1,4 @@
-package com.pwhiting.sdk.vcs.util;
+package com.pwhiting.util;
 
 import java.util.Date;
 

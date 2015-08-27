@@ -1,6 +1,6 @@
-package com.pwhiting.sdk.vcs.util;
+package com.pwhiting.util.lang;
 
-import static com.pwhiting.sdk.vcs.util.FileExtensionMapping.FILE_EXTENSION_ASSOCIATIONS;
+import static com.pwhiting.util.lang.FileExtensionMapping.FILE_EXTENSION_ASSOCIATIONS;
 
 import java.io.File;
 import java.io.FileReader;
@@ -16,9 +16,9 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.pwhiting.sdk.vcs.core.ClocData;
-import com.pwhiting.sdk.vcs.core.ClocData.Header;
-import com.pwhiting.sdk.vcs.core.ClocData.LangStats;
+import com.pwhiting.util.Util;
+import com.pwhiting.util.lang.ClocData.Header;
+import com.pwhiting.util.lang.ClocData.LangStats;
 
 /**
  * Used to detect language. This isn't meant to be very sophisticated, just to
