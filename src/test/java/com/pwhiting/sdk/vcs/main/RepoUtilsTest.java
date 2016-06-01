@@ -105,7 +105,7 @@ public class RepoUtilsTest {
 
 		assertTrue(ac.getAdditions() == 19);
 		assertTrue(ac.getDeletions() == 9);
-		assertTrue(ac.getTimestamp().compareTo(commits.get(0).getTimestamp()) >= 0);
+		assertTrue(ac.getTimestamp().compareTo(commits.get(0).getTimestamp()) <= 0);
 		assertTrue(ac.getMessage().equals("Merge pull request #29 from RichardBronosky/master"));
 		assertTrue(ac.isMergeCommit());
 		assertTrue(ac.getChangedFiles() == 1);
@@ -253,12 +253,12 @@ public class RepoUtilsTest {
 	public void testSVN() throws Exception {
 		
 		SVNRepo repo = new SVNRepo("https://github.com/Himself12794/Heroes-Mod", "branches/" + DEVELOP);
-		repo.sync("branches/bugfix/fix-broken-things", true, true);
+		repo.sync("branches/additional-powers", true, true);
 		
 		System.out.println(repo);
 		
 		assertTrue(repo.getRepoStatistics().branchExists("branches/" + DEVELOP));
-		assertEquals("Wrong commit count", 13, repo.getRepoStatistics().getBranchInfoFor("branches/" + DEVELOP).getCommitCount());
+		assertEquals("Wrong commit count", 49, repo.getRepoStatistics().getBranchInfoFor("branches/" + DEVELOP).getCommitCount());
 		
 	}
 
